@@ -3,6 +3,7 @@ import re
 import os
 from dotenv import load_dotenv
 
+
 def find_document_starts(pdf_path):
     """
     Scans through the PDF to find pages that start with "1 of x" pattern,
