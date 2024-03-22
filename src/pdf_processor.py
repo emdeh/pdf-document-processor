@@ -1,5 +1,7 @@
 import fitz  # PyMuPDF
 import re
+import os
+from dotenv import load_dotenv
 
 def find_document_starts(pdf_path):
     """
