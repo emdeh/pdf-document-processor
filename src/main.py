@@ -22,6 +22,3 @@ if __name__ == "__main__":
     # Count processed PDFs
     detailed_data_after, summary_data_after = process_folders([output_folder])
     save_to_excel(detailed_data_after,summary_data_after,post_process_count)
-
-
-    
