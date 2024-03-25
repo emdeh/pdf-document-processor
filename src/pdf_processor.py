@@ -94,3 +94,5 @@ def process_all_pdfs(input_folder, output_folder):
         else:
             # Print a message if no '1 of x' pattern is found.
             print(f"No '1 of x' pattern found in {pdf_file.name}, skipping file.")
+
+## TO-DO - ISSUE - if it can't split, it skips. Need to handle this better

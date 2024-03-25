@@ -109,7 +109,7 @@ def extract_summary_info(results):
             for name, field in document.fields.items():
                 if name == label:
                     # Assuming fields have 'content' or 'value' attributes
-                    return ' '.join([field.content if field.content else field.value])
+                    return ' '.join([field.content if field.content else '' if field.content is not None else field.value if field.value else '' if field.value is not None else '' ])
         return ""  # Return an empty string if the label is not found
 
 
@@ -123,4 +123,3 @@ def extract_summary_info(results):
         'PaymentDueDate': extract_summary_values('PaymentDueDate')
     }
     return summary_info
-
