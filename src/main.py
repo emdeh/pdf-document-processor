@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # json_blobs_list = [blob for blob in blobs_list if not blob.name.endswith('.pdf') and not blob.name.endswith('.pdf.ocr.json')]
 
     # Temp for constrained testing.
-    json_blobs_list = [blob for blob in blobs_list if blob.name.endswith('.pdf.labels.json') and "Darren" in blob.name and not blob.name.endswith('.pdf.ocr.json')] 
+    json_blobs_list = [blob for blob in blobs_list if blob.name.endswith('.pdf.labels.json') and "JOHN" in blob.name and not blob.name.endswith('.pdf.ocr.json')] 
 
     # Read blob content
     for blob in json_blobs_list:
