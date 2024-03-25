@@ -23,8 +23,8 @@ if __name__ == "__main__":
     detailed_data_after, summary_data_after = process_folders([output_folder])
     save_to_excel(detailed_data_after,summary_data_after,post_process_count)
 
-    # TO DO - wait process for when PDFs are being processed by Document Intelligence
-
+    # TO DO - Implement argparse to make features modular and independent.
+    
     # TO DO - access extracted JSON from blob storage
 
     # TO DO - write JSON to csv
