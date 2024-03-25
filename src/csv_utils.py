@@ -1,14 +1,22 @@
 import csv
 import json
+import pandas as pd
 
 # Function to prepare the CSV file with headers for output
-def create_output_file(csv_output):
-    with open(csv_output, 'w', newline='', encoding='utf-8') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(['OriginalFileName', 'AccountHolder', 'AccountEntity', 'ABN', 'CorporateID', 'MembershipNumber', 'StatementDate', 'TransactionDate', 'TransactionDescription', 'TransactionAmount', 'CRifCredit'])
+#def create_output_file(csv_output):
+ #   with open(csv_output, 'w', newline='', encoding='utf-8') as csvfile:
+ #       csvwriter = csv.writer(csvfile)
+   #     csvwriter.writerow(['OriginalFileName', 'AccountHolder', 'AccountEntity', 'ABN', 'CorporateID', 'MembershipNumber', 'StatementDate', 'TransactionDate', 'TransactionDescription', 'TransactionAmount', 'CRifCredit'])
 
+def write_data_to_excel(transactions, summaryinfo, output_path):
+    transactions_df = pd.DataFrame(transactions)
+    summaryinfo_df = pd.DataFrame(summaryinfo)
 
-def parse_results_to_csv(static_info, transactions, csv_file_path):
+    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+        transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+        summaryinfo_df.to_excel(writer, sheet_name='Summary',index=False)
+
+def aggregate_data(static_info, transactions, csv_file_path):
     with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
         csvwriter = csv.writer(csvfile)
 
@@ -91,3 +99,28 @@ def process_transactions(results):
                 transactions.append(transaction)
 
     return transactions
+
+def extract_summary_info(results):
+    """Extracts summary information from a document's results."""
+    
+    def extract_summary_values(label):
+        """Nested helper function to extract concatenated text values for a given label."""
+        for document in results.documents:
+            for name, field in document.fields.items():
+                if name == label:
+                    # Assuming fields have 'content' or 'value' attributes
+                    return ' '.join([field.content if field.content else field.value])
+        return ""  # Return an empty string if the label is not found
+
+
+    # Assuming 'document' is an 'AnalyzeResult' object with a 'fields' attribute
+    summary_info = {
+        'PreviousBalance': extract_summary_values('PreviousBalance'),
+        'PaymentsAndCredits': extract_summary_values('PaymentsAndCredits'),
+        'NewDebits': extract_summary_values('NewDebits'),
+        'TotalBalance': extract_summary_values('TotalBalance'),
+        'BalanceDue': extract_summary_values('BalanceDue'),
+        'PaymentDueDate': extract_summary_values('PaymentDueDate')
+    }
+    return summary_info
+

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from pdf_processor import process_all_pdfs
 from count_pdfs import process_folders, save_to_excel
 # from azure_blob_utils import get_blob_service_client, list_blobs, read_blob_content, upload_analysis_results_to_blob
-from csv_utils import parse_results_to_csv, create_output_file, extract_static_info, process_transactions
+from csv_utils import extract_static_info, process_transactions, extract_summary_info, write_data_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
 
 # Load env variables from .env file
@@ -48,8 +48,11 @@ if __name__ == "__main__":
     print(f"Document Intelligence Client {doc_ai_client} ready at endpoint {doc_model_endpoint}.\n Preparing to extract data...\n")
 
     # Create file to write transaction data to
-    create_output_file(csv_output)
-    print(f"Created {csv_output} to save extracted transaction data...\n\nProceeding to analysis...\n\n")
+    #create_output_file(csv_output)
+    #print(f"Created {csv_output} to save extracted transaction data...\n\nProceeding to analysis...\n\n")
+
+    all_transactions = []
+    all_summaries = []
 
     for document_path in glob.glob(os.path.join(output_folder, '*.pdf')):
         # Analyse the document
@@ -61,14 +64,33 @@ if __name__ == "__main__":
         # Process the results
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name)
+        summary_info = extract_summary_info(results)
         transactions = process_transactions(results)
 
-        print("Data extraction processed!\n")
+        updated_transactions = []
+
+        for transaction in transactions:
+            # Combine dictionaries with static info first
+            combined_transaction = {**static_info, **transaction}
+            updated_transactions.append(combined_transaction)
+
+        static_info['DocumentName'] = original_document_name
+        summary_info['DocumentName'] = original_document_name
+
+        # Aggregate transactions and summary info
+        all_transactions.extend(updated_transactions)
+        all_summaries.append(summary_info)
+        
+        print(f"Data extraction processed!\nData aggregated for {document_path}.")
+
+    # once all documents processed, write data to Excel
+    print(f"Writing data to {csv_output}...\n")
+    write_data_to_excel(all_transactions, all_summaries, csv_output)
             
         # Extract results to the CSV.
-        print(f"Parsing transaction details from {document_path} to {csv_output}...\n")
-        parse_results_to_csv(static_info, transactions, csv_output)
-        print("Parsing complete! moving on...\n")
+        #print(f"Parsing transaction details from {document_path} to {csv_output}...\n")
+        #aggregate_data(static_info, transactions, csv_output)
+        #print("Parsing complete! moving on...\n")
 
         # Get original document name
         # TO DO - issue with serialising results output to upload to storage
