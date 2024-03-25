@@ -1,5 +1,5 @@
 # Description: This file contains utility functions to interact with Azure Blob Storage.
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, BlobClient
 from dotenv import load_dotenv
 import json
 
@@ -24,3 +24,22 @@ def read_blob_content(client, container_name, blob_name):
     except Exception as e:
         print(f"Failed to read blob content for {blob_name}: {e}")
         return None
+    
+
+def upload_analysis_results_to_blob(storage_connection_string, container_name, blob_name, content):
+    """
+    Upload analysis results to Azure Blob Storage as a JSON file.
+
+    :param storage_connection_string: Connection string to the Azure Storage account
+    :param container_name: Name of the container where the blob will be uploaded
+    :param blob_name: Name of the blob (file) to create
+    :param content: Content to be uploaded, typically a dictionary
+    """
+    # Convert the content (dict) to a JSON string
+    json_content = json.dumps(content, indent=2)
+
+    # Initialize a BlobClient
+    blob_client = BlobClient.from_connection_string(conn_str=storage_connection_string, container_name=container_name, blob_name=blob_name)
+
+    # Upload the content
+    blob_client.upload_blob(json_content, overwrite=True)

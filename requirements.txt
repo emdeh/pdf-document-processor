@@ -1,3 +1,5 @@
+azure-ai-formrecognizer==3.3.2
+azure-common==1.1.28
 azure-core==1.30.1
 azure-storage-blob==12.19.1
 certifi==2024.2.2
@@ -9,7 +11,9 @@ et-xmlfile==1.1.0
 idna==3.6
 isodate==0.6.1
 JPype1==1.5.0
+msrest==0.7.1
 numpy==1.26.4
+oauthlib==3.2.2
 openpyxl==3.1.2
 packaging==24.0
 pandas==2.2.1
@@ -20,6 +24,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
 requests==2.31.0
+requests-oauthlib==2.0.0
 six==1.16.0
 tabula-py==2.9.0
 typing_extensions==4.10.0

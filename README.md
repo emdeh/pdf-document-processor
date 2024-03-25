@@ -14,3 +14,5 @@ env file requirements
 # SAS_TOKEN="TOKEN WITH READ AND LIST PERMISSIONS"
 # BLOB_PATH_PREFIX="SUBFOLDER PATH (NOT INCLUDING CONTAINER NAME)"'
 ```
+
+# TO DO - Implement argparse to make features modular and independent.
