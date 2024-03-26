@@ -33,10 +33,11 @@ def process_folders(folders):
 
     return detailed_data, summary_data
 
-def save_to_excel(detailed_data, summary_data, output_csv_path):
+def save_to_excel(detailed_data, summary_data, output_csv_path, output_filename):
     detailed_df = pd.DataFrame(detailed_data, columns=['Folder', 'Document Name', 'Total Pages'])
     summary_df = pd.DataFrame(summary_data, columns=['Folder', 'Number of Documents', 'Total Pages'])
 
-    with pd.ExcelWriter(output_csv_path, engine='openpyxl') as writer:
+    output_file_path = os.path.join(output_csv_path, output_filename)
+    with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
         detailed_df.to_excel(writer, sheet_name='Pages Per Document', index=False)
         summary_df.to_excel(writer, sheet_name='Summary', index=False)

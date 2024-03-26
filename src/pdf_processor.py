@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+import shutil
 import fitz  # PyMuPDF
 
 def find_document_starts(pdf_path):
@@ -71,17 +72,19 @@ def split_pdf(pdf_path, output_folder, doc_starts):
     # Close the original PDF.
     doc.close()
 
-def process_all_pdfs(input_folder, output_folder):
+def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
     """
     Processes all PDF files in a given folder, splitting them into separate documents.
     
     This function iterates over all PDF files in the input folder, identifies the
     starting pages of documents within each PDF, and splits them into separate PDF files.
     The new PDF files are saved to the specified output folder.
+    If no '1 of x' pattern is found, the PDF file is moved to the manual processing folder.
     
     Args:
         input_folder (str): The folder containing the PDF files to process.
         output_folder (str): The folder where the split PDFs will be saved.
+        manual_processing_folder (str): The folder where the PDF files without '1 of x' pattern will be moved.
     """
     # Iterate through each PDF file in the input folder.
     for pdf_file in Path(input_folder).glob('*.pdf'):
@@ -92,7 +95,17 @@ def process_all_pdfs(input_folder, output_folder):
             # Split the PDF into separate documents.
             split_pdf(pdf_path, output_folder, doc_starts)
         else:
-            # Print a message if no '1 of x' pattern is found.
-            print(f"No '1 of x' pattern found in {pdf_file.name}, skipping file.")
+            # Move the PDF file to the manual processing folder.
+            print(f"Could not split {pdf_file}, moving to {manual_processing_folder}.\n")
+            shutil.move(pdf_path, manual_processing_folder)
+            # Create a manifest file for the unsplit files.
+            manifest_path = f"{manual_processing_folder}/manifest-of-unsplit-files.txt"
+            with open(manifest_path, 'w') as manifest_file:
+                manifest_file.write("Manifest of unsplifted files:\n")
+                for pdf_file in Path(manual_processing_folder).glob('*.pdf'):
+                    manifest_file.write(f"{pdf_file}\n")
+            # Advise the user to manually split the file and add it to the split_files_folder.
+            print(f" {pdf_file} will need to be manually split and placed in the {output_folder} on another extraction run. A manifst of unsplit files is in the {manual_processing_folder}.")
+            
 
-## TO-DO - ISSUE - if it can't split, it skips. Need to handle this better
+

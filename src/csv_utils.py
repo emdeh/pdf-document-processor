@@ -2,13 +2,13 @@ import csv
 import json
 import pandas as pd
 
-def write_data_to_excel(transactions, summaryinfo, output_path):
+def write_data_to_excel(transactions, summaryinfo, output_file):
     transactions_df = pd.DataFrame(transactions)
     summaryinfo_df = pd.DataFrame(summaryinfo)
 
-    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+    with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
         transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
-        summaryinfo_df.to_excel(writer, sheet_name='Summary',index=False)
+        summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
 
 def aggregate_data(static_info, transactions, csv_file_path):
     with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
