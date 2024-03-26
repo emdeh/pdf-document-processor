@@ -103,7 +103,7 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
             with open(manifest_path, 'w') as manifest_file:
                 manifest_file.write("Manifest of unsplifted files:\n")
                 for pdf_file in Path(manual_processing_folder).glob('*.pdf'):
-                    manifest_file.write(f"{pdf_file}\n")
+                    manifest_file.write(f"{pdf_file.stem}\n")
             # Advise the user to manually split the file and add it to the split_files_folder.
             print(f" {pdf_file} will need to be manually split and placed in the {output_folder} on another extraction run. A manifst of unsplit files is in the {manual_processing_folder}.")
             
