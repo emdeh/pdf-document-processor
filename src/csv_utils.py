@@ -2,12 +2,6 @@ import csv
 import json
 import pandas as pd
 
-# Function to prepare the CSV file with headers for output
-#def create_output_file(csv_output):
- #   with open(csv_output, 'w', newline='', encoding='utf-8') as csvfile:
- #       csvwriter = csv.writer(csvfile)
-   #     csvwriter.writerow(['OriginalFileName', 'AccountHolder', 'AccountEntity', 'ABN', 'CorporateID', 'MembershipNumber', 'StatementDate', 'TransactionDate', 'TransactionDescription', 'TransactionAmount', 'CRifCredit'])
-
 def write_data_to_excel(transactions, summaryinfo, output_path):
     transactions_df = pd.DataFrame(transactions)
     summaryinfo_df = pd.DataFrame(summaryinfo)
