@@ -1,12 +1,14 @@
 import csv
 import json
 import pandas as pd
+import os
 
-def write_data_to_excel(transactions, summaryinfo, output_file):
+def write_data_to_excel(transactions, summaryinfo, output_path, output_filename):
     transactions_df = pd.DataFrame(transactions)
     summaryinfo_df = pd.DataFrame(summaryinfo)
 
-    with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
+    output_location = os.path.join(output_path, output_filename)
+    with pd.ExcelWriter(output_location, engine='openpyxl') as writer:
         transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
         summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
 

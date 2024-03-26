@@ -40,7 +40,7 @@ if __name__ == "__main__":
     print(f"Counting files and pages of split statements saved to {os.path.basename(split_files_folders)}...\n")
     detailed_data_after, summary_data_after, total_post_files, total_post_pages = process_folders([split_files_folders])
     save_to_excel(detailed_data_after,summary_data_after, statement_set_name, "post-split-counts.xlsx")
-    print(f"Saved post-splitting count to {os.path.basename(statement_set_name)}.\n\nPost-splitting count is Files: {total_pre_files} Pages: {total_pre_pages}")
+    print(f"Saved post-splitting count to {os.path.basename(statement_set_name)}.\n\nPost-splitting count is Files: {total_post_files} Pages: {total_post_pages}")
 
     # Check that total_pre_pages and total_post_pages match. If they do tell the user, if not warn the user then continue.
     if total_pre_pages == total_post_pages:
@@ -56,13 +56,14 @@ if __name__ == "__main__":
 
     all_transactions = []
     all_summaries = []
-
+    files_to_go = total_post_files
+    print(F"Analysis has begun.\nNumber of files remaining: {files_to_go}.\n")
     for document_path in glob.glob(os.path.join(split_files_folders, '*.pdf')):
         # Analyse the document
-        print(f"Analysing {os.path.basename(document_path)}.\n")
+        print(f"Analysing:\n{os.path.basename(document_path)}.\n\n")
         original_document_name = basename(document_path)
         results = analyse_document(doc_ai_client, doc_model_id, document_path)
-        print(f"Analysed {os.path.basename(document_path)}.\n")
+        print(f"Analysed:\n{os.path.basename(document_path)}.\n")
 
         # Process the results
         print("Processing extracted data...\n")
@@ -83,13 +84,15 @@ if __name__ == "__main__":
         # Aggregate transactions and summary info
         all_transactions.extend(updated_transactions)
         all_summaries.append(summary_info)
-        
-        print(f"Data extraction processed!\nData aggregated for {os.path.basename(document_path)}.\n")
 
-    # once all documents processed, write data to Excel
-    # Create the necessary folders if they don't exist
-    os.makedirs(statement_set_name, exist_ok=True)
+        print(f"Data extraction processed.\nData aggregated for:\n{os.path.basename(document_path)}...\n")
 
+        files_to_go -= 1
+        print(f"Number of files remaining: {files_to_go}")
+   
     print(f"Writing extracted data to {os.path.basename(statement_set_name)} folder...\n")
-    extracted_data = os.path.join(statement_set_name, "extracted-data.xlsx")
-    write_data_to_excel(all_transactions, all_summaries, extracted_data)
+    write_data_to_excel(all_transactions, all_summaries, statement_set_name, "extracted-data.xlsx")
+    print(f"Extracted data written to the file 'extracted-data.xlsx' in {os.path.basename(statement_set_name)}.\n")
+
+    print("All done!")
+    
