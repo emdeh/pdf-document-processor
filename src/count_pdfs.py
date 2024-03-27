@@ -39,11 +39,25 @@ def process_folders(folders):
 
     return detailed_data, summary_data, total_files, total_pages
 
-def save_to_excel(detailed_data, summary_data, output_csv_path, output_filename):
+def save_to_excel(detailed_data, summary_data, output_excel_path, output_filename):
     detailed_df = pd.DataFrame(detailed_data, columns=['Folder', 'Document Name', 'Total Pages'])
     summary_df = pd.DataFrame(summary_data, columns=['Folder', 'Number of Documents', 'Total Pages'])
 
-    output_file_path = os.path.join(output_csv_path, output_filename)
-    with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
-        detailed_df.to_excel(writer, sheet_name='Pages Per Document', index=False)
-        summary_df.to_excel(writer, sheet_name='Summary', index=False)
+    output_file_path = os.path.join(output_excel_path, output_filename)
+
+    # Check if the file already exists
+    if os.path.exists(output_file_path):
+        # Append data to the existing file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a') as writer:
+            detailed_df.to_excel(writer, sheet_name='Pages Per Document', index=False, header=False)
+            summary_df.to_excel(writer, sheet_name='Summary', index=False, header=False)
+        print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.")
+
+    else:
+        # Create a new file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
+            detailed_df.to_excel(writer, sheet_name='Pages Per Document', index=False)
+            summary_df.to_excel(writer, sheet_name='Summary', index=False)
+        print(f"New file '{output_filename}' created in {os.path.basename(output_excel_path)}.")
+
+    print(f"Data written to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.\n")

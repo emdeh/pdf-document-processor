@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # Count input PDFs
     print(f"Counting files and pages in {os.path.basename(initial_input_folder)}...\n")
     detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_folders([initial_input_folder])
-    save_to_excel(detailed_data_before, summary_data_before, statement_set_name, "pre-split-counts.xlsx")
+    save_to_excel(detailed_data_before, summary_data_before, statement_set_name, statement_set_name + "-pre-split-counts.xlsx")
     print(f"Saved pre-splitting count to {os.path.basename(statement_set_name)}.\n\n Pre-splitting count is Files: {total_pre_files} Pages: {total_pre_pages}")
 
     # Process all PDFs to split them into separate statements
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Count processed PDFs
     print(f"Counting files and pages of split statements saved to {os.path.basename(split_files_folders)}...\n")
     detailed_data_after, summary_data_after, total_post_files, total_post_pages = process_folders([split_files_folders])
-    save_to_excel(detailed_data_after,summary_data_after, statement_set_name, "post-split-counts.xlsx")
+    save_to_excel(detailed_data_after,summary_data_after, statement_set_name, statement_set_name + "-post-split-counts.xlsx")
     print(f"Saved post-splitting count to {os.path.basename(statement_set_name)}.\n\nPost-splitting count is Files: {total_post_files} Pages: {total_post_pages}")
 
     # Check that total_pre_pages and total_post_pages match. If they do tell the user, if not warn the user then continue.
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         print(f"Number of files remaining: {files_to_go}")
    
     print(f"Writing extracted data to {os.path.basename(statement_set_name)} folder...\n")
-    write_data_to_excel(all_transactions, all_summaries, statement_set_name, "extracted-data.xlsx")
+    write_data_to_excel(all_transactions, all_summaries, statement_set_name, statement_set_name + "-extracted-data.xlsx")
     print(f"Extracted data written to the file 'extracted-data.xlsx' in {os.path.basename(statement_set_name)}.\n")
 
     print("All done!")
