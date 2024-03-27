@@ -7,24 +7,23 @@ def write_data_to_excel(transactions, summaryinfo, output_path, output_filename)
     transactions_df = pd.DataFrame(transactions)
     summaryinfo_df = pd.DataFrame(summaryinfo)
 
-    output_location = os.path.join(output_path, output_filename)
-
-    # Check if the file already exists
-    if os.path.exists(output_location):
-        # Append data to the existing file
-        with pd.ExcelWriter(output_location, engine='openpyxl', mode='a') as writer:
-            transactions_df.to_excel(writer, sheet_name='Transactions', index=False, header=False)
-            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False, header=False)
-        print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}.")
+    output_file_path = os.path.join(output_path, output_filename)
+    
+    if os.path.exists(output_file_path):
+        # Append data to existing file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a', if_sheet_exists='new') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
+        print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}. folder.\n")
 
     else:
         # Create a new file
-        with pd.ExcelWriter(output_location, engine='openpyxl') as writer:
+        with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
             transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
-        print(f"New file '{output_filename}' created in {os.path.basename(output_path)}.")
+        print(f"New file '{os.path.basename(output_filename)}' created in {os.path.basename(output_path)}.")
+        print(f"Data written to the NEW file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}.\n")
 
-    print(f"Extracted data written to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}.\n")
 
 def aggregate_data(static_info, transactions, csv_file_path):
     with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
