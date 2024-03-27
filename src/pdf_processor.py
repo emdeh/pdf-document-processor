@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 import shutil
 import fitz  # PyMuPDF
+import os
 
 def find_document_starts(pdf_path):
     """
@@ -96,16 +97,16 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
             split_pdf(pdf_path, output_folder, doc_starts)
         else:
             # Move the PDF file to the manual processing folder.
-            print(f"Could not split {pdf_file}, moving to {manual_processing_folder}.\n")
+            print(f"Could not split {os.path.basname(pdf_file)}, moving to {os.path.basename(manual_processing_folder)}.\n")
             shutil.move(pdf_path, manual_processing_folder)
             # Create a manifest file for the unsplit files.
             manifest_path = f"{manual_processing_folder}/manifest-of-unsplit-files.txt"
             with open(manifest_path, 'w') as manifest_file:
-                manifest_file.write("Manifest of unsplifted files:\n")
+                manifest_file.write("Manifest of unsplit files:\n")
                 for pdf_file in Path(manual_processing_folder).glob('*.pdf'):
                     manifest_file.write(f"{pdf_file.stem}\n")
             # Advise the user to manually split the file and add it to the split_files_folder.
-            print(f" {pdf_file} will need to be manually split and placed in the {output_folder} on another extraction run. A manifst of unsplit files is in the {manual_processing_folder}.")
+            print(f" {os.path.basename(pdf_file)} will need to be manually split and placed in the {os.path.basename(output_folder)} on another extraction run. A manifst of unsplit files is in {os.path.basename(manual_processing_folder)}.")
             
 
 

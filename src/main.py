@@ -46,7 +46,7 @@ if __name__ == "__main__":
     if total_pre_pages == total_post_pages:
         print("Total pre-splitting pages and total post-splitting pages match.\nThis indicates that the splitting function has captured all data...\n")
     else:
-        print(f"### WARNING: Total pre-splitting pages and total post-splitting pages do not match.\n The difference is {total_pre_pages - total_post_pages}.\nThis may indicate some files could not be split. Look in the {os.path.basename(manual_splitting_folder)} for more details on what to split manually.\n\n")
+        print(f"### WARNING: Total pre-splitting pages and total post-splitting pages do not match.\nThe difference is {total_pre_pages - total_post_pages}.\nThis may indicate some files could not be split. Look in the {os.path.basename(manual_splitting_folder)} for more details on what to split manually.\n\n")
     
 
     # Initialise the Azure Document Analysis Client
