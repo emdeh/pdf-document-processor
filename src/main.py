@@ -95,7 +95,7 @@ if __name__ == "__main__":
         all_transactions.extend(updated_transactions)
         all_summaries.append(summary_info)
 
-        print(f"Data extraction processed.\nData aggregated for:\n{os.path.basename(document_path)}.\n")
+        print(f"Data aggregated for:\n{os.path.basename(document_path)}.\n")
 
         # Move the analysed file to the analysed-files folder
         move_analysed_file(document_path, analysed_files_folder)
