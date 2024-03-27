@@ -1,14 +1,29 @@
 import csv
 import json
 import pandas as pd
+import os
 
-def write_data_to_excel(transactions, summaryinfo, output_path):
+def write_data_to_excel(transactions, summaryinfo, output_path, output_filename):
     transactions_df = pd.DataFrame(transactions)
     summaryinfo_df = pd.DataFrame(summaryinfo)
 
-    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
-        transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
-        summaryinfo_df.to_excel(writer, sheet_name='Summary',index=False)
+    output_file_path = os.path.join(output_path, output_filename)
+    
+    if os.path.exists(output_file_path):
+        # Append data to existing file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a', if_sheet_exists='new') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
+        print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}. folder.\n")
+
+    else:
+        # Create a new file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
+        print(f"New file '{os.path.basename(output_filename)}' created in {os.path.basename(output_path)}.")
+        print(f"Data written to the NEW file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}.\n")
+
 
 def aggregate_data(static_info, transactions, csv_file_path):
     with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
