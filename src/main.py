@@ -57,9 +57,8 @@ if __name__ == "__main__":
         quit()
 
     # Initialise the Azure Document Analysis Client
-    print("Initialising Document Intelligence Client...\n")
-    doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key)
-    print(f"Document Intelligence Client established with Endpoint: {doc_model_endpoint}.\nUsing {doc_model_id}.\nPreparing to extract data...\n\n")
+    doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key,doc_model_id)
+    
 
     all_transactions = []
     all_summaries = []

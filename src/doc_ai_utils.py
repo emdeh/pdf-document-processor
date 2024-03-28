@@ -1,10 +1,13 @@
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 
-def initialise_analysis_client(endpoint, api_key):
+def initialise_analysis_client(endpoint, api_key, doc_model_id):
+    print("Initialising Document Intelligence Client...\n")
     credential = AzureKeyCredential(api_key)
     client = DocumentAnalysisClient(endpoint=endpoint, credential=credential)
+    print(f"Document Intelligence Client established with Endpoint: {endpoint}.\nUsing {doc_model_id}.\nPreparing to extract data...\n\n")
     return client
+    
 
 def analyse_document(client, model_id, document_path):
     with open(document_path, "rb") as document:
