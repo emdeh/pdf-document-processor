@@ -7,9 +7,7 @@ from count_pdfs import process_pdf_count, save_to_excel
 from csv_utils import extract_static_info, process_transactions, extract_summary_info, write_data_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
 from prep_env import create_folders, move_analysed_file
-import os
-from prep_env import create_folders
-import os
+
 
 # Load env variables from .env file
 load_dotenv()
@@ -64,6 +62,7 @@ if __name__ == "__main__":
     all_summaries = []
     
     print(F"Analysis has begun.\nNumber of files remaining: {files_to_go}.\n")
+    
     for document_path in glob.glob(os.path.join(ready_for_analysis, '*.pdf')):
         # Analyse the document
         original_document_name = basename(document_path)

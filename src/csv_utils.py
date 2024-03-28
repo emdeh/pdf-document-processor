@@ -1,11 +1,19 @@
 import csv
-import json
 import pandas as pd
 import os
 
-def write_data_to_excel(transactions, summaryinfo, output_path, output_filename):
+def write_data_to_excel(transactions, all_summaries, output_path, output_filename):
     transactions_df = pd.DataFrame(transactions)
-    summaryinfo_df = pd.DataFrame(summaryinfo)
+    
+    # Initialize an empty list for rows
+    summary_rows = []
+    for summary in all_summaries:
+        # Flatten each summary info dictionary and add it to the rows list
+        flattened_summary = flatten_summary_info(summary)
+        summary_rows.append(flattened_summary)
+    
+    # Now create a DataFrame from the list of rows
+    summaryinfo_df = pd.DataFrame(summary_rows)
 
     output_file_path = os.path.join(output_path, output_filename)
     
@@ -23,6 +31,22 @@ def write_data_to_excel(transactions, summaryinfo, output_path, output_filename)
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
         print(f"New file '{os.path.basename(output_filename)}' created in {os.path.basename(output_path)}.")
         print(f"Data written to the NEW file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}.\n")
+
+def flatten_summary_info(summary_info_with_confidence):
+    flattened = {}
+    # Ensure that summary_info_with_confidence is indeed a dictionary as expected
+    print("Debug - summary_info_with_confidence:", summary_info_with_confidence)  # Debug print
+    if isinstance(summary_info_with_confidence, dict):
+        for key, info in summary_info_with_confidence.items():
+            #print("Debug - Processing:", key, info)  # Further debug print to inspect each item
+            if isinstance(info, dict) and 'value' in info:
+                flattened[f"{key}_Value"] = info['value']
+                flattened[f"{key}_Confidence"] = info.get('confidence', 'N/A')
+            else:
+                print(f"Unexpected structure for {key}: {info}")
+    else:
+        print(f"flatten_summary_info was passed a non-dict object: {type(summary_info_with_confidence)}")
+    return flattened
 
 
 def aggregate_data(static_info, transactions, csv_file_path):
@@ -128,34 +152,40 @@ def process_transactions(results):
     return transactions
 
 def extract_summary_info(results):
-    """Extracts summary information from a document's results."""
+    """Extracts summary information from a document's results, now including confidence levels."""
     
-    def extract_summary_values(label):
-        """Nested helper function to extract concatenated text values for a given label."""
+    def extract_summary_values_and_confidence(label):
+        """Extracts values and their confidence."""
+        value_concat = []
+        confidence_concat = []
         for document in results.documents:
             for name, field in document.fields.items():
                 if name == label:
-                    # Assuming fields have 'content' or 'value' attributes
-                    return ' '.join([field.content if field.content else '' if field.content is not None else field.value if field.value else '' if field.value is not None else '' ])
-        return ""  # Return an empty string if the label is not found
-    
-    def convert_to_float(value):
-        """Attempts to convert a string value to a float. Returns the original string if conversion fails."""
-        try:
-            return float(value.replace(',', '').strip())
-        except ValueError:
-            return value  # Return the original string if conversion fails
+                    # Concatenate content from multiple entries if necessary
+                    content = field.content if field.content else field.value
+                    if content is not None:
+                        value_concat.append(content)
+                    # Aggregate confidence if available; else use placeholder
+                    confidence = field.confidence if field.confidence is not None else 'N/A'
+                    confidence_concat.append(confidence)
+        # Join multiple entries into a single string, if applicable
+        value = ' '.join(value_concat) if value_concat else ''
+        confidence = ' '.join(map(str, confidence_concat)) if confidence_concat else ''
+        return value, confidence
 
 
-    # Assuming 'document' is an 'AnalyzeResult' object with a 'fields' attribute
-    summary_info = {
-        'PreviousBalance': extract_summary_values('PreviousBalance'),
-        'PaymentsAndCredits': extract_summary_values('PaymentsAndCredits'),
-        'NewDebits': extract_summary_values('NewDebits'),
-        'TotalBalance': extract_summary_values('TotalBalance'),
-        'BalanceDue': extract_summary_values('BalanceDue'),
-        'PaymentDueDate': extract_summary_values('PaymentDueDate')
-    }
-    summary_info = {key: convert_to_float(value) if key != 'PaymentDueDate' else value for key, value in summary_info.items()}
-    
-    return summary_info
+    # Specified fields
+    labels = ['PreviousBalance', 'PaymentsAndCredits', 'NewDebits', 'TotalBalance', 'BalanceDue', 'PaymentDueDate']
+    summary_info_with_confidence = {}
+    for label in labels:
+        value, confidence = extract_summary_values_and_confidence(label)
+        # Convert to float where applicable, except for 'PaymentDueDate'
+        if label != 'PaymentDueDate':
+            try:
+                value = float(value.replace(',', '').strip())
+            except ValueError:
+                pass  # Keep the original value if conversion fails
+        summary_info_with_confidence[label] = {"value": value, "confidence": confidence}
+
+    return summary_info_with_confidence
+
