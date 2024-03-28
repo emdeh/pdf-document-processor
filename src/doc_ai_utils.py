@@ -12,10 +12,14 @@ def initialise_analysis_client(endpoint, api_key, doc_model_id):
 
 def analyse_document(client, model_id, document_path):
     print(f"Analysing:\n{os.path.basename(document_path)}.\n\n")
-    with open(document_path, "rb") as document:
-        poller = client.begin_analyze_document(model_id=model_id, document=document)
-        result = poller.result()
-    print(f"Analysed:\n{os.path.basename(document_path)}.\n")
+    try:
+        with open(document_path, "rb") as document:
+            poller = client.begin_analyze_document(model_id=model_id, document=document)
+            result = poller.result()
+        print(f"Analysed:\n{os.path.basename(document_path)}.\n")
+    except Exception as e:
+        print(f"Error analysing {os.path.basename(document_path)}: {e}")
+        result = None
     return result
 
 def process_analysis_results(results):
