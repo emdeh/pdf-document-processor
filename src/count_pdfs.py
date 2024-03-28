@@ -12,13 +12,19 @@ def count_pdf_pages(pdf_path):
         return 0
 
 def process_pdf_count(folders):
+
+    # If folders is not a list, make it a list
+    if not isinstance(folders, list):
+        folders = [folders]
+
     detailed_data = []
     summary_data = []
     total_files = 0
     total_pages = 0
-    print(f"Counting files and pages in {os.path.basename(folders)}...\n")
 
     for folder in folders:
+        print(f"Counting files and pages in {os.path.basename(folder)}...\n")
+
         # Ensure folder is a Path object for easier manipulation
         folder_path = Path(folder)
         folder_files = 0

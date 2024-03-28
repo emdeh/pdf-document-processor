@@ -27,6 +27,7 @@ if __name__ == "__main__":
     
     # Count input PDFs
     detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_pdf_count([initial_input_folder])
+    # Can be passed a single folder or a list of folders
 
     if total_pre_files == 0:
         print(f"No files found in {os.path.basename(initial_input_folder)} folder.")
