@@ -11,7 +11,7 @@ def count_pdf_pages(pdf_path):
         print(f"Error processing {pdf_path}: {e}")
         return 0
 
-def process_folders(folders):
+def process_pdf_count(folders):
     detailed_data = []
     summary_data = []
     total_files = 0
