@@ -59,18 +59,15 @@ if __name__ == "__main__":
     # Initialise the Azure Document Analysis Client
     doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key,doc_model_id)
     
-
     all_transactions = []
     all_summaries = []
     
     print(F"Analysis has begun.\nNumber of files remaining: {files_to_go}.\n")
     for document_path in glob.glob(os.path.join(ready_for_analysis, '*.pdf')):
         # Analyse the document
-        print(f"Analysing:\n{os.path.basename(document_path)}.\n\n")
         original_document_name = basename(document_path)
         results = analyse_document(doc_ai_client, doc_model_id, document_path)
-        print(f"Analysed:\n{os.path.basename(document_path)}.\n")
-
+        
         # Process the results
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name)
