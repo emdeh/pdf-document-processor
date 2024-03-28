@@ -58,6 +58,7 @@ def create_folders():
 
     return new_folder, ready_for_analysis, manual_splitting_folder, analysed_files_folder
 
+
 def move_analysed_file(document_path, analysed_files_folder):
     """
     Move a file to the analysed files folder.

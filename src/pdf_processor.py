@@ -114,7 +114,4 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
             print(f" {os.path.basename(pdf_file)} will need to be manually split and placed in the {os.path.basename(output_folder)} on another extraction run. A manifest of unsplit files is in {os.path.basename(manual_processing_folder)}.")
     print(f"Splitting complete.\n\n")
 
-
-            
-
-
+       

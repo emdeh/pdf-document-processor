@@ -70,6 +70,7 @@ if __name__ == "__main__":
         results = analyse_document(doc_ai_client, doc_model_id, document_path)
         
         # Process the results
+        # TO-DO: Implement super function process_document() to encapsulate this section
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name)
         summary_info = extract_summary_info(results)
