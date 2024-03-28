@@ -37,6 +37,7 @@ def aggregate_data(static_info, transactions, csv_file_path):
             transaction_description = transaction.get('Description', '').replace('\n', ' ')
             transaction_amount = transaction.get('Amount', '')
             cr_if_credit = transaction.get('CR if Credit', '')  # This field is optional
+            conversion_flag = transaction.get('AmountConversionSuccess', False)  # Flag indicating if amount conversion was successful
 
             # Combine static and transaction-specific information into one row
             row = [
@@ -50,7 +51,8 @@ def aggregate_data(static_info, transactions, csv_file_path):
                 transaction_date,
                 transaction_description,
                 transaction_amount,
-                cr_if_credit
+                cr_if_credit,
+                conversion_flag
             ]
             
             # Write the row to the CSV
@@ -98,12 +100,28 @@ def process_transactions(results):
                 amount_field = transaction_field.value.get('Amount', None)
                 cr_if_credit_field = transaction_field.value.get('CR if Credit', None)
                 
+                # Prepare the amount_field value for conversion
+                # Remove commas and convert to float
+                amount_value = 0.0
+                conversion_flag = False
+                if amount_field:
+                    amount_str = amount_field.value.replace(',', '')
+                    try:
+                        amount_value = float(amount_str)
+                    except ValueError:
+                        # Handle cases where conversion is not possible
+                        amount_value = amount_str
+                        conversion_flag = True
+                        print(f"Could not convert {amount_str} to float. Mapping actual value.\n")
+
                 # Build the transaction dictionary
                 transaction = {
                     'Date': date_field.value if date_field else '',
                     'Description': description_field.value.replace('\n', ' ') if description_field else '',
-                    'Amount': amount_field.value if amount_field else '',
-                    'CR if Credit': cr_if_credit_field.value if cr_if_credit_field else ''
+                    'Amount': amount_value,
+                    'CR if Credit': cr_if_credit_field.value if cr_if_credit_field else '',
+                    'AmountConversionSuccess': not conversion_flag # True if conversion was successful, False otherwise
+                    
                 }
                 transactions.append(transaction)
 
