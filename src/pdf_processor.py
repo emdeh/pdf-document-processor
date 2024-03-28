@@ -87,6 +87,7 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
         output_folder (str): The folder where the split PDFs will be saved.
         manual_processing_folder (str): The folder where the PDF files without '1 of x' pattern will be moved.
     """
+    print(f"Splitting files in {input_folder} and saving individual statements to {output_folder}...\n")
     # Iterate through each PDF file in the input folder
     for pdf_file in Path(input_folder).glob('*.pdf'):
         pdf_path = str(pdf_file)
@@ -111,6 +112,7 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
                     manifest_file.write(f"{pdf_file.stem}\n")
             # Advise the user to manually split the file and add it to the split_files_folder.
             print(f" {os.path.basename(pdf_file)} will need to be manually split and placed in the {os.path.basename(output_folder)} on another extraction run. A manifest of unsplit files is in {os.path.basename(manual_processing_folder)}.")
+    print(f"Splitting complete.\n\n")
 
 
             

@@ -26,7 +26,6 @@ if __name__ == "__main__":
     statement_set_name, ready_for_analysis, manual_splitting_folder, analysed_files_folder = create_folders()
     
     # Count input PDFs
-    print(f"Counting files and pages in {os.path.basename(initial_input_folder)}...\n")
     detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_pdf_count([initial_input_folder])
 
     if total_pre_files == 0:
@@ -37,10 +36,8 @@ if __name__ == "__main__":
         print(f"Saved pre-splitting count to {os.path.basename(statement_set_name)}.\n\n Pre-splitting count is Files: {total_pre_files} Pages: {total_pre_pages}")
 
         # Process all PDFs to split them into separate statements
-        print(f"Splitting files in {initial_input_folder} and saving individual statements to {ready_for_analysis}...\n")
         process_all_pdfs(initial_input_folder, ready_for_analysis, manual_splitting_folder)
-        print(f"Splitting complete.\n\n")
-
+        
     # Count processed PDFs
     print(f"Counting files and pages of split statements saved to {os.path.basename(ready_for_analysis)}...\n")
     detailed_data_after, summary_data_after, total_post_files, total_post_pages = process_pdf_count([ready_for_analysis])

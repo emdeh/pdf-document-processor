@@ -16,6 +16,7 @@ def process_pdf_count(folders):
     summary_data = []
     total_files = 0
     total_pages = 0
+    print(f"Counting files and pages in {os.path.basename(folders)}...\n")
 
     for folder in folders:
         # Ensure folder is a Path object for easier manipulation
