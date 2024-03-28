@@ -1,15 +1,25 @@
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
+import os
 
-def initialise_analysis_client(endpoint, api_key):
+def initialise_analysis_client(endpoint, api_key, doc_model_id):
+    print("Initialising Document Intelligence Client...\n")
     credential = AzureKeyCredential(api_key)
     client = DocumentAnalysisClient(endpoint=endpoint, credential=credential)
+    print(f"Document Intelligence Client established with Endpoint: {endpoint}.\nUsing {doc_model_id}.\nPreparing to extract data...\n\n")
     return client
+    
 
 def analyse_document(client, model_id, document_path):
-    with open(document_path, "rb") as document:
-        poller = client.begin_analyze_document(model_id=model_id, document=document)
-        result = poller.result()
+    print(f"Analysing:\n{os.path.basename(document_path)}.\n\n")
+    try:
+        with open(document_path, "rb") as document:
+            poller = client.begin_analyze_document(model_id=model_id, document=document)
+            result = poller.result()
+        print(f"Analysed:\n{os.path.basename(document_path)}.\n")
+    except Exception as e:
+        print(f"Error analysing {os.path.basename(document_path)}: {e}")
+        result = None
     return result
 
 def process_analysis_results(results):

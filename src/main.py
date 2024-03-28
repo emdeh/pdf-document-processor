@@ -3,7 +3,7 @@ import glob
 from os.path import basename
 from dotenv import load_dotenv
 from pdf_processor import process_all_pdfs
-from count_pdfs import process_folders, save_to_excel
+from count_pdfs import process_pdf_count, save_to_excel
 from csv_utils import extract_static_info, process_transactions, extract_summary_info, write_data_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
 from prep_env import create_folders, move_analysed_file
@@ -26,8 +26,8 @@ if __name__ == "__main__":
     statement_set_name, ready_for_analysis, manual_splitting_folder, analysed_files_folder = create_folders()
     
     # Count input PDFs
-    print(f"Counting files and pages in {os.path.basename(initial_input_folder)}...\n")
-    detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_folders([initial_input_folder])
+    detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_pdf_count([initial_input_folder])
+    # Can be passed a single folder or a list of folders
 
     if total_pre_files == 0:
         print(f"No files found in {os.path.basename(initial_input_folder)} folder.")
@@ -37,13 +37,11 @@ if __name__ == "__main__":
         print(f"Saved pre-splitting count to {os.path.basename(statement_set_name)}.\n\n Pre-splitting count is Files: {total_pre_files} Pages: {total_pre_pages}")
 
         # Process all PDFs to split them into separate statements
-        print(f"Splitting files in {initial_input_folder} and saving individual statements to {ready_for_analysis}...\n")
         process_all_pdfs(initial_input_folder, ready_for_analysis, manual_splitting_folder)
-        print(f"Splitting complete.\n\n")
-
+        
     # Count processed PDFs
     print(f"Counting files and pages of split statements saved to {os.path.basename(ready_for_analysis)}...\n")
-    detailed_data_after, summary_data_after, total_post_files, total_post_pages = process_folders([ready_for_analysis])
+    detailed_data_after, summary_data_after, total_post_files, total_post_pages = process_pdf_count([ready_for_analysis])
     save_to_excel(detailed_data_after,summary_data_after, statement_set_name, "post-split-counts.xlsx")
     print(f"Saved post-splitting count to {os.path.basename(statement_set_name)}.\n\nPost-splitting count is Files: {total_post_files} Pages: {total_post_pages}")
 
@@ -60,22 +58,19 @@ if __name__ == "__main__":
         quit()
 
     # Initialise the Azure Document Analysis Client
-    print("Initialising Document Intelligence Client...\n")
-    doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key)
-    print(f"Document Intelligence Client established with Endpoint: {doc_model_endpoint}.\nUsing {doc_model_id}.\nPreparing to extract data...\n\n")
-
+    doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key,doc_model_id)
+    
     all_transactions = []
     all_summaries = []
     
     print(F"Analysis has begun.\nNumber of files remaining: {files_to_go}.\n")
     for document_path in glob.glob(os.path.join(ready_for_analysis, '*.pdf')):
         # Analyse the document
-        print(f"Analysing:\n{os.path.basename(document_path)}.\n\n")
         original_document_name = basename(document_path)
         results = analyse_document(doc_ai_client, doc_model_id, document_path)
-        print(f"Analysed:\n{os.path.basename(document_path)}.\n")
-
+        
         # Process the results
+        # TO-DO: Implement super function process_document() to encapsulate this section
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name)
         summary_info = extract_summary_info(results)
