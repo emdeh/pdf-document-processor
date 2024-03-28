@@ -138,6 +138,13 @@ def extract_summary_info(results):
                     # Assuming fields have 'content' or 'value' attributes
                     return ' '.join([field.content if field.content else '' if field.content is not None else field.value if field.value else '' if field.value is not None else '' ])
         return ""  # Return an empty string if the label is not found
+    
+    def convert_to_float(value):
+        """Attempts to convert a string value to a float. Returns the original string if conversion fails."""
+        try:
+            return float(value.replace(',', '').strip())
+        except ValueError:
+            return value  # Return the original string if conversion fails
 
 
     # Assuming 'document' is an 'AnalyzeResult' object with a 'fields' attribute
@@ -149,4 +156,6 @@ def extract_summary_info(results):
         'BalanceDue': extract_summary_values('BalanceDue'),
         'PaymentDueDate': extract_summary_values('PaymentDueDate')
     }
+    summary_info = {key: convert_to_float(value) if key != 'PaymentDueDate' else value for key, value in summary_info.items()}
+    
     return summary_info
