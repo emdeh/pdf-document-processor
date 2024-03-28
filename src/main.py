@@ -3,7 +3,7 @@ import glob
 from os.path import basename
 from dotenv import load_dotenv
 from pdf_processor import process_all_pdfs
-from count_pdfs import process_folders, save_to_excel
+from count_pdfs import process_pdf_count, save_to_excel
 from csv_utils import extract_static_info, process_transactions, extract_summary_info, write_data_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
 from prep_env import create_folders, move_analysed_file
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     
     # Count input PDFs
     print(f"Counting files and pages in {os.path.basename(initial_input_folder)}...\n")
-    detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_folders([initial_input_folder])
+    detailed_data_before, summary_data_before, total_pre_files, total_pre_pages = process_pdf_count([initial_input_folder])
 
     if total_pre_files == 0:
         print(f"No files found in {os.path.basename(initial_input_folder)} folder.")
