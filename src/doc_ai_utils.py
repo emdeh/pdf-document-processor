@@ -23,6 +23,8 @@ def analyse_document(client, model_id, document_path):
     return result
 
 def process_analysis_results(results):
+    # This function is not currently in use. Instead results from the analyse_document() function are passed to csv_utils functions as arguments.
+    # TO-DO: Consider re organising csv_utils functions...
     extracted_data = []
     for analyzed_document in results.documents:
         print(f"Document Type: {analyzed_document.doc_type}")
