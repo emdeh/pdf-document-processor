@@ -69,6 +69,7 @@ def process_transactions(results):
 
     return transactions
 
+""" TO DELETE
 def aggregate_data(static_info, transactions, csv_file_path):
     with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
         csvwriter = csv.writer(csvfile)
@@ -101,6 +102,7 @@ def aggregate_data(static_info, transactions, csv_file_path):
             
             # Write the row to the CSV
             csvwriter.writerow(row)
+"""
 
 def extract_and_process_summary_info(document_analysis_results):
     """
