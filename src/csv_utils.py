@@ -1,7 +1,10 @@
+##
+## TO-DO: Update field names to be relative to yaml file like extract_static_info() function.
+##
+
 import csv
 import pandas as pd
 import os
-from prep_env import transaction_static_fields
 
 def extract_static_info(results, original_file_name, statement_type):
     """Extract static information from the analysis results."""
@@ -16,8 +19,8 @@ def extract_static_info(results, original_file_name, statement_type):
 
     static_info = {
         'OriginalFileName': original_file_name}
-    for field in statement_type[transaction_static_fields]:
-        field_name = field['name']
+    for field in statement_type["transaction_static_fields"]:
+        field_name = field['field_name']
         static_info[field_name] = extract_label_value(field_name)
 
     return static_info
