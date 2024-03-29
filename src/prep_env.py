@@ -77,7 +77,7 @@ def move_analysed_file(document_path, analysed_files_folder):
     # Print a message indicating that the file has been moved
     print(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
 
-def load_statement_config(config_path="path/to/config.yaml"):
+def load_statement_config(config_path):
     # Check if the file exists at the given path
     if not os.path.isfile(config_path):
         raise FileNotFoundError(f"Config file not found at {config_path}.")
