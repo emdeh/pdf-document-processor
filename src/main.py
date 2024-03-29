@@ -4,7 +4,7 @@ from os.path import basename
 from dotenv import load_dotenv
 from pdf_processor import process_all_pdfs
 from count_pdfs import process_pdf_count, save_to_excel
-from csv_utils import extract_static_info, process_transactions, extract_summary_info, write_data_to_excel
+from csv_utils import extract_static_info, process_transactions, extract_and_process_summary_info, write_transactions_and_summaries_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
 from prep_env import create_folders, move_analysed_file
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         # TO-DO: Implement super function process_document() to encapsulate this section
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name)
-        summary_info = extract_summary_info(results)
+        summary_info = extract_and_process_summary_info(results)
         transactions = process_transactions(results)
 
         updated_transactions = []
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         print(f"Number of files remaining: {files_to_go}.\n")
    
     print(f"Writing extracted data to file...\n")
-    write_data_to_excel(all_transactions, all_summaries, statement_set_name, "extracted-data.xlsx")
+    write_transactions_and_summaries_to_excel(all_transactions, all_summaries, statement_set_name, "extracted-data.xlsx")
     print(f"Extracted data written to the file 'extracted-data.xlsx' in {os.path.basename(statement_set_name)}.\n")
 
     print("All done!")

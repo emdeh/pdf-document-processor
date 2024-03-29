@@ -2,86 +2,6 @@ import csv
 import pandas as pd
 import os
 
-def write_data_to_excel(transactions, all_summaries, output_path, output_filename):
-    transactions_df = pd.DataFrame(transactions)
-    
-    # Initialize an empty list for rows
-    summary_rows = []
-    for summary in all_summaries:
-        # Flatten each summary info dictionary and add it to the rows list
-        flattened_summary = flatten_summary_info(summary)
-        summary_rows.append(flattened_summary)
-    
-    # Now create a DataFrame from the list of rows
-    summaryinfo_df = pd.DataFrame(summary_rows)
-
-    output_file_path = os.path.join(output_path, output_filename)
-    
-    if os.path.exists(output_file_path):
-        # Append data to existing file
-        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a', if_sheet_exists='new') as writer:
-            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
-            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
-        print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}. folder.\n")
-
-    else:
-        # Create a new file
-        with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
-            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
-            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
-        print(f"New file '{os.path.basename(output_filename)}' created in {os.path.basename(output_path)}.")
-        print(f"Data written to the NEW file '{os.path.basename(output_filename)}' in {os.path.basename(output_path)}.\n")
-
-def flatten_summary_info(summary_info_with_confidence):
-    flattened = {}
-    # Ensure that summary_info_with_confidence is indeed a dictionary as expected
-    print("Debug - summary_info_with_confidence:", summary_info_with_confidence)  # Debug print
-    if isinstance(summary_info_with_confidence, dict):
-        for key, info in summary_info_with_confidence.items():
-            #print("Debug - Processing:", key, info)  # Further debug print to inspect each item
-            if isinstance(info, dict) and 'value' in info:
-                flattened[f"{key}_Value"] = info['value']
-                flattened[f"{key}_Confidence"] = info.get('confidence', 'N/A')
-            else:
-                print(f"Unexpected structure for {key}: {info}")
-    else:
-        print(f"flatten_summary_info was passed a non-dict object: {type(summary_info_with_confidence)}")
-    return flattened
-
-
-def aggregate_data(static_info, transactions, csv_file_path):
-    with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
-        csvwriter = csv.writer(csvfile)
-
-        # Iterate over transactions to write each one to the CSV
-        for transaction in transactions:
-            # Assuming each transaction is a dictionary with 'Date', 'Description', 'Amount', and 'CR if Credit'
-            # Note: You may need to adjust the extraction logic based on the actual structure of 'transaction'
-            transaction_date = transaction.get('Date', '')
-            transaction_description = transaction.get('Description', '').replace('\n', ' ')
-            transaction_amount = transaction.get('Amount', '')
-            cr_if_credit = transaction.get('CR if Credit', '')  # This field is optional
-            conversion_flag = transaction.get('AmountConversionSuccess', False)  # Flag indicating if amount conversion was successful
-
-            # Combine static and transaction-specific information into one row
-            row = [
-                static_info['OriginalFileName'],
-                static_info['AccountHolder'],
-                static_info['AccountEntity'],
-                static_info['ABN'],
-                static_info['CorporateID'],
-                static_info['MembershipNumber'],
-                static_info['StatementDate'],
-                transaction_date,
-                transaction_description,
-                transaction_amount,
-                cr_if_credit,
-                conversion_flag
-            ]
-            
-            # Write the row to the CSV
-            csvwriter.writerow(row)
-
 def extract_static_info(results, original_file_name):
     """Extract static information from the analysis results."""
     def extract_label_value(label):
@@ -92,8 +12,6 @@ def extract_static_info(results, original_file_name):
                     # Assuming fields have 'content' or 'value' attributes
                     return ' '.join([field.content if field.content else field.value])
         return ""  # Return an empty string if the label is not found
-
-    original_file_name = original_file_name  # Placeholder, adjust accordingly
 
     static_info = {
         'OriginalFileName': original_file_name, 
@@ -151,14 +69,55 @@ def process_transactions(results):
 
     return transactions
 
-def extract_summary_info(results):
-    """Extracts summary information from a document's results, now including confidence levels."""
+def aggregate_data(static_info, transactions, csv_file_path):
+    with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
+        csvwriter = csv.writer(csvfile)
+
+        # Iterate over transactions to write each one to the CSV
+        for transaction in transactions:
+            # Assuming each transaction is a dictionary with 'Date', 'Description', 'Amount', and 'CR if Credit'
+            # Note: You may need to adjust the extraction logic based on the actual structure of 'transaction'
+            transaction_date = transaction.get('Date', '')
+            transaction_description = transaction.get('Description', '').replace('\n', ' ')
+            transaction_amount = transaction.get('Amount', '')
+            cr_if_credit = transaction.get('CR if Credit', '')  # This field is optional
+            conversion_flag = transaction.get('AmountConversionSuccess', False)  # Flag indicating if amount conversion was successful
+
+            # Combine static and transaction-specific information into one row
+            row = [
+                static_info['OriginalFileName'],
+                static_info['AccountHolder'],
+                static_info['AccountEntity'],
+                static_info['ABN'],
+                static_info['CorporateID'],
+                static_info['MembershipNumber'],
+                static_info['StatementDate'],
+                transaction_date,
+                transaction_description,
+                transaction_amount,
+                cr_if_credit,
+                conversion_flag
+            ]
+            
+            # Write the row to the CSV
+            csvwriter.writerow(row)
+
+def extract_and_process_summary_info(document_analysis_results):
+    """
+    Extracts summary information from a document's results, now including CIs.
+    Like this: 
+    {
+        "PreviousBalance": {"value": 1000.0, "confidence": "0.95"},
+        "PaymentsAndCredits": {"value": 200.0, "confidence": "0.9"},
+        // Other fields follow the same structure...
+    }       
+    """
     
     def extract_summary_values_and_confidence(label):
         """Extracts values and their confidence."""
         value_concat = []
         confidence_concat = []
-        for document in results.documents:
+        for document in document_analysis_results.documents:
             for name, field in document.fields.items():
                 if name == label:
                     # Concatenate content from multiple entries if necessary
@@ -172,7 +131,6 @@ def extract_summary_info(results):
         value = ' '.join(value_concat) if value_concat else ''
         confidence = ' '.join(map(str, confidence_concat)) if confidence_concat else ''
         return value, confidence
-
 
     # Specified fields
     labels = ['PreviousBalance', 'PaymentsAndCredits', 'NewDebits', 'TotalBalance', 'BalanceDue', 'PaymentDueDate']
@@ -189,3 +147,61 @@ def extract_summary_info(results):
 
     return summary_info_with_confidence
 
+def format_summary_for_excel(summary_data):
+    """
+    Takes the dictionary from extract_and_process_summary_info and flattens it.
+    Returns a dictionary with keys for each summary field and its confidence.
+    Like this:
+    {
+        "PreviousBalance_Value": 1000.0,
+        "PreviousBalance_Confidence": "0.95",
+        "PaymentsAndCredits_Value": 200.0,
+        "PaymentsAndCredits_Confidence": "0.9",
+        // This pattern is repeated for each original key...
+    }        
+    """
+    flattened = {}
+    # Ensure that summary_data is a dictionary as expected
+    print("Debug - summary_data:", summary_data)  # Debug print
+    if isinstance(summary_data, dict):
+        for key, info in summary_data.items():
+            if key == "DocumentName":
+                flattened[key] = str(info)
+            elif isinstance(info, dict) and 'value' in info:
+                flattened[f"{key}_Value"] = info['value']
+                flattened[f"{key}_Confidence"] = info.get('confidence', 'N/A')
+            else:
+                print(f"Unexpected structure for {key}: {info}")
+    else:
+        print(f"Was passed a non-dict object: {type(summary_data)}") # What passed it?
+    return flattened
+
+def write_transactions_and_summaries_to_excel(transactions_records, summary_data, output_dir, excel_filename):
+    transactions_df = pd.DataFrame(transactions_records)
+    
+    # Initialize an empty list for rows
+    summary_rows = []
+    for summary in summary_data:
+        # Flatten each summary info dictionary and add it to the rows list
+        flattened_summary = format_summary_for_excel(summary)
+        summary_rows.append(flattened_summary)
+    
+    # Now create a DataFrame from the list of rows
+    summaryinfo_df = pd.DataFrame(summary_rows)
+
+    output_file_path = os.path.join(output_dir, excel_filename)
+    
+    if os.path.exists(output_file_path):
+        # Append data to existing file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a', if_sheet_exists='new') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
+        print(f"Data appended to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}. folder.\n")
+
+    else:
+        # Create a new file
+        with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
+        print(f"New file '{os.path.basename(excel_filename)}' created in {os.path.basename(output_dir)}.")
+        print(f"Data written to the NEW file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
