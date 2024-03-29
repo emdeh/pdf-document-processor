@@ -69,41 +69,6 @@ def process_transactions(results):
 
     return transactions
 
-""" TO DELETE
-def aggregate_data(static_info, transactions, csv_file_path):
-    with open(csv_file_path, 'a', newline='', encoding='utf-8') as csvfile:
-        csvwriter = csv.writer(csvfile)
-
-        # Iterate over transactions to write each one to the CSV
-        for transaction in transactions:
-            # Assuming each transaction is a dictionary with 'Date', 'Description', 'Amount', and 'CR if Credit'
-            # Note: You may need to adjust the extraction logic based on the actual structure of 'transaction'
-            transaction_date = transaction.get('Date', '')
-            transaction_description = transaction.get('Description', '').replace('\n', ' ')
-            transaction_amount = transaction.get('Amount', '')
-            cr_if_credit = transaction.get('CR if Credit', '')  # This field is optional
-            conversion_flag = transaction.get('AmountConversionSuccess', False)  # Flag indicating if amount conversion was successful
-
-            # Combine static and transaction-specific information into one row
-            row = [
-                static_info['OriginalFileName'],
-                static_info['AccountHolder'],
-                static_info['AccountEntity'],
-                static_info['ABN'],
-                static_info['CorporateID'],
-                static_info['MembershipNumber'],
-                static_info['StatementDate'],
-                transaction_date,
-                transaction_description,
-                transaction_amount,
-                cr_if_credit,
-                conversion_flag
-            ]
-            
-            # Write the row to the CSV
-            csvwriter.writerow(row)
-"""
-
 def extract_and_process_summary_info(document_analysis_results):
     """
     Extracts summary information from a document's results, now including CIs.
