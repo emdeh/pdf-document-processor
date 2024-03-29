@@ -25,7 +25,7 @@ def extract_static_info(results, original_file_name):
     return static_info
 
 def process_transactions(results):
-    print(f"Debug - {results}") # Debug print
+    #print(f"Debug - {results}") # Debug print
     transactions = []
 
     # Iterate through the analyzed document results
