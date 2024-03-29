@@ -78,9 +78,14 @@ def move_analysed_file(document_path, analysed_files_folder):
     print(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
 
 def load_statement_config(config_path="path/to/config.yaml"):
+    # Check if the file exists at the given path
+    if not os.path.isfile(config_path):
+        raise FileNotFoundError(f"Config file not found at {config_path}.")
+    
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)
     return config
+
 
 def select_statement_type(config):
     # Extracting the list of type names from the configuration
