@@ -1,8 +1,9 @@
 import csv
 import pandas as pd
 import os
+from prep_env import transaction_static_fields
 
-def extract_static_info(results, original_file_name):
+def extract_static_info(results, original_file_name, statement_type):
     """Extract static information from the analysis results."""
     def extract_label_value(label):
         """Nested helper function to extract concatenated text values for a given label."""
@@ -14,14 +15,11 @@ def extract_static_info(results, original_file_name):
         return ""  # Return an empty string if the label is not found
 
     static_info = {
-        'OriginalFileName': original_file_name, 
-        'AccountHolder': extract_label_value('AccountName'),
-        'AccountEntity': extract_label_value('AccountEntity'),
-        'ABN': extract_label_value('ABN'),
-        'CorporateID': extract_label_value('CorporateID'),
-        'MembershipNumber': extract_label_value('MembershipNumber'),
-        'StatementDate': extract_label_value('StatementDate')
-    }
+        'OriginalFileName': original_file_name}
+    for field in statement_type[transaction_static_fields]:
+        field_name = field['name']
+        static_info[field_name] = extract_label_value(field_name)
+
     return static_info
 
 def process_transactions(results):

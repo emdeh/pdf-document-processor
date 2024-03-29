@@ -9,7 +9,6 @@ statement_types:
       - field_name: "PaymentDueDate"
       - field_name: "DocumentName"
     transaction_static_fields:
-      - field_name: "OriginalFileName"
       - field_name: "AccountHolder"
       - field_name: "AccountEntity"
       - field_name: "ABN"
@@ -33,7 +32,6 @@ statement_types:
       - field_name: "PaymentDueDate"
       - field_name: "DocumentName"
     transaction_static_fields:
-      - field_name: "OriginalFileName"
       - field_name: "AccountHolder"
       - field_name: "AccountEntity"
       - field_name: "ABN"
