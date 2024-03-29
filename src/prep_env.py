@@ -1,5 +1,6 @@
 import os
 import shutil
+import yaml
 
 def create_folders():
 
@@ -58,7 +59,6 @@ def create_folders():
 
     return new_folder, ready_for_analysis, manual_splitting_folder, analysed_files_folder
 
-
 def move_analysed_file(document_path, analysed_files_folder):
     """
     Move a file to the analysed files folder.
@@ -76,3 +76,30 @@ def move_analysed_file(document_path, analysed_files_folder):
 
     # Print a message indicating that the file has been moved
     print(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
+
+def load_statement_config(config_path="path/to/config.yaml"):
+    with open(config_path, "r") as file:
+        config = yaml.safe_load(file)
+    return config
+
+def select_statement_type(config):
+    # Extracting the list of type names from the configuration
+    type_names = [stype["type_name"] for stype in config["statement_types"]]
+    
+    # Displaying the options to the user
+    print("Available Statement Types:")
+    for i, type_name in enumerate(type_names, start=1):
+        print(f"{i}. {type_name}")
+    
+    # Prompting user for selection
+    while True:
+        try:
+            selection = int(input("Select a statement type (number): "))
+            # Validate selection is within the correct range
+            if 1 <= selection <= len(type_names):
+                print(f"Selected statement type: {type_names[selection - 1]}")
+                return config["statement_types"][selection - 1]  # Adjust for zero-based index   
+            else:
+                print("Invalid selection. Please select a number from the list.")
+        except ValueError:
+            print("Please enter a number.")
