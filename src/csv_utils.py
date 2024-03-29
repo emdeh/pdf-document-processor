@@ -25,6 +25,7 @@ def extract_static_info(results, original_file_name):
     return static_info
 
 def process_transactions(results):
+    print(f"Debug - {results}") # Debug print
     transactions = []
 
     # Iterate through the analyzed document results
@@ -33,7 +34,7 @@ def process_transactions(results):
         if 'accountTransactions' in document.fields:
             # Get the list of transactions
             account_trans_list = document.fields['accountTransactions'].value
-            
+                        
             # Iterate through each transaction DocumentField in the list
             for transaction_field in account_trans_list:
                 # Access each field within the transaction using the .value attribute of DocumentField
@@ -129,7 +130,7 @@ def format_summary_for_excel(summary_data):
     """
     flattened = {}
     # Ensure that summary_data is a dictionary as expected
-    print("Debug - summary_data:", summary_data)  # Debug print
+    #print("Debug - summary_data:", summary_data)  # Debug print
     if isinstance(summary_data, dict):
         for key, info in summary_data.items():
             if key == "DocumentName":
