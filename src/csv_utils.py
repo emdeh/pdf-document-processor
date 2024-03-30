@@ -28,41 +28,32 @@ def extract_static_info(results, original_file_name, statement_type):
 def process_transactions(results, statement_type):
     transactions = []
 
-    # Retrieve the dynamic fields configuration from the statement_type
-    dynamic_fields = statement_type["transaction_dynamic_fields"]
-
     for document in results.documents:
         if 'accountTransactions' in document.fields:
             account_trans_list = document.fields['accountTransactions'].value
 
             for transaction_field in account_trans_list:
                 transaction = {}
-                conversion_flag = False
+                conversion_success = True  # Assumes success unless proven otherwise
                 
-                # Dynamically process each field as per configuration
-                for field_config in dynamic_fields:
+                for field_config in statement_type['transaction_dynamic_fields']:
                     field_name = field_config['field_name']
-                    field = transaction_field.value.get(field_name, None)
-
-                    # Check if field is a DocumentField and has a 'value' attribute
-                    if field and hasattr(field, 'value'):
-                        field_value = field.value
-                    else:
-                        field_value = field  # Use the field directly if it's not a DocumentField
-
-                    # Special handling for 'Amount'
-                    if field_name == 'Amount' and field_value:
-                        field_value, conversion_flag = convert_amount(field_value)
-
-                    # Replace newlines in 'Description' with spaces (or handle other string manipulations)
-                    if field_name == 'Description' and isinstance(field_value, str):
-                        field_value = field_value.replace('\n', ' ')
+                    is_amount = field_config.get('is_amount', False)
+                    # Initially assume field_value is None
+                    field_value = None
+                    # Check if the field exists and has a 'value' attribute
+                    if field_name in transaction_field.value and hasattr(transaction_field.value[field_name], 'value'):
+                        field_value = transaction_field.value[field_name].value
+                    
+                    if is_amount and field_value:
+                        # Convert field_value to string in case it's not
+                        field_value_str = str(field_value)
+                        field_value, temp_conversion_success = convert_amount(field_value_str)
+                        conversion_success = conversion_success and temp_conversion_success
 
                     transaction[field_name] = field_value
 
-                if 'Amount' in [f['field_name'] for f in dynamic_fields]:
-                    transaction['AmountConversionSuccess'] = not conversion_flag
-
+                transaction['ConversionSuccess'] = conversion_success
                 transactions.append(transaction)
 
     return transactions
@@ -75,15 +66,18 @@ def convert_amount(amount_str):
         print(f"Could not convert {amount_str} to float. Mapping actual value.")
         return amount_str, False
 
-def extract_and_process_summary_info(document_analysis_results):
+def extract_and_process_summary_info(document_analysis_results, statement_type):
     """
-    Extracts summary information from a document's results, now including CIs.
+    Extracts summary information from a document's results, now including CIs,
+    and uses the statement_type configuration to determine how to process each field.
+
+        Extracts summary information from a document's results, now including CIs.
     Like this: 
     {
         "PreviousBalance": {"value": 1000.0, "confidence": "0.95"},
         "PaymentsAndCredits": {"value": 200.0, "confidence": "0.9"},
         // Other fields follow the same structure...
-    }       
+    } 
     """
     
     def extract_summary_values_and_confidence(label):
@@ -100,22 +94,24 @@ def extract_and_process_summary_info(document_analysis_results):
                     # Aggregate confidence if available; else use placeholder
                     confidence = field.confidence if field.confidence is not None else 'N/A'
                     confidence_concat.append(confidence)
-        # Join multiple entries into a single string, if applicable
         value = ' '.join(value_concat) if value_concat else ''
         confidence = ' '.join(map(str, confidence_concat)) if confidence_concat else ''
         return value, confidence
 
-    # Specified fields
-    labels = ['PreviousBalance', 'PaymentsAndCredits', 'NewDebits', 'TotalBalance', 'BalanceDue', 'PaymentDueDate']
     summary_info_with_confidence = {}
-    for label in labels:
+    for field_config in statement_type["summary_fields"]:
+        label = field_config['field_name']
+        is_amount = field_config.get('is_amount', False)
+        
         value, confidence = extract_summary_values_and_confidence(label)
-        # Convert to float where applicable, except for 'PaymentDueDate'
-        if label != 'PaymentDueDate':
-            try:
-                value = float(value.replace(',', '').strip())
-            except ValueError:
-                pass  # Keep the original value if conversion fails
+        
+        # Process the value based on whether it's flagged as an amount
+        if is_amount:
+            value, _ = convert_amount(value)  # Assuming convert_amount returns (converted_value, success_flag)
+        else:
+            # For non-amount fields, just ensure it's appropriately formatted or left as is
+            value = value.strip()
+        
         summary_info_with_confidence[label] = {"value": value, "confidence": confidence}
 
     return summary_info_with_confidence

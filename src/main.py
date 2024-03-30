@@ -77,7 +77,7 @@ if __name__ == "__main__":
         # TO-DO: Implement super function process_document() to encapsulate this section
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name, statement_type)
-        summary_info = extract_and_process_summary_info(results)
+        summary_info = extract_and_process_summary_info(results, statement_type)
         transactions = process_transactions(results, statement_type)
 
         updated_transactions = []
