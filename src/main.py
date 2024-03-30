@@ -78,7 +78,7 @@ if __name__ == "__main__":
         print("Processing extracted data...\n")
         static_info = extract_static_info(results, original_document_name, statement_type)
         summary_info = extract_and_process_summary_info(results)
-        transactions = process_transactions(results)
+        transactions = process_transactions(results, statement_type)
 
         updated_transactions = []
 

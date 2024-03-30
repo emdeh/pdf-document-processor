@@ -25,51 +25,55 @@ def extract_static_info(results, original_file_name, statement_type):
 
     return static_info
 
-def process_transactions(results):
-    #print(f"Debug - {results}") # Debug print
+def process_transactions(results, statement_type):
     transactions = []
 
-    # Iterate through the analyzed document results
-    for document in results.documents:
-        # Check if 'accountTransactions' is a key in this document
-        if 'accountTransactions' in document.fields:
-            # Get the list of transactions
-            account_trans_list = document.fields['accountTransactions'].value
-                        
-            # Iterate through each transaction DocumentField in the list
-            for transaction_field in account_trans_list:
-                # Access each field within the transaction using the .value attribute of DocumentField
-                date_field = transaction_field.value.get('Date', None)
-                description_field = transaction_field.value.get('Description', None)
-                amount_field = transaction_field.value.get('Amount', None)
-                cr_if_credit_field = transaction_field.value.get('CR if Credit', None)
-                
-                # Prepare the amount_field value for conversion
-                # Remove commas and convert to float
-                amount_value = 0.0
-                conversion_flag = False
-                if amount_field:
-                    amount_str = amount_field.value.replace(',', '')
-                    try:
-                        amount_value = float(amount_str)
-                    except ValueError:
-                        # Handle cases where conversion is not possible
-                        amount_value = amount_str
-                        conversion_flag = True
-                        print(f"Could not convert {amount_str} to float. Mapping actual value.\n")
+    # Retrieve the dynamic fields configuration from the statement_type
+    dynamic_fields = statement_type["transaction_dynamic_fields"]
 
-                # Build the transaction dictionary
-                transaction = {
-                    'Date': date_field.value if date_field else '',
-                    'Description': description_field.value.replace('\n', ' ') if description_field else '',
-                    'Amount': amount_value,
-                    'CR if Credit': cr_if_credit_field.value if cr_if_credit_field else '',
-                    'AmountConversionSuccess': not conversion_flag # True if conversion was successful, False otherwise
-                    
-                }
+    for document in results.documents:
+        if 'accountTransactions' in document.fields:
+            account_trans_list = document.fields['accountTransactions'].value
+
+            for transaction_field in account_trans_list:
+                transaction = {}
+                conversion_flag = False
+                
+                # Dynamically process each field as per configuration
+                for field_config in dynamic_fields:
+                    field_name = field_config['field_name']
+                    field = transaction_field.value.get(field_name, None)
+
+                    # Check if field is a DocumentField and has a 'value' attribute
+                    if field and hasattr(field, 'value'):
+                        field_value = field.value
+                    else:
+                        field_value = field  # Use the field directly if it's not a DocumentField
+
+                    # Special handling for 'Amount'
+                    if field_name == 'Amount' and field_value:
+                        field_value, conversion_flag = convert_amount(field_value)
+
+                    # Replace newlines in 'Description' with spaces (or handle other string manipulations)
+                    if field_name == 'Description' and isinstance(field_value, str):
+                        field_value = field_value.replace('\n', ' ')
+
+                    transaction[field_name] = field_value
+
+                if 'Amount' in [f['field_name'] for f in dynamic_fields]:
+                    transaction['AmountConversionSuccess'] = not conversion_flag
+
                 transactions.append(transaction)
 
     return transactions
+
+def convert_amount(amount_str):
+    """Attempt to convert the amount string to float and return the conversion success flag."""
+    try:
+        return float(amount_str.replace(',', '')), True
+    except ValueError:
+        print(f"Could not convert {amount_str} to float. Mapping actual value.")
+        return amount_str, False
 
 def extract_and_process_summary_info(document_analysis_results):
     """
