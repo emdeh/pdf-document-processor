@@ -1,0 +1,52 @@
+statement_types:
+  - type_name: "DefaultStatement"
+    summary_fields:
+      - field_name: "PreviousBalance"
+        is_amount: true
+      - field_name: "PaymentsAndCredits"
+        is_amount: true
+      - field_name: "NewDebits"
+        is_amount: true
+      - field_name: "TotalBalance"
+        is_amount: true
+      - field_name: "BalanceDue"
+        is_amount: true
+      - field_name: "PaymentDueDate"
+        is_date: true
+      - field_name: "DocumentName"
+    transaction_static_fields:
+      - field_name: "AccountName"
+      - field_name: "AccountEntity"
+      - field_name: "ABN"
+      - field_name: "CorporateID"
+      - field_name: "MembershipNumber"
+      - field_name: "StatementDate"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+      - field_name: "Description"
+      - field_name: "Amount"
+        is_amount: true
+      - field_name: "CR if Credit"
+
+
+  - type_name: "AnotherStatementType"
+    summary_fields:
+      - field_name: "PreviousBalance"
+      - field_name: "PaymentsAndCredits"
+      - field_name: "NewDebits"
+      - field_name: "TotalBalance"
+      - field_name: "BalanceDue"
+      - field_name: "PaymentDueDate"
+      - field_name: "DocumentName"
+    transaction_static_fields:
+      - field_name: "AccountHolder"
+      - field_name: "AccountEntity"
+      - field_name: "ABN"
+      - field_name: "CorporateID"
+      - field_name: "MembershipNumber"
+      - field_name: "StatementDate"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+      - field_name: "Description"
+      - field_name: "Amount"
+      - field_name: "CR if Credit"

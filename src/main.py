@@ -6,7 +6,7 @@ from pdf_processor import process_all_pdfs
 from count_pdfs import process_pdf_count, save_to_excel
 from csv_utils import extract_static_info, process_transactions, extract_and_process_summary_info, write_transactions_and_summaries_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
-from prep_env import create_folders, move_analysed_file
+from prep_env import create_folders, move_analysed_file, load_statement_config, select_statement_type
 
 
 # Load env variables from .env file
@@ -18,9 +18,14 @@ if __name__ == "__main__":
     doc_model_endpoint = os.getenv("MODEL_ENDPOINT")
     doc_model_api_key = os.getenv("MODEL_API_KEY")
     doc_model_id = os.getenv("MODEL_ID")
+    config_path = os.getenv("CONFIG_PATH")
     
 
     # Prepare environment
+    config = load_statement_config(config_path) # Load the config file for different statement types
+    
+    statement_type = select_statement_type(config) # Select the statement type to process
+
     statement_set_name, ready_for_analysis, manual_splitting_folder, analysed_files_folder = create_folders()
     
     # Count input PDFs
@@ -71,9 +76,9 @@ if __name__ == "__main__":
         # Process the results
         # TO-DO: Implement super function process_document() to encapsulate this section
         print("Processing extracted data...\n")
-        static_info = extract_static_info(results, original_document_name)
-        summary_info = extract_and_process_summary_info(results)
-        transactions = process_transactions(results)
+        static_info = extract_static_info(results, original_document_name, statement_type)
+        summary_info = extract_and_process_summary_info(results, statement_type)
+        transactions = process_transactions(results, statement_type)
 
         updated_transactions = []
 

@@ -1,8 +1,12 @@
+##
+## TO-DO: Update field names to be relative to yaml file like extract_static_info() function.
+##
+
 import csv
 import pandas as pd
 import os
 
-def extract_static_info(results, original_file_name):
+def extract_static_info(results, original_file_name, statement_type):
     """Extract static information from the analysis results."""
     def extract_label_value(label):
         """Nested helper function to extract concatenated text values for a given label."""
@@ -14,71 +18,66 @@ def extract_static_info(results, original_file_name):
         return ""  # Return an empty string if the label is not found
 
     static_info = {
-        'OriginalFileName': original_file_name, 
-        'AccountHolder': extract_label_value('AccountName'),
-        'AccountEntity': extract_label_value('AccountEntity'),
-        'ABN': extract_label_value('ABN'),
-        'CorporateID': extract_label_value('CorporateID'),
-        'MembershipNumber': extract_label_value('MembershipNumber'),
-        'StatementDate': extract_label_value('StatementDate')
-    }
+        'OriginalFileName': original_file_name}
+    for field in statement_type["transaction_static_fields"]:
+        field_name = field['field_name']
+        static_info[field_name] = extract_label_value(field_name)
+
     return static_info
 
-def process_transactions(results):
-    #print(f"Debug - {results}") # Debug print
+def process_transactions(results, statement_type):
     transactions = []
 
-    # Iterate through the analyzed document results
     for document in results.documents:
-        # Check if 'accountTransactions' is a key in this document
         if 'accountTransactions' in document.fields:
-            # Get the list of transactions
             account_trans_list = document.fields['accountTransactions'].value
-                        
-            # Iterate through each transaction DocumentField in the list
-            for transaction_field in account_trans_list:
-                # Access each field within the transaction using the .value attribute of DocumentField
-                date_field = transaction_field.value.get('Date', None)
-                description_field = transaction_field.value.get('Description', None)
-                amount_field = transaction_field.value.get('Amount', None)
-                cr_if_credit_field = transaction_field.value.get('CR if Credit', None)
-                
-                # Prepare the amount_field value for conversion
-                # Remove commas and convert to float
-                amount_value = 0.0
-                conversion_flag = False
-                if amount_field:
-                    amount_str = amount_field.value.replace(',', '')
-                    try:
-                        amount_value = float(amount_str)
-                    except ValueError:
-                        # Handle cases where conversion is not possible
-                        amount_value = amount_str
-                        conversion_flag = True
-                        print(f"Could not convert {amount_str} to float. Mapping actual value.\n")
 
-                # Build the transaction dictionary
-                transaction = {
-                    'Date': date_field.value if date_field else '',
-                    'Description': description_field.value.replace('\n', ' ') if description_field else '',
-                    'Amount': amount_value,
-                    'CR if Credit': cr_if_credit_field.value if cr_if_credit_field else '',
-                    'AmountConversionSuccess': not conversion_flag # True if conversion was successful, False otherwise
+            for transaction_field in account_trans_list:
+                transaction = {}
+                conversion_success = True  # Assumes success unless proven otherwise
+                
+                for field_config in statement_type['transaction_dynamic_fields']:
+                    field_name = field_config['field_name']
+                    is_amount = field_config.get('is_amount', False)
+                    # Initially assume field_value is None
+                    field_value = None
+                    # Check if the field exists and has a 'value' attribute
+                    if field_name in transaction_field.value and hasattr(transaction_field.value[field_name], 'value'):
+                        field_value = transaction_field.value[field_name].value
                     
-                }
+                    if is_amount and field_value:
+                        # Convert field_value to string in case it's not
+                        field_value_str = str(field_value)
+                        field_value, temp_conversion_success = convert_amount(field_value_str)
+                        conversion_success = conversion_success and temp_conversion_success
+
+                    transaction[field_name] = field_value
+
+                transaction['ConversionSuccess'] = conversion_success
                 transactions.append(transaction)
 
     return transactions
 
-def extract_and_process_summary_info(document_analysis_results):
+def convert_amount(amount_str):
+    """Attempt to convert the amount string to float and return the conversion success flag."""
+    try:
+        return float(amount_str.replace(',', '')), True
+    except ValueError:
+        print(f"Could not convert {amount_str} to float. Mapping actual value.")
+        return amount_str, False
+
+def extract_and_process_summary_info(document_analysis_results, statement_type):
     """
-    Extracts summary information from a document's results, now including CIs.
+    Extracts summary information from a document's results, now including CIs,
+    and uses the statement_type configuration to determine how to process each field.
+
+        Extracts summary information from a document's results, now including CIs.
     Like this: 
     {
         "PreviousBalance": {"value": 1000.0, "confidence": "0.95"},
         "PaymentsAndCredits": {"value": 200.0, "confidence": "0.9"},
         // Other fields follow the same structure...
-    }       
+    } 
     """
     
     def extract_summary_values_and_confidence(label):
@@ -95,22 +94,24 @@ def extract_and_process_summary_info(document_analysis_results):
                     # Aggregate confidence if available; else use placeholder
                     confidence = field.confidence if field.confidence is not None else 'N/A'
                     confidence_concat.append(confidence)
-        # Join multiple entries into a single string, if applicable
         value = ' '.join(value_concat) if value_concat else ''
         confidence = ' '.join(map(str, confidence_concat)) if confidence_concat else ''
         return value, confidence
 
-    # Specified fields
-    labels = ['PreviousBalance', 'PaymentsAndCredits', 'NewDebits', 'TotalBalance', 'BalanceDue', 'PaymentDueDate']
     summary_info_with_confidence = {}
-    for label in labels:
+    for field_config in statement_type["summary_fields"]:
+        label = field_config['field_name']
+        is_amount = field_config.get('is_amount', False)
+        
         value, confidence = extract_summary_values_and_confidence(label)
-        # Convert to float where applicable, except for 'PaymentDueDate'
-        if label != 'PaymentDueDate':
-            try:
-                value = float(value.replace(',', '').strip())
-            except ValueError:
-                pass  # Keep the original value if conversion fails
+        
+        # Process the value based on whether it's flagged as an amount
+        if is_amount:
+            value, _ = convert_amount(value)  # Assuming convert_amount returns (converted_value, success_flag)
+        else:
+            # For non-amount fields, just ensure it's appropriately formatted or left as is
+            value = value.strip()
+        
         summary_info_with_confidence[label] = {"value": value, "confidence": confidence}
 
     return summary_info_with_confidence
