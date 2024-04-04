@@ -1,5 +1,5 @@
 statement_types:
-  - type_name: "DefaultStatement"
+  - type_name: "AMEX Statement - Card"
     summary_fields:
       - field_name: "PreviousBalance"
         is_amount: true
@@ -29,24 +29,38 @@ statement_types:
       - field_name: "CR if Credit"
 
 
-  - type_name: "AnotherStatementType"
+  - type_name: "Westpac Statement - Bank"
     summary_fields:
-      - field_name: "PreviousBalance"
-      - field_name: "PaymentsAndCredits"
-      - field_name: "NewDebits"
-      - field_name: "TotalBalance"
-      - field_name: "BalanceDue"
-      - field_name: "PaymentDueDate"
-      - field_name: "DocumentName"
+      - field_name: "OpeningBalance"
+      - is_amount: true
+      - field_name: "TotalCredits"
+      - is_amount: true
+      - field_name: "TotalDebits"
+      - is_amount: true
+      - field_name: "ClosingBalance"
+      - is_amount: true
     transaction_static_fields:
-      - field_name: "AccountHolder"
-      - field_name: "AccountEntity"
-      - field_name: "ABN"
-      - field_name: "CorporateID"
-      - field_name: "MembershipNumber"
-      - field_name: "StatementDate"
+      - field_name: "StatementNumber"
+      - field_name: "StatementStartDate"
+      - is_date: true
+      - field_name: "StatementEndDate"
+      - is_date: true
+      - field_name: "AccountName"
+      - field_name: "CustomerID"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
     transaction_dynamic_fields:
       - field_name: "Date"
+      - is_date: true
       - field_name: "Description"
-      - field_name: "Amount"
-      - field_name: "CR if Credit"
+      - field_name: "Debit"
+        is_amount: true
+      - field_name: "Credit"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
+
+# The is_amount field was original used to specify what values needed to be transformed into amounts during processing, but this is now handled by the field type in the model itself. It has been retained here (and is_date) added for backwards compatibility and to ensure future flexibility.
+
+        
