@@ -20,6 +20,7 @@ def analyse_document(client, model_id, document_path):
     except Exception as e:
         print(f"Error analysing {os.path.basename(document_path)}: {e}")
         result = None
+    #print(f"debug - result: {result}")
     return result
 
 def process_analysis_results(results):

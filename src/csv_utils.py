@@ -1,7 +1,3 @@
-##
-## TO-DO: Update field names to be relative to yaml file like extract_static_info() function.
-##
-
 import csv
 import pandas as pd
 import os
@@ -29,8 +25,8 @@ def process_transactions(results, statement_type):
     transactions = []
 
     for document in results.documents:
-        if 'accountTransactions' in document.fields:
-            account_trans_list = document.fields['accountTransactions'].value
+        if 'Transactions' in document.fields: # TO-DO: This is Transactions for westpac and accountTransactions for amex due to field naming difference - need to fix to be dynamic somehow.
+            account_trans_list = document.fields['Transactions'].value # TO-DO: Transactions for one type and accountTransactions for another - need to fix.
 
             for transaction_field in account_trans_list:
                 transaction = {}

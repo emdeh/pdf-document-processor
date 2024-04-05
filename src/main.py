@@ -25,7 +25,6 @@ if __name__ == "__main__":
     config = load_statement_config(config_path) # Load the config file for different statement types
     
     statement_type = select_statement_type(config) # Select the statement type to process
-    print("Selected statement type structure:", statement_type)
 
 
     statement_set_name, ready_for_analysis, manual_splitting_folder, analysed_files_folder = create_folders()
