@@ -32,19 +32,19 @@ statement_types:
   - type_name: "Westpac Statement - Bank"
     summary_fields:
       - field_name: "OpeningBalance"
-      - is_amount: true
+        is_amount: true
       - field_name: "TotalCredits"
-      - is_amount: true
+        is_amount: true
       - field_name: "TotalDebits"
-      - is_amount: true
+        is_amount: true
       - field_name: "ClosingBalance"
-      - is_amount: true
+        is_amount: true
     transaction_static_fields:
       - field_name: "StatementNumber"
       - field_name: "StatementStartDate"
-      - is_date: true
+        is_date: true
       - field_name: "StatementEndDate"
-      - is_date: true
+        is_date: true
       - field_name: "AccountName"
       - field_name: "CustomerID"
       - field_name: "BSB"
@@ -52,7 +52,7 @@ statement_types:
       - field_name: "Address"
     transaction_dynamic_fields:
       - field_name: "Date"
-      - is_date: true
+        is_date: true
       - field_name: "Description"
       - field_name: "Debit"
         is_amount: true
