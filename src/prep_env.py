@@ -112,10 +112,11 @@ def select_statement_type(config):
 
 def set_model_id(selected_env_var):
     # Set the corresponding MODEL_ID variable based on the selected statement type
-    model_id_env_var = os.getenv(selected_env_var)
-    if model_id_env_var:
-        os.environ["MODEL_ID"] = model_id_env_var
-        print(f"MODEL ID set to: {model_id_env_var}")
+    model_id = os.getenv(selected_env_var)
+    if model_id:
+        os.environ["MODEL_ID"] = model_id
+        print(f"MODEL ID set to: {model_id}")
+        return model_id
     else:
-        print(f"No corresponding MODEL ID variable found for selected statement type.\nQuitting program.")
+        print(f"No corresponding MODEL ID variable found for {selected_env_var}.\nQuitting program.")
         quit()

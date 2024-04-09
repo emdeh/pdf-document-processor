@@ -29,7 +29,7 @@ if __name__ == "__main__":
     statement_type, selected_env_var = select_statement_type(config) # Select the statement type to process
 
     # Set the corresponding MODEL_ID variable
-    set_model_id(selected_env_var)
+    model_id = set_model_id(selected_env_var)
 
     # Create folders for the statement set
     statement_set_name, ready_for_analysis, manual_splitting_folder, analysed_files_folder = create_folders()
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 # Start processing
 
     # Initialise the Azure Document Analysis Client
-    doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key, selected_env_var)
+    doc_ai_client = initialise_analysis_client(doc_model_endpoint,doc_model_api_key, model_id)
     
     all_transactions = []
     all_summaries = []
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     for document_path in glob.glob(os.path.join(ready_for_analysis, '*.pdf')):
         # Analyse the document
         original_document_name = basename(document_path)
-        results = analyse_document(doc_ai_client, selected_env_var, document_path)
+        results = analyse_document(doc_ai_client, model_id, document_path)
         
 # Start post-processing
 
