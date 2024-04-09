@@ -1,6 +1,6 @@
 statement_types:
   - type_name: "AMEX Statement - Card"
-    env_var: "MODEL_ID_AMEX-CARD"
+    env_var: "MODEL_ID_AMEX_CARD" # References back to a .env file
     summary_fields:
       - field_name: "PreviousBalance"
         is_amount: true
@@ -31,7 +31,7 @@ statement_types:
 
 
   - type_name: "Westpac Statement - Bank"
-    env_var: "MODEL_ID_WESTPAC-BANK"
+    env_var: "MODEL_ID_WESTPAC_BANK" # References back to a .env file
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true

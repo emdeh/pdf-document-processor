@@ -102,9 +102,20 @@ def select_statement_type(config):
             selection = int(input("Select a statement type (number): "))
             # Validate selection is within the correct range
             if 1 <= selection <= len(type_names):
-                print(f"Selected statement type: {type_names[selection - 1]}")
-                return config["statement_types"][selection - 1]  # Adjust for zero-based index   
+                selected_type = config["statement_types"][selection - 1]
+                print(f"Selected statement type: {selected_type['type_name']}")
+                return selected_type, selected_type['env_var']  # Adjust for zero-based index   
             else:
                 print("Invalid selection. Please select a number from the list.")
         except ValueError:
             print("Please enter a number.")
+
+def set_model_id(selected_env_var):
+    # Set the corresponding MODEL_ID variable based on the selected statement type
+    model_id_env_var = os.getenv(selected_env_var)
+    if model_id_env_var:
+        os.environ["MODEL_ID"] = model_id_env_var
+        print(f"MODEL ID set to: {model_id_env_var}")
+    else:
+        print(f"No corresponding MODEL ID variable found for selected statement type.\nQuitting program.")
+        quit()
