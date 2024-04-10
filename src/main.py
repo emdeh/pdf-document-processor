@@ -19,16 +19,15 @@ if __name__ == "__main__":
     initial_input_folder = os.getenv("INITIAL_INPUT_FOLDER")
     doc_model_endpoint = os.getenv("MODEL_ENDPOINT")
     doc_model_api_key = os.getenv("MODEL_API_KEY")
-    # doc_model_id = os.getenv("MODEL_ID") # TO REMOVE
     config_path = os.getenv("CONFIG_PATH") # Yaml file with statement types
     
     # Load the config file for different statement types
     config = load_statement_config(config_path) 
     
-    # Select the statement type
+    # Select the statement type and return the env_var value to load the model ID
     statement_type, selected_env_var = select_statement_type(config) # Select the statement type to process
 
-    # Set the corresponding MODEL_ID variable
+    # Set the corresponding MODEL_ID variable from .env using the value passed by 'select_statement_type()' as the argument
     model_id = set_model_id(selected_env_var)
 
     # Create folders for the statement set
