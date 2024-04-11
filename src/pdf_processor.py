@@ -80,7 +80,7 @@ def find_statement_numbers_starts(pdf_path):
     return statement_starts
 
 
-def split_pdf(pdf_path, output_folder, doc_starts):
+'''def old_split_pdf(pdf_path, output_folder, doc_starts):# old splitting function
     """
     Splits a PDF into multiple documents based on the starting pages of each document.
     
@@ -114,6 +114,49 @@ def split_pdf(pdf_path, output_folder, doc_starts):
         new_doc.close()
     # Close the original PDF.
     doc.close()
+    '''
+
+def split_pdf(pdf_path, output_folder, doc_starts): # new splitting function
+    """
+    Splits a PDF into multiple documents based on the starting pages of each document.
+    This function can handle both lists of page numbers (from find_standard_statement_starts)
+    and dictionaries of page numbers with start and end pages (from find_statement_numbers_starts).
+
+    Args:
+        pdf_path (str): The file path of the PDF to be split.
+        output_folder (str): The folder where the split PDFs will be saved.
+        doc_starts (list or dict): A list or dictionary of page numbers where new documents start.
+    """
+    doc = fitz.open(pdf_path)
+    total_pages = len(doc)
+    pdf_name = Path(pdf_path).stem
+
+    # Check if doc_starts is a list or a dictionary and adjusts the processing logic accordingly.
+    if isinstance(doc_starts, list):
+        # Handle list of starts (standard document starts)
+        for i, start_page in enumerate(doc_starts):
+            end_page = doc_starts[i + 1] if i + 1 < len(doc_starts) else total_pages
+            output_path = f"{output_folder}/{pdf_name}_document_{i + 1}.pdf"
+            new_doc = fitz.open()
+            for page_num in range(start_page, end_page):
+                new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+            new_doc.save(output_path)
+            new_doc.close()
+
+    elif isinstance(doc_starts, dict):
+        # Handle dictionary of starts and ends (statement numbers starts)
+        for statement, pages in doc_starts.items():
+            start_page = pages['start']
+            end_page = pages['end']
+            output_path = f"{output_folder}/{pdf_name}_statement_{statement}.pdf"
+            new_doc = fitz.open()
+            for page_num in range(start_page, end_page + 1):  # '+1' to include end page
+                new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+            new_doc.save(output_path)
+            new_doc.close()
+
+    doc.close()
+
 
 def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
     """
