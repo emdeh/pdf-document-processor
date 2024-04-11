@@ -158,7 +158,7 @@ def split_pdf(pdf_path, output_folder, doc_starts): # new splitting function
     doc.close()
 
 
-def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
+'''def old_process_all_pdfs(input_folder, output_folder, manual_processing_folder):
     """
     Processes all PDF files in a given folder, splitting them into separate documents.
 
@@ -198,5 +198,61 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
             # Advise the user to manually split the file and add it to the split_files_folder.
             print(f" {os.path.basename(pdf_file)} will need to be manually split and placed in the {os.path.basename(output_folder)} on another extraction run. A manifest of unsplit files is in {os.path.basename(manual_processing_folder)}.")
     print(f"Splitting complete.\n\n")
+'''
 
+def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # new process_all_pdfs function
+    """
+    Processes all PDF files in a given folder, splitting them into separate documents based on identified patterns.
+
+    This function iterates over all PDF files in the input folder, identifies the
+    document type and the starting pages of documents within each PDF, and splits
+    them into separate PDF files. The new PDF files are saved to the specified output folder.
+    If no known pattern is found, the PDF file is moved to the manual processing folder.
+
+    Args:
+        input_folder (str): The folder containing the PDF files to process.
+        output_folder (str): The folder where the split PDFs will be saved.
+        manual_processing_folder (str): The folder where the PDF files without a known pattern will be moved.
+    """
+    print(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
+    # Iterate through each PDF file in the input folder
+    for pdf_file in Path(input_folder).glob('*.pdf'):
+        pdf_path = str(pdf_file)
+        # Detect document type based on the initial pages content
+        doc_type = detect_document_type(pdf_path)
+
+        if doc_type == 'standard_statement':
+            doc_starts = find_standard_statement_starts(pdf_path)
+        elif doc_type == 'statement_numbers':
+            doc_starts = find_statement_numbers_starts(pdf_path)
+        else:
+            doc_starts = None
+
+        if doc_starts:
+            # Split the PDF into separate documents.
+            split_pdf(pdf_path, output_folder, doc_starts)
+            print(f"{os.path.basename(pdf_file)} has been processed and split accordingly.\n")
+        else:
+            # Copy the PDF file to the manual processing folder if can't be split.
+            print(f"Could not identify document pattern for {os.path.basename(pdf_file)}, moving to manual processing folder.\n")
+            shutil.copy(pdf_path, manual_processing_folder)
+            # Create or update a manifest file for the unsplit files.
+            manifest_path = os.path.join(manual_processing_folder, "manifest-of-unsplit-files.txt")
+            with open(manifest_path, 'a') as manifest_file:
+                manifest_file.write(f"{pdf_file.stem}\n")
+
+    print(f"Splitting complete.\n\n")
+
+def detect_document_type(pdf_path):
+    doc = fitz.open(pdf_path)
+    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(3, len(doc)))])  # Analyze the first 3 pages
+
+    if "Statement Number" in first_pages_text:
+        doc.close()
+        return 'statement_numbers'
+    elif re.search(r'\b1 of \d+', first_pages_text):
+        doc.close()
+        return 'standard_statement'
+    doc.close()
+    return 'unknown'
        
