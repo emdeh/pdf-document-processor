@@ -6,7 +6,7 @@ from pdf_processor import process_all_pdfs
 from count_pdfs import process_pdf_count, save_to_excel
 from csv_utils import extract_static_info, process_transactions, extract_and_process_summary_info, write_transactions_and_summaries_to_excel
 from doc_ai_utils import initialise_analysis_client, analyse_document
-from prep_env import create_folders, move_analysed_file, load_statement_config, select_statement_type, set_model_id
+from prep_env import create_folders, move_analysed_file, load_statement_config, select_statement_type, set_model_id, ask_user_to_continue
 
 
 # Load env variables from .env file
@@ -17,19 +17,7 @@ if __name__ == "__main__":
 # Load and prepare environment variables and target folders
 
     initial_input_folder = os.getenv("INITIAL_INPUT_FOLDER")
-    doc_model_endpoint = os.getenv("MODEL_ENDPOINT")
-    doc_model_api_key = os.getenv("MODEL_API_KEY")
-    config_path = os.getenv("CONFIG_PATH") # Yaml file with statement types
     
-    # Load the config file for different statement types
-    config = load_statement_config(config_path) 
-    
-    # Select the statement type and return the env_var value to load the model ID
-    statement_type, selected_env_var = select_statement_type(config) # Select the statement type to process
-
-    # Set the corresponding MODEL_ID variable from .env using the value passed by 'select_statement_type()' as the argument
-    model_id = set_model_id(selected_env_var)
-
     # Create folders for the statement set
     statement_set_name, ready_for_analysis, manual_splitting_folder, analysed_files_folder = create_folders()
     
@@ -61,7 +49,27 @@ if __name__ == "__main__":
         print("Total pre-splitting pages and total post-splitting pages match.\nThis indicates that the splitting function has captured all data...\n")
     else:
         print(f"### WARNING: Total pre-splitting pages and total post-splitting pages do not match.\nThe difference is {total_pre_pages - total_post_pages}.\nThis may indicate some files could not be split. If you are not re-running extraction on manually split files. Look in the {os.path.basename(manual_splitting_folder)} for more details on what to split manually.\n\n")
+
+  
+# End of pre-processing
+    ask_user_to_continue()
+
+# Start processing
+# Load processing variables from .env      
+
+    doc_model_endpoint = os.getenv("MODEL_ENDPOINT")
+    doc_model_api_key = os.getenv("MODEL_API_KEY")
+    config_path = os.getenv("CONFIG_PATH") # Yaml file with statement types
     
+    # Load the config file for different statement types
+    config = load_statement_config(config_path) 
+    
+    # Select the statement type and return the env_var value to load the model ID
+    statement_type, selected_env_var = select_statement_type(config) # Select the statement type to process
+
+    # Set the corresponding MODEL_ID variable from .env using the value passed by 'select_statement_type()' as the argument
+    model_id = set_model_id(selected_env_var)
+
     # Set files to go counter
     files_to_go = total_post_files
     

@@ -120,3 +120,19 @@ def set_model_id(selected_env_var):
     else:
         print(f"No corresponding MODEL ID variable found for {selected_env_var}.\nQuitting program.")
         quit()
+
+def ask_user_to_continue():
+    # Ask the user if they want to continue or stop
+    user_input = input("Would you like to continue to the next stage? (y/n): ")
+
+    # Check the user's input
+    while True:
+        if user_input.lower() == "n":
+            print("Stopping the program.")
+            quit()
+        elif user_input.lower() == "y":
+            print("Continuing to the next stage.")
+            break
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+            user_input = input("Would you like to continue to the processing stage? (y/n): ")
