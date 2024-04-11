@@ -4,7 +4,7 @@ import shutil
 import fitz  # PyMuPDF
 import os
 
-def find_document_starts(pdf_path):
+def find_standard_statement_starts(pdf_path):
     """
     Identifies the starting pages of documents within a PDF file.
     
@@ -37,6 +37,48 @@ def find_document_starts(pdf_path):
     doc.close()
     
     return doc_starts
+
+def find_statement_numbers_starts(pdf_path):
+    """
+    Identifies the starting pages of documents within a PDF file based on 'Statement Number'
+    and checks for the ending with 'Continued overleaf...' absence.
+
+    This function scans through each page of a PDF file looking for a unique 'Statement Number X'
+    pattern which denotes the beginning of a new document. It also identifies the end of a document
+    when 'Continued overleaf...' is not present on a page that follows a started document.
+    
+    Args:
+        pdf_path (str): The file path of the PDF to be processed.
+        
+    Returns:
+        dict: A dictionary with keys as the statement number and values as dictionaries
+              containing 'start' and 'end' pages for each document.
+    """
+    doc = fitz.open(pdf_path)
+    statement_starts = {}
+    current_statement = None
+
+    for page_num in range(len(doc)):
+        page_text = doc.load_page(page_num).get_text()
+        match = re.search(r'Statement Number (\d+)', page_text)
+        if match:
+            statement_number = int(match.group(1))
+            if statement_number != current_statement:
+                if current_statement is not None:
+                    statement_starts[current_statement]['end'] = page_num - 1
+                current_statement = statement_number
+                statement_starts[statement_number] = {'start': page_num}
+        elif "Continued overleaf..." not in page_text and current_statement is not None:
+            statement_starts[current_statement]['end'] = page_num
+            current_statement = None
+
+    # Ensure the last statement is closed if it doesn't end explicitly
+    if current_statement and 'end' not in statement_starts[current_statement]:
+        statement_starts[current_statement]['end'] = len(doc) - 1
+
+    doc.close()
+    return statement_starts
+
 
 def split_pdf(pdf_path, output_folder, doc_starts):
     """
