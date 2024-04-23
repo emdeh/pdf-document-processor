@@ -172,7 +172,7 @@ def find_bom_statement_starts(pdf_path): #TO-DO: Still not working perfectly - f
         page_text = doc.load_page(page_num).get_text()
         
         # If the '1 of x' pattern is found, append the page number to the list.
-        if re.search(r'\(page\s+1 of \d+\)', page_text):
+        if re.search(r'\(page\s+1 of \d+\)', page_text): # works better??
             doc_starts.append(page_num)
 
         # if re.search(r'Statement No\.\s+(\d+)\s*\((page\s+1 of \d+)\)', page_text): # works kinda
