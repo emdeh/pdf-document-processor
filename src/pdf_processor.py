@@ -27,7 +27,7 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # n
 
         if doc_type == 'standard_statement':
             doc_starts = find_standard_statement_starts(pdf_path)
-        if doc_type == 'bom_statement':
+        elif doc_type == 'bom_statement':
             doc_starts = find_bom_statement_starts(pdf_path)
         elif doc_type == 'bendigo_statement':
             doc_starts = find_bendigo_statement_starts(pdf_path)
@@ -58,7 +58,8 @@ def detect_document_type(pdf_path): # Function used to detect document type to d
         print("Bendigo Bank statement detected.")
         return 'bendigo_statement'
     
-    if "Bank of Melbourne" in first_pages_text:
+    elif "Bank of Melbourne" in first_pages_text:
+        doc.close()
         print("Bank of Melbourne statement detected.")
         return 'bom_statement'
     
@@ -171,9 +172,11 @@ def find_bom_statement_starts(pdf_path): #TO-DO: Still not working perfectly - f
         page_text = doc.load_page(page_num).get_text()
         
         # If the '1 of x' pattern is found, append the page number to the list.
-        if re.search(r'(?<=\(page )1 of \d+', page_text):
+        if re.search(r'\(page\s+1 of \d+\)', page_text):
             doc_starts.append(page_num)
-    
+
+        # if re.search(r'Statement No\.\s+(\d+)\s*\((page\s+1 of \d+)\)', page_text): # works kinda
+
     # Close the PDF after processing.
     doc.close()
     
