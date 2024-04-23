@@ -118,9 +118,9 @@ statement_types:
       - field_name: "Date"
         is_date: true
       - field_name: "Description"
-      - field_name: "Debits"
+      - field_name: "Debit"
         is_amount: true
-      - field_name: "Credits"
+      - field_name: "Credit"
         is_amount: true
       - field_name: "Balance"
         is_amount: true
