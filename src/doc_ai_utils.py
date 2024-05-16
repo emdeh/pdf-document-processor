@@ -1,6 +1,6 @@
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
-import os
+
 
 def initialise_analysis_client(endpoint, api_key, doc_model_id):
     print("Initialising Document Intelligence Client...\n")
