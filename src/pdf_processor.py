@@ -51,16 +51,16 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # n
 
 def detect_document_type(pdf_path): # Function used to detect document type to determine which find function to use
     doc = fitz.open(pdf_path)
-    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(3, len(doc)))])  # Analyze the first 3 pages
+    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(9, len(doc)))])  # Analyze the first 3 pages
 
     if "Bendigo" in first_pages_text:
         doc.close()
         print("Bendigo Bank statement detected.")
         return 'bendigo_statement'
     
-    elif "Bank of Melbourne" in first_pages_text:
+    elif "FREEDOM" in first_pages_text:
         doc.close()
-        print("Bank of Melbourne statement detected.")
+        print("Bank of Melbourne OR St. George statement detected.")
         return 'bom_statement'
     
     elif re.search(r'\b1 of \d', first_pages_text):
