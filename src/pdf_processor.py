@@ -51,7 +51,7 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # n
 
 def detect_document_type(pdf_path): # Function used to detect document type to determine which find function to use
     doc = fitz.open(pdf_path)
-    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(9, len(doc)))])  # Analyze the first 3 pages
+    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(9, len(doc)))])  # Analyze the first 9 pages
 
     if "Bendigo" in first_pages_text:
         doc.close()
@@ -146,7 +146,7 @@ def find_bendigo_statement_starts(pdf_path): # New function for Bendigo Bank sta
     doc.close()
     return statement_starts
 
-def find_bom_statement_starts(pdf_path): #TO-DO: Still not working perfectly - for Bank of Melbourne statements
+def find_bom_statement_starts(pdf_path): #TO-DO: Still not working perfectly - for Bank of Melbourne and St. George statements
     """
     Identifies the starting pages of documents within a PDF file.
     
