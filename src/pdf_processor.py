@@ -27,8 +27,10 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # n
 
         if doc_type == 'standard_statement':
             doc_starts = find_standard_statement_starts(pdf_path)
-        elif doc_type == 'statement_numbers':
-            doc_starts = find_statement_numbers_starts(pdf_path)
+        elif doc_type == 'bom_statement':
+            doc_starts = find_bom_statement_starts(pdf_path)
+        elif doc_type == 'bendigo_statement':
+            doc_starts = find_bendigo_statement_starts(pdf_path)
         else:
             doc_starts = None
 
@@ -49,16 +51,23 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # n
 
 def detect_document_type(pdf_path): # Function used to detect document type to determine which find function to use
     doc = fitz.open(pdf_path)
-    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(3, len(doc)))])  # Analyze the first 3 pages
+    first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(9, len(doc)))])  # Analyze the first 9 pages
 
     if "Bendigo" in first_pages_text:
         doc.close()
         print("Bendigo Bank statement detected.")
-        return 'statement_numbers'
-    elif re.search(r'\b1 of \d+', first_pages_text):
+        return 'bendigo_statement'
+    
+    elif "FREEDOM" in first_pages_text:
+        doc.close()
+        print("Bank of Melbourne OR St. George statement detected.")
+        return 'bom_statement'
+    
+    elif re.search(r'\b1 of \d', first_pages_text):
         doc.close()
         print("Standard statement detected.")
         return 'standard_statement'
+    
     doc.close()
     return 'unknown'
 
@@ -96,7 +105,7 @@ def find_standard_statement_starts(pdf_path): # Standard function for statements
     
     return doc_starts
 
-def find_statement_numbers_starts(pdf_path): # New function for Bendigo Bank statements that don't have '1 of x' pattern
+def find_bendigo_statement_starts(pdf_path): # New function for Bendigo Bank statements that don't have '1 of x' pattern
     """
     Identifies the starting pages of documents within a PDF file based on 'Statement Number'
     and checks for the ending with 'Continued overleaf...' absence.
@@ -136,6 +145,42 @@ def find_statement_numbers_starts(pdf_path): # New function for Bendigo Bank sta
 
     doc.close()
     return statement_starts
+
+def find_bom_statement_starts(pdf_path): #TO-DO: Still not working perfectly - for Bank of Melbourne and St. George statements
+    """
+    Identifies the starting pages of documents within a PDF file.
+    
+    This function scans through each page of a PDF file looking for a specific
+    pattern '(page 1 of x)' which denotes the beginning of a new document. It collects
+    and returns the page numbers where new documents start.
+    
+    Args:
+        pdf_path (str): The file path of the PDF to be processed.
+        
+    Returns:
+        list: A list of page numbers where new documents start.
+    """
+    # Initialize a list to hold the starting pages of documents.
+    doc_starts = []
+    
+    # Open the PDF file for processing.
+    doc = fitz.open(pdf_path)
+    
+    # Iterate through each page in the PDF.
+    for page_num in range(len(doc)):
+        # Extract text from the current page.
+        page_text = doc.load_page(page_num).get_text()
+        
+        # If the '1 of x' pattern is found, append the page number to the list.
+        if re.search(r'\(page\s+1 of \d+\)', page_text): # works better??
+            doc_starts.append(page_num)
+
+        # if re.search(r'Statement No\.\s+(\d+)\s*\((page\s+1 of \d+)\)', page_text): # works kinda
+
+    # Close the PDF after processing.
+    doc.close()
+    
+    return doc_starts
 
 def split_pdf(pdf_path, output_folder, doc_starts): # new splitting function
     """

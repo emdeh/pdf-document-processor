@@ -93,5 +93,67 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
+        
+  - type_name: "Bank of Melbourne Statement - Bank"
+    env_var: "MODEL_ID_BOM_BANK" # References back to a .env file
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "TotalDebits"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+    transaction_static_fields:
+      - field_name: "StatementStartDate"
+        is_date: true
+      - field_name: "StatementEndDate"
+        is_date: true
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+      - field_name: "Description"
+      - field_name: "Debit"
+        is_amount: true
+      - field_name: "Credit"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
 
+  - type_name: "St. George - Bank" # Duplicate of Bank of Melbourne, but kept separate for future flexibility
+    env_var: "MODEL_ID_STGEORGE_BANK" # Is actually the same as Bank of Melbourne, but duplicated to allow for future differences
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "TotalDebits"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+    transaction_static_fields:
+      - field_name: "StatementStartDate"
+        is_date: true
+      - field_name: "StatementEndDate"
+        is_date: true
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+      - field_name: "Description"
+      - field_name: "Debit"
+        is_amount: true
+      - field_name: "Credit"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
+        
 # The is_amount field was original used to specify what values needed to be transformed into amounts during processing, but this is now handled by the field type in the model itself. It has been retained here (and is_date) added for backwards compatibility and to ensure future flexibility.
