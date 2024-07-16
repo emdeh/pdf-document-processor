@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from pdf_processor import process_all_pdfs
 from count_pdfs import process_pdf_count, save_to_excel
 from csv_utils import extract_static_info, process_transactions, extract_and_process_summary_info, write_transactions_and_summaries_to_excel
-from doc_ai_utils import initialise_analysis_client, analyse_document
+from doc_ai_utils import initialise_analysis_client, analyse_document, extract_table_data
 from prep_env import create_folders, move_analysed_file, load_statement_config, select_statement_type, set_model_id, ask_user_to_continue
 
 
@@ -85,21 +85,36 @@ if __name__ == "__main__":
     
     all_transactions = []
     all_summaries = []
+    all_table_data = [] # to store all table data from pre-built layout model runs
     
     print(F"Analysis has begun.\nNumber of files remaining: {files_to_go}.\n")
     
     for document_path in glob.glob(os.path.join(ready_for_analysis, '*.pdf')):
         # Analyse the document
         original_document_name = basename(document_path)
-        results = analyse_document(doc_ai_client, model_id, document_path)
+
+        if model_id == "prebuilt-layout":
+            results = analyse_document(doc_ai_client, model_id, document_path)
+            static_info = {"DocumentName": original_document_name}
+            summary_info = {"TotalPages": len(results.pages), "DocumentName": original_document_name}
+            transactions = []  # No transaction fields for pre-built layout
+
+            # Extract table data
+            tables = extract_table_data(results)
+            for table_idx, table in tables:
+                for row in table:
+                    row_data = {"DocumentName": original_document_name, "TableIndex": table_idx}
+                    for col_idx, content in enumerate(row):
+                        row_data[f"Column{col_idx + 1}"] = content
+                    all_table_data.append(row_data)
+        else:
+            results = analyse_document(doc_ai_client, model_id, document_path)
+            print("Processing extracted data...\n")
+            static_info = extract_static_info(results, original_document_name, statement_type)
+            summary_info = extract_and_process_summary_info(results, statement_type)
+            transactions = process_transactions(results, statement_type)
         
 # Start post-processing
-
-        # TO-DO: Implement super function process_document() to encapsulate this section
-        print("Processing extracted data...\n")
-        static_info = extract_static_info(results, original_document_name, statement_type)
-        summary_info = extract_and_process_summary_info(results, statement_type)
-        transactions = process_transactions(results, statement_type)
 
         updated_transactions = []
 
@@ -124,7 +139,7 @@ if __name__ == "__main__":
         print(f"Number of files remaining: {files_to_go}.\n")
    
     print(f"Writing extracted data to file...\n")
-    write_transactions_and_summaries_to_excel(all_transactions, all_summaries, statement_set_name, "extracted-data.xlsx")
+    write_transactions_and_summaries_to_excel(all_transactions, all_summaries, statement_set_name, "extracted-data.xlsx", table_data=all_table_data)
     print(f"Extracted data written to the file 'extracted-data.xlsx' in {os.path.basename(statement_set_name)}.\n")
 
     print("All done!")

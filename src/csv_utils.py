@@ -141,7 +141,35 @@ def format_summary_for_excel(summary_data):
         print(f"Was passed a non-dict object: {type(summary_data)}") # What passed it?
     return flattened
 
-def write_transactions_and_summaries_to_excel(transactions_records, summary_data, output_dir, excel_filename):
+def write_transactions_and_summaries_to_excel(transactions_records, summary_data, output_dir, excel_filename, table_data=None):
+    transactions_df = pd.DataFrame(transactions_records)
+    
+    # Initialize an empty list for rows
+    summary_rows = []
+    for summary in summary_data:
+        # Flatten each summary info dictionary and add it to the rows list
+        flattened_summary = format_summary_for_excel(summary)
+        summary_rows.append(flattened_summary)
+    
+    # Now create a DataFrame from the list of rows
+    summaryinfo_df = pd.DataFrame(summary_rows)
+
+    output_file_path = os.path.join(output_dir, excel_filename)
+    
+    with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a' if os.path.exists(output_file_path) else 'w') as writer:
+        if not transactions_df.empty:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+        summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
+
+        if table_data:
+            table_df = pd.DataFrame(table_data)
+            if not table_df.empty:
+                table_df.to_excel(writer, sheet_name='Tables', index=False)
+
+    print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
+
+'''
+def write_transactions_and_summaries_to_excel(transactions_records, summary_data, output_dir, excel_filename, table_data=None):
     transactions_df = pd.DataFrame(transactions_records)
     
     # Initialize an empty list for rows
@@ -170,3 +198,4 @@ def write_transactions_and_summaries_to_excel(transactions_records, summary_data
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
         print(f"New file '{os.path.basename(excel_filename)}' created in {os.path.basename(output_dir)}.")
         print(f"Data written to the NEW file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
+'''
