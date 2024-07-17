@@ -4,6 +4,15 @@ import os
 from pathlib import Path
 
 def count_pdf_pages(pdf_path):
+    """
+    Counts the number of pages in a PDF document.
+
+    Args:
+        pdf_path (str): The path to the PDF document.
+
+    Returns:
+        int: The number of pages in the PDF document. Returns 0 if there was an error processing the document.
+    """
     try:
         with fitz.open(pdf_path) as doc:
             return len(doc)
@@ -12,6 +21,24 @@ def count_pdf_pages(pdf_path):
         return 0
 
 def process_pdf_count(folders):
+    """
+    Process the count of PDF files and pages in the given folders.
+    This function takes a list of folder paths or a single folder path and counts the number of PDF files
+    and pages in each folder. It returns detailed data for each PDF file, summary data for each folder,
+    and the total number of PDF files and pages across all folders.
+
+    Args:
+        folders (list or str): A list of folder paths or a single folder path.
+
+    Returns:
+            tuple: A tuple containing the following:
+                    - detailed_data (list): A list of lists containing detailed data for each PDF file.
+                        Each inner list contains the folder path, PDF file name, and number of pages.
+                    - summary_data (list): A list of lists containing summary data for each folder.
+                        Each inner list contains the folder path, number of PDF files, and total number of pages.
+                    - total_files (int): The total number of PDF files across all folders.
+                    - total_pages (int): The total number of pages across all PDF files.
+    """
 
     # If folders is not a list, make it a list
     if not isinstance(folders, list):
@@ -46,8 +73,27 @@ def process_pdf_count(folders):
 
     return detailed_data, summary_data, total_files, total_pages
 
-
 def save_to_excel(detailed_data, summary_data, output_excel_path, output_filename):
+    """
+    Saves the detailed and summary data to an Excel file.
+
+    Args:
+        detailed_data (list): A list of tuples containing the detailed data.
+            Each tuple should have the following elements:
+            - Folder (str): The folder name.
+            - Document Name (str): The document name.
+            - Total Pages (int): The total number of pages in the document.
+        summary_data (list): A list of tuples containing the summary data.
+            Each tuple should have the following elements:
+            - Folder (str): The folder name.
+            - Number of Documents (int): The number of documents in the folder.
+            - Total Pages (int): The total number of pages in the folder.
+        output_excel_path (str): The path to the output Excel file.
+        output_filename (str): The name of the output Excel file.
+
+    Returns:
+        None
+    """
     detailed_df = pd.DataFrame(detailed_data, columns=['Folder', 'Document Name', 'Total Pages'])
     summary_df = pd.DataFrame(summary_data, columns=['Folder', 'Number of Documents', 'Total Pages'])
 
