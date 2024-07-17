@@ -3,6 +3,15 @@ import shutil
 import yaml
 
 def create_folders():
+    """
+    Prompts the user to input the name of a statement set and creates the necessary folders for processing the files.
+
+    Returns:
+        new_folder (str): The path of the newly created folder.
+        ready_for_analysis (str): The path of the 'split-files' folder within the new folder.
+        manual_splitting_folder (str): The path of the 'manual-splitting required' folder within the new folder.
+        analysed_files_folder (str): The path of the 'analysed-files' folder within the new folder.
+    """
 
     while True:
         # Prompt the user to input the name of the statement set
@@ -61,12 +70,20 @@ def create_folders():
 
 def move_analysed_file(document_path, analysed_files_folder):
     """
-    Move a file to the analysed files folder.
+    Moves a document file to the specified analysed files folder.
 
     Args:
-    - document_path (str): Path to the document file.
-    - analysed_files_folder (str): Path to the folder where the document will be moved.
+        document_path (str): The path of the document file to be moved.
+        analysed_files_folder (str): The path of the folder where the document file will be moved to.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the document file does not exist.
+        PermissionError: If there is a permission error while moving the file.
     """
+
     print(f"Moving {os.path.basename(document_path)} to the analysed-files folder.\n")
     # Construct the destination path
     destination_path = os.path.join(analysed_files_folder, os.path.basename(document_path))
@@ -78,7 +95,19 @@ def move_analysed_file(document_path, analysed_files_folder):
     print(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
 
 def load_statement_config(config_path):
-    # Check if the file exists at the given path
+    """
+    Loads the statement configuration from a YAML file.
+
+    Args:
+        config_path (str): The path to the configuration file.
+
+    Returns:
+        dict: The loaded configuration.
+
+    Raises:
+        FileNotFoundError: If the configuration file is not found at the given path.
+    """
+    
     if not os.path.isfile(config_path):
         raise FileNotFoundError(f"Config file not found at {config_path}.")
     
@@ -86,8 +115,36 @@ def load_statement_config(config_path):
         config = yaml.safe_load(file)
     return config
 
-
 def select_statement_type(config):
+    """
+    Prompts the user to select a statement type from the provided configuration.
+
+    Args:
+        config (dict): The configuration containing a list of statement types.
+
+    Returns:
+        tuple: A tuple containing the selected statement type and its corresponding environment variable.
+
+    Raises:
+        None
+
+    Example:
+        >>> config = {
+        ...     "statement_types": [
+        ...         {"type_name": "Type A", "env_var": "ENV_VAR_A"},
+        ...         {"type_name": "Type B", "env_var": "ENV_VAR_B"},
+        ...         {"type_name": "Type C", "env_var": "ENV_VAR_C"}
+        ...     ]
+        ... }
+        >>> select_statement_type(config)
+        Available Statement Types:
+        1. Type A
+        2. Type B
+        3. Type C
+        Select a statement type (number): 2
+        Selected statement type: Type B
+        ({'type_name': 'Type B', 'env_var': 'ENV_VAR_B'}, 'ENV_VAR_B')
+    """
     # Extracting the list of type names from the configuration
     type_names = [stype["type_name"] for stype in config["statement_types"]]
     
@@ -111,7 +168,18 @@ def select_statement_type(config):
             print("Please enter a number.")
 
 def set_model_id(selected_env_var):
-    # Set the corresponding MODEL_ID variable based on the selected statement type
+    """
+    Sets the MODEL_ID environment variable based on the selected statement type.
+
+    Args:
+        selected_env_var (str): The selected statement type.
+
+    Returns:
+        str: The value of the MODEL_ID environment variable.
+
+    Raises:
+        SystemExit: If no corresponding MODEL ID variable is found for the selected statement type.
+    """
     model_id = os.getenv(selected_env_var)
     if model_id:
         os.environ["MODEL_ID"] = model_id
@@ -122,10 +190,14 @@ def set_model_id(selected_env_var):
         quit()
 
 def ask_user_to_continue():
-    # Ask the user if they want to continue or stop
+    """
+    Asks the user if they want to continue or stop.
+
+    Returns:
+        None
+    """
     user_input = input("Would you like to continue to the next stage? (y/n): ")
 
-    # Check the user's input
     while True:
         if user_input.lower() == "n":
             print("Stopping the program.")
