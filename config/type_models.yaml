@@ -188,8 +188,7 @@ statement_types:
         is_amount: true
         
 # The is_amount field was original used to specify what values needed to be transformed into amounts during processing, but this is now handled by the field type in the model itself. It has been retained here (and is_date) added for backwards compatibility and to ensure future flexibility.
-
-statement_types:
+  
   - type_name: "Pre-Built Layout Model"
     env_var: "PRE_BUILT_LAYOUT_MODEL"
     summary_fields: []
