@@ -194,3 +194,34 @@ statement_types:
     summary_fields: []
     transaction_static_fields: []
     transaction_dynamic_fields: []
+
+  - type_name: "CBA - Bank"
+    env_var: "MODEL_ID_CBA_BANK"
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "TotalDebits"
+        is_amount: true
+      - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+    transaction_static_fields:
+      - field_name: "StatementStartDate"
+        is_date: true
+      - field_name: "StatementEndDate"
+        is_date: true
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+      - field_name: "Transaction"
+      - field_name: "Debit"
+        is_amount: true
+      - field_name: "Credit"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
