@@ -3,9 +3,30 @@ import pandas as pd
 import os
 
 def extract_static_info(results, original_file_name, statement_type):
-    """Extract static information from the analysis results."""
+    """
+    Extracts static information from the analysis results.
+
+    Args:
+        results (AnalysisResults): The analysis results object.
+        original_file_name (str): The original file name.
+        statement_type (dict): The statement type dictionary.
+
+    Returns:
+        dict: A dictionary containing the extracted static information.
+
+    """
+    
     def extract_label_value(label):
-        """Nested helper function to extract concatenated text values for a given label."""
+        """
+        Nested helper function to extract concatenated text values for a given label.
+
+        Args:
+            label (str): The label to extract values for.
+
+        Returns:
+            str: The concatenated text values for the given label.
+
+        """
         for document in results.documents:
             for name, field in document.fields.items():
                 if name == label:
@@ -22,6 +43,17 @@ def extract_static_info(results, original_file_name, statement_type):
     return static_info
 
 def process_transactions(results, statement_type):
+    """
+    Process transactions from the provided results based on the statement type.
+
+    Args:
+        results (object): The results object containing the documents.
+        statement_type (dict): The statement type configuration.
+
+    Returns:
+        list: A list of dictionaries representing the processed transactions.
+    """
+    
     transactions = []
 
     for document in results.documents:
@@ -55,7 +87,25 @@ def process_transactions(results, statement_type):
     return transactions
 
 def convert_amount(amount_str):
-    """Attempt to convert the amount string to float and return the conversion success flag."""
+    """
+    Convert the amount string to a float and return the conversion success flag.
+
+    Parameters:
+    amount_str (str): The amount string to be converted.
+
+    Returns:
+    tuple: A tuple containing the converted amount (float) and a flag indicating the success of the conversion (bool).
+
+    If the conversion is successful, the flag will be True and the converted amount(int) will be returned.
+    If the conversion fails, the flag will be False and the original amount(str) string will be returned.
+
+    Example:
+    >>> convert_amount("1,000.50")
+    (1000.5, True)
+
+    >>> convert_amount("+USD100")
+    ("+USD100", False)
+    """
     try:
         return float(amount_str.replace(',', '')), True
     except ValueError:
@@ -67,17 +117,38 @@ def extract_and_process_summary_info(document_analysis_results, statement_type):
     Extracts summary information from a document's results, now including CIs,
     and uses the statement_type configuration to determine how to process each field.
 
-        Extracts summary information from a document's results, now including CIs.
-    Like this: 
-    {
-        "PreviousBalance": {"value": 1000.0, "confidence": "0.95"},
-        "PaymentsAndCredits": {"value": 200.0, "confidence": "0.9"},
-        // Other fields follow the same structure...
-    } 
+    Args:
+        document_analysis_results (AnalysisResults): The analysis results object.
+        statement_type (dict): The statement type configuration.
+
+    Returns:
+        dict: A dictionary containing the extracted summary information with values and confidence.
+
+    Example:
+        >>> extract_and_process_summary_info(results, statement_type)
+        {
+            "PreviousBalance": {"value": 1000.0, "confidence": "0.95"},
+            "PaymentsAndCredits": {"value": 200.0, "confidence": "0.9"},
+            ...
+        }
+
     """
-    
+
     def extract_summary_values_and_confidence(label):
-        """Extracts values and their confidence."""
+        """
+        Extracts values and their confidence for a given label.
+
+        Args:
+            label (str): The label to extract values and confidence for.
+
+        Returns:
+            tuple: A tuple containing the extracted value (str) and confidence (str).
+
+        Example:
+            >>> extract_summary_values_and_confidence("PreviousBalance")
+            ("1000.0", "0.95")
+
+        """
         value_concat = []
         confidence_concat = []
         for document in document_analysis_results.documents:
@@ -114,20 +185,41 @@ def extract_and_process_summary_info(document_analysis_results, statement_type):
 
 def format_summary_for_excel(summary_data):
     """
-    Takes the dictionary from extract_and_process_summary_info and flattens it.
+    Takes the dictionary from extract_and_process_summary_info() and flattens it.
     Returns a dictionary with keys for each summary field and its confidence.
-    Like this:
-    {
-        "PreviousBalance_Value": 1000.0,
-        "PreviousBalance_Confidence": "0.95",
-        "PaymentsAndCredits_Value": 200.0,
-        "PaymentsAndCredits_Confidence": "0.9",
-        // This pattern is repeated for each original key...
-    }        
+
+    Args:
+        summary_data (dict): A dictionary containing the summary data extracted from a document.
+
+    Returns:
+        dict: A flattened dictionary with keys for each summary field and its confidence.
+
+    Example:
+        summary_data = {
+            "DocumentName": "Invoice.pdf",
+            "PreviousBalance": {
+                "value": 1000.0,
+                "confidence": 0.95
+            },
+            "PaymentsAndCredits": {
+                "value": 200.0,
+                "confidence": 0.9
+            }
+        }
+        flattened = format_summary_for_excel(summary_data)
+        print(flattened)
+        # Output:
+        # {
+        #     "DocumentName": "Invoice.pdf",
+        #     "PreviousBalance_Value": 1000.0,
+        #     "PreviousBalance_Confidence": 0.95,
+        #     "PaymentsAndCredits_Value": 200.0,
+        #     "PaymentsAndCredits_Confidence": 0.9
+        # }
     """
+
     flattened = {}
     # Ensure that summary_data is a dictionary as expected
-    #print("Debug - summary_data:", summary_data)  # Debug print
     if isinstance(summary_data, dict):
         for key, info in summary_data.items():
             if key == "DocumentName":
@@ -138,10 +230,27 @@ def format_summary_for_excel(summary_data):
             else:
                 print(f"Unexpected structure for {key}: {info}")
     else:
-        print(f"Was passed a non-dict object: {type(summary_data)}") # What passed it?
+        print(f"Was passed a non-dict object: {type(summary_data)}")
     return flattened
 
 def write_transactions_and_summaries_to_excel(transactions_records, summary_data, output_dir, excel_filename, table_data=None):
+    """
+    Writes transaction records and summary data to an Excel file.
+
+    Args:
+        transactions_records (list): A list of dictionaries representing transaction records.
+        summary_data (list): A list of dictionaries representing summary data.
+        output_dir (str): The directory where the Excel file will be saved.
+        excel_filename (str): The name of the Excel file.
+        table_data (list, optional): A list of dictionaries representing table data. Defaults to None.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    """
     transactions_df = pd.DataFrame(transactions_records)
     
     # Initialize an empty list for rows
@@ -167,35 +276,3 @@ def write_transactions_and_summaries_to_excel(transactions_records, summary_data
                 table_df.to_excel(writer, sheet_name='Tables', index=False)
 
     print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
-
-'''
-def write_transactions_and_summaries_to_excel(transactions_records, summary_data, output_dir, excel_filename, table_data=None):
-    transactions_df = pd.DataFrame(transactions_records)
-    
-    # Initialize an empty list for rows
-    summary_rows = []
-    for summary in summary_data:
-        # Flatten each summary info dictionary and add it to the rows list
-        flattened_summary = format_summary_for_excel(summary)
-        summary_rows.append(flattened_summary)
-    
-    # Now create a DataFrame from the list of rows
-    summaryinfo_df = pd.DataFrame(summary_rows)
-
-    output_file_path = os.path.join(output_dir, excel_filename)
-    
-    if os.path.exists(output_file_path):
-        # Append data to existing file
-        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a', if_sheet_exists='new') as writer:
-            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
-            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
-        print(f"Data appended to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}. folder.\n")
-
-    else:
-        # Create a new file
-        with pd.ExcelWriter(output_file_path, engine='openpyxl') as writer:
-            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
-            summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
-        print(f"New file '{os.path.basename(excel_filename)}' created in {os.path.basename(output_dir)}.")
-        print(f"Data written to the NEW file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
-'''
