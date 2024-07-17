@@ -4,14 +4,13 @@ import shutil
 import fitz  # PyMuPDF
 import os
 
-def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # new core process_all_pdfs function
+def process_all_pdfs(input_folder, output_folder, manual_processing_folder):
     """
     Processes all PDF files in a given folder, splitting them into separate documents based on identified patterns.
 
-    This function iterates over all PDF files in the input folder, identifies the
-    document type and the starting pages of documents within each PDF, and splits
-    them into separate PDF files. The new PDF files are saved to the specified output folder.
-    If no known pattern is found, the PDF file is moved to the manual processing folder.
+    This function iterates over all PDF files in the input folder and identifies the document type and the starting pages
+    of documents within each PDF. It then splits the PDF files into separate documents and saves them to the specified
+    output folder. If a known pattern is not found, the PDF file is moved to the manual processing folder.
 
     Args:
         input_folder (str): The folder containing the PDF files to process.
@@ -49,7 +48,17 @@ def process_all_pdfs(input_folder, output_folder, manual_processing_folder): # n
 
     print(f"Splitting complete.\n\n")
 
-def detect_document_type(pdf_path): # Function used to detect document type to determine which find function to use
+def detect_document_type(pdf_path):
+    """
+    Detects the type of a PDF document based on its content.
+
+    Parameters:
+    pdf_path (str): The path to the PDF document.
+
+    Returns:
+    str: The detected document type. Possible values are 'bendigo_statement',
+         'bom_statement', 'standard_statement', or 'unknown'.
+    """
     doc = fitz.open(pdf_path)
     first_pages_text = ''.join([doc.load_page(i).get_text() for i in range(min(9, len(doc)))])  # Analyze the first 9 pages
 
@@ -71,8 +80,9 @@ def detect_document_type(pdf_path): # Function used to detect document type to d
     doc.close()
     return 'unknown'
 
-def find_standard_statement_starts(pdf_path): # Standard function for statements that have '1 of x' pattern
+def find_standard_statement_starts(pdf_path):
     """
+    Standard function for statements that have '1 of x' pattern.
     Identifies the starting pages of documents within a PDF file.
     
     This function scans through each page of a PDF file looking for a specific
@@ -105,8 +115,9 @@ def find_standard_statement_starts(pdf_path): # Standard function for statements
     
     return doc_starts
 
-def find_bendigo_statement_starts(pdf_path): # New function for Bendigo Bank statements that don't have '1 of x' pattern
+def find_bendigo_statement_starts(pdf_path):
     """
+    New function for Bendigo Bank statements that don't have '1 of x' pattern.
     Identifies the starting pages of documents within a PDF file based on 'Statement Number'
     and checks for the ending with 'Continued overleaf...' absence.
 
@@ -146,8 +157,10 @@ def find_bendigo_statement_starts(pdf_path): # New function for Bendigo Bank sta
     doc.close()
     return statement_starts
 
-def find_bom_statement_starts(pdf_path): #TO-DO: Still not working perfectly - for Bank of Melbourne and St. George statements
+def find_bom_statement_starts(pdf_path):
     """
+    TO-DO: Still not working perfectly - for Bank of Melbourne and St. George statements.
+    
     Identifies the starting pages of documents within a PDF file.
     
     This function scans through each page of a PDF file looking for a specific
