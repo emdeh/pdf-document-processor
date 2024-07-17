@@ -1,6 +1,51 @@
+# This YAML file defines the configuration for different statement types.
+# Each statement type has its own set of fields, including summary fields, static fields, and dynamic fields.
+# These fields correspond to the labels of the trained extraction models.
+
+# The configuration includes:
+#     - type name: which is displayed to the user to select on the command line
+#     - environment variable reference: which is used to reference the model ID in the .env file
+#     - and the fields for each type.
+#
+#
+# The summary fields are what is written to the summary tab in excel
+# The static and dynamic fields are the fields written to each transaction row in the transaction tab in excel.
+#
+# The exception to this is the "Pre-Built Layout Model" which is a generic model that can be used for statements
+# that have not had a custom model trained. This model calls specific functions to format the entirety of the
+# raw input excel.
+#
+# The is_amount field was originally used to specify what values needed to be transformed into amounts during processing, 
+# but this is now handled by the field type in the model itself. 
+# It has been retained here (and "is_date") added for backwards compatibility and to ensure future flexibility.
+# 
+# NOTE: The extraction model's struggle with dates, so it may be easier to train all fields as strings and parse 
+# them in the code as the appropriate type.
+#
+# Example format:
+#
+# statement_types:
+#   - type_name: "Statement Type Name"
+#     env_var: "ENV_VARIABLE_NAME" # References back to a .env file
+#     summary_fields:
+#       - field_name: "Summary Field 1"
+#         is_amount: true
+#       - field_name: "Summary Field 2"
+#         is_amount: true
+#     transaction_static_fields:
+#       - field_name: "Static Field 1"
+#       - field_name: "Static Field 2"
+#     transaction_dynamic_fields:
+#       - field_name: "Dynamic Field 1"
+#       - field_name: "Dynamic Field 2"
+#         is_date: true
+#       - field_name: "Dynamic Field 3"
+#         is_amount: true
+#
+#
 statement_types:
   - type_name: "AMEX - Card Statement"
-    env_var: "MODEL_ID_AMEX_CARD" # References back to a .env file
+    env_var: "MODEL_ID_AMEX_CARD"
     summary_fields:
       - field_name: "PreviousBalance"
         is_amount: true
@@ -30,7 +75,7 @@ statement_types:
       - field_name: "CR if Credit"
 
   - type_name: "Westpac - Bank Statement"
-    env_var: "MODEL_ID_WESTPAC_BANK" # References back to a .env file
+    env_var: "MODEL_ID_WESTPAC_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -63,7 +108,7 @@ statement_types:
         is_amount: true
 
   - type_name: "Bendigo - Bank Statement"
-    env_var: "MODEL_ID_BENDIGO_BANK" # References back to a .env file
+    env_var: "MODEL_ID_BENDIGO_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -95,7 +140,7 @@ statement_types:
         is_amount: true
         
   - type_name: "Bank of Melbourne - Bank Statement"
-    env_var: "MODEL_ID_BOM_BANK" # References back to a .env file
+    env_var: "MODEL_ID_BOM_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -126,7 +171,7 @@ statement_types:
         is_amount: true
 
   - type_name: "St. George - Bank Statement" # Duplicate of Bank of Melbourne, but kept separate for future flexibility
-    env_var: "MODEL_ID_STGEORGE_BANK" # Is actually the same as Bank of Melbourne, but duplicated to allow for future differences
+    env_var: "MODEL_ID_STGEORGE_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -186,9 +231,7 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
-        
-# The is_amount field was original used to specify what values needed to be transformed into amounts during processing, but this is now handled by the field type in the model itself. It has been retained here (and is_date) added for backwards compatibility and to ensure future flexibility.
-  
+          
   - type_name: "Pre-Built Layout Model"
     env_var: "PRE_BUILT_LAYOUT_MODEL"
     summary_fields: []
