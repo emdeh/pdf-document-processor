@@ -1,5 +1,5 @@
 statement_types:
-  - type_name: "AMEX Statement - Card"
+  - type_name: "AMEX - Card Statement"
     env_var: "MODEL_ID_AMEX_CARD" # References back to a .env file
     summary_fields:
       - field_name: "PreviousBalance"
@@ -29,7 +29,7 @@ statement_types:
         is_amount: true
       - field_name: "CR if Credit"
 
-  - type_name: "Westpac Statement - Bank"
+  - type_name: "Westpac - Bank Statement"
     env_var: "MODEL_ID_WESTPAC_BANK" # References back to a .env file
     summary_fields:
       - field_name: "OpeningBalance"
@@ -62,7 +62,7 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
-  - type_name: "Bendigo Statement - Bank"
+  - type_name: "Bendigo - Bank Statement"
     env_var: "MODEL_ID_BENDIGO_BANK" # References back to a .env file
     summary_fields:
       - field_name: "OpeningBalance"
@@ -94,7 +94,7 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
         
-  - type_name: "Bank of Melbourne Statement - Bank"
+  - type_name: "Bank of Melbourne - Bank Statement"
     env_var: "MODEL_ID_BOM_BANK" # References back to a .env file
     summary_fields:
       - field_name: "OpeningBalance"
@@ -125,7 +125,7 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
-  - type_name: "St. George - Bank" # Duplicate of Bank of Melbourne, but kept separate for future flexibility
+  - type_name: "St. George - Bank Statement" # Duplicate of Bank of Melbourne, but kept separate for future flexibility
     env_var: "MODEL_ID_STGEORGE_BANK" # Is actually the same as Bank of Melbourne, but duplicated to allow for future differences
     summary_fields:
       - field_name: "OpeningBalance"
@@ -156,7 +156,7 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
-  - type_name: "Suncorp - Bank"
+  - type_name: "Suncorp - Bank Statement"
     env_var: "MODEL_ID_SUNCORP_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -195,7 +195,7 @@ statement_types:
     transaction_static_fields: []
     transaction_dynamic_fields: []
 
-  - type_name: "CBA - Bank"
+  - type_name: "CBA - Bank Statement"
     env_var: "MODEL_ID_CBA_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
