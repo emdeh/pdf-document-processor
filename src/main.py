@@ -229,6 +229,7 @@ def main():
         statement_set_name,
         "extracted-data.xlsx",
         table_data=all_table_data,
+        statement_type=statement_type,
     )
     print(
         f"Extracted data written to the file 'extracted-data.xlsx' in {os.path.basename(statement_set_name)}.\n"

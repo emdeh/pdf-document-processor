@@ -3,6 +3,7 @@
 import csv
 import pandas as pd
 import os
+import re
 
 
 class CSVUtils:
@@ -94,30 +95,26 @@ class CSVUtils:
         return transactions
 
     def convert_amount(self, amount_str):
-        """
-        Convert the amount string to a float and return the conversion success flag.
+        import re
 
-        Parameters:
-        amount_str (str): The amount string to be converted.
-
-        Returns:
-        tuple: A tuple containing the converted amount (float) and a flag indicating the success of the conversion (bool).
-
-        If the conversion is successful, the flag will be True and the converted amount(int) will be returned.
-        If the conversion fails, the flag will be False and the original amount(str) string will be returned.
-
-        Example:
-        >>> convert_amount("1,000.50")
-        (1000.5, True)
-
-        >>> convert_amount("+USD100")
-        ("+USD100", False)
-        """
         try:
-            return float(amount_str.replace(',', '')), True
+            # Use regex to extract numeric part
+            match = re.search(r'[-+]?[\d,]*\.?\d+', amount_str)
+            if match:
+                amount_cleaned = match.group()
+                amount_cleaned = amount_cleaned.replace(',', '')
+                amount_float = float(amount_cleaned)
+                # Determine the sign
+                if '-' in amount_str:
+                    amount_float = -amount_float
+                return amount_float, True
+            else:
+                raise ValueError("No numeric value found")
         except ValueError:
             print(f"Could not convert {amount_str} to float. Mapping actual value.")
             return amount_str, False
+
+
 
     def extract_and_process_summary_info(self, document_analysis_results, statement_type):
         """
@@ -241,46 +238,92 @@ class CSVUtils:
         return flattened
 
     def write_transactions_and_summaries_to_excel(
-        self, transactions_records, summary_data, output_dir, excel_filename, table_data=None
-    ):
-        """
-        Writes transaction records and summary data to an Excel file.
-
-        Args:
-            transactions_records (list): A list of dictionaries representing transaction records.
-            summary_data (list): A list of dictionaries representing summary data.
-            output_dir (str): The directory where the Excel file will be saved.
-            excel_filename (str): The name of the Excel file.
-            table_data (list, optional): A list of dictionaries representing table data. Defaults to None.
-
-        Returns:
-            None
-        """
-        import pandas as pd
-        import os
+    self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None
+):
 
         transactions_df = pd.DataFrame(transactions_records)
 
         # Initialize an empty list for rows
         summary_rows = []
         for summary in summary_data:
-            # **Use 'self.format_summary_for_excel' instead of 'format_summary_for_excel'**
             flattened_summary = self.format_summary_for_excel(summary)
             summary_rows.append(flattened_summary)
 
-        # Now create a DataFrame from the list of rows
         summaryinfo_df = pd.DataFrame(summary_rows)
+
+        # Extract amount and date columns from statement_type
+        amount_columns = set()
+        date_columns = set()
+
+        # Ensure statement_type is passed to this method
+        if statement_type:
+            # Extract from transaction_dynamic_fields
+            for field in statement_type.get('transaction_dynamic_fields', []):
+                field_name = field['field_name']
+                if field.get('is_amount'):
+                    amount_columns.add(field_name)
+                if field.get('is_date'):
+                    date_columns.add(field_name)
+
+            # Extract from transaction_static_fields
+            for field in statement_type.get('transaction_static_fields', []):
+                field_name = field['field_name']
+                if field.get('is_amount'):
+                    amount_columns.add(field_name)
+                if field.get('is_date'):
+                    date_columns.add(field_name)
+
+            # Extract from summary_fields
+            for field in statement_type.get('summary_fields', []):
+                field_name = field['field_name']
+                if field.get('is_amount'):
+                    amount_columns.add(field_name)
+                if field.get('is_date'):
+                    date_columns.add(field_name)
+
+        # Convert amount columns to numeric
+        for col in amount_columns:
+            if col in transactions_df.columns:
+                transactions_df[col] = pd.to_numeric(transactions_df[col], errors='coerce')
+            if col in summaryinfo_df.columns:
+                summaryinfo_df[col] = pd.to_numeric(summaryinfo_df[col], errors='coerce')
+
+        # Convert date columns to datetime
+        for col in date_columns:
+            if col in transactions_df.columns:
+                transactions_df[col] = pd.to_datetime(transactions_df[col], errors='coerce', dayfirst=True)
+            if col in summaryinfo_df.columns:
+                summaryinfo_df[col] = pd.to_datetime(summaryinfo_df[col], errors='coerce', dayfirst=True)
 
         output_file_path = os.path.join(output_dir, excel_filename)
 
-        with pd.ExcelWriter(output_file_path, engine='openpyxl', mode='a' if os.path.exists(output_file_path) else 'w') as writer:
-            if not transactions_df.empty:
-                transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+        with pd.ExcelWriter(output_file_path, engine='xlsxwriter', datetime_format='dd/mm/yyyy', date_format='dd/mm/yyyy') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
 
-            if table_data:
-                table_df = pd.DataFrame(table_data)
-                if not table_df.empty:
-                    table_df.to_excel(writer, sheet_name='Tables', index=False)
+            # Apply formats
+            workbook = writer.book
+            transactions_sheet = writer.sheets['Transactions']
+            summary_sheet = writer.sheets['Summary']
+
+            # Define formats
+            money_fmt = workbook.add_format({'num_format': '$#,##0.00'})
+            date_fmt = workbook.add_format({'num_format': 'dd/mm/yyyy'})
+
+            # Apply formats to Transactions sheet
+            for idx, col in enumerate(transactions_df.columns):
+                if col in amount_columns:
+                    transactions_sheet.set_column(idx, idx, None, money_fmt)
+                elif col in date_columns:
+                    transactions_sheet.set_column(idx, idx, None, date_fmt)
+
+            # Apply formats to Summary sheet
+            for idx, col in enumerate(summaryinfo_df.columns):
+                if col in amount_columns:
+                    summary_sheet.set_column(idx, idx, None, money_fmt)
+                elif col in date_columns:
+                    summary_sheet.set_column(idx, idx, None, date_fmt)
+
+            # Handle table_data if necessary
 
         print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
