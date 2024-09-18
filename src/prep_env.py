@@ -1,78 +1,36 @@
-# src/prep_env.py
+# prep_env.py
 
 import os
 import shutil
 import yaml
 
-
 class EnvironmentPrep:
-    def __init__(self):
-        self.config = None
-
-    def create_folders(self):
+    def create_folders(self, statement_set_name, base_folder):
         """
-        Prompts the user to input the name of a statement set and creates the necessary folders for processing the files.
+        Creates the necessary folders for processing the files.
+
+        Args:
+            statement_set_name (str): Name of the statement set.
+            base_folder (str): Base path where folders will be created.
 
         Returns:
-            new_folder (str): The path of the newly created folder.
-            ready_for_analysis (str): The path of the 'split-files' folder within the new folder.
-            manual_splitting_folder (str): The path of the 'manual-splitting required' folder within the new folder.
-            analysed_files_folder (str): The path of the 'analysed-files' folder within the new folder.
+            tuple: Paths of the newly created folders.
         """
-        while True:
-            statement_set_name = input("Enter the name of the statement set: ")
+        new_folder = os.path.join(base_folder, statement_set_name)
+        os.makedirs(new_folder, exist_ok=True)
+        print(f"Using folder '{os.path.basename(statement_set_name)}' to hold processed files.\n")
 
-            base_folder = os.getenv("INITIAL_INPUT_FOLDER")
-            new_folder = os.path.join(base_folder, statement_set_name)
+        ready_for_analysis = os.path.join(new_folder, 'split-files')
+        os.makedirs(ready_for_analysis, exist_ok=True)
+        print("Created 'split-files' folder to hold files ready for analysis.\n")
 
-            if os.path.exists(new_folder):
-                user_input = input(
-                    f"The folder '{os.path.basename(statement_set_name)}' already exists. Do you want to use this folder? (yes/no): "
-                )
-                if user_input.lower() == "yes":
-                    print(
-                        f"Using existing folder '{os.path.basename(statement_set_name)}' to hold processed files.\n"
-                    )
-                    break
-                elif user_input.lower() == "no":
-                    print("Please enter a different name.")
-                    continue
-                else:
-                    print("Invalid input. Please enter 'yes' or 'no'.")
-                    continue
-            else:
-                os.makedirs(new_folder)
-                print(f"Created '{os.path.basename(statement_set_name)}' to hold processed files.\n")
-                break
+        manual_splitting_folder = os.path.join(new_folder, 'manual-splitting required')
+        os.makedirs(manual_splitting_folder, exist_ok=True)
+        print("Created 'manual-splitting required' folder to hold files that fail auto-splitting.\n")
 
-        ready_for_analysis = os.path.join(new_folder, "split-files")
-        if not os.path.exists(ready_for_analysis):
-            os.makedirs(ready_for_analysis)
-            print("Created 'split-files' folder to hold files ready for analysis.\n")
-        else:
-            print(
-                "The 'split-files' folder already exists. Using existing folder to hold files ready for analysis.\n"
-            )
-
-        manual_splitting_folder = os.path.join(new_folder, "manual-splitting required")
-        if not os.path.exists(manual_splitting_folder):
-            os.makedirs(manual_splitting_folder)
-            print(
-                "Created 'manual-splitting required' folder to hold files that fail auto-splitting.\n"
-            )
-        else:
-            print(
-                "The 'manual-splitting required' folder already exists. Using existing folder to hold files that fail auto-splitting.\n"
-            )
-
-        analysed_files_folder = os.path.join(new_folder, "analysed-files")
-        if not os.path.exists(analysed_files_folder):
-            os.makedirs(analysed_files_folder)
-            print("Created 'analysed-files' folder to hold files that have been analysed.\n")
-        else:
-            print(
-                "The 'analysed-files' folder already exists. Using existing folder to hold analysed files.\n"
-            )
+        analysed_files_folder = os.path.join(new_folder, 'analysed-files')
+        os.makedirs(analysed_files_folder, exist_ok=True)
+        print("Created 'analysed-files' folder to hold files that have been analysed.\n")
 
         return new_folder, ready_for_analysis, manual_splitting_folder, analysed_files_folder
 
@@ -81,8 +39,8 @@ class EnvironmentPrep:
         Moves a document file to the specified analysed files folder.
 
         Args:
-            document_path (str): The path of the document file to be moved.
-            analysed_files_folder (str): The path of the folder where the document file will be moved to.
+            document_path (str): Path to the document to be moved.
+            analysed_files_folder (str): Destination folder.
         """
         print(f"Moving {os.path.basename(document_path)} to the analysed-files folder.\n")
         destination_path = os.path.join(analysed_files_folder, os.path.basename(document_path))
@@ -94,76 +52,76 @@ class EnvironmentPrep:
         Loads the statement configuration from a YAML file.
 
         Args:
-            config_path (str): The path to the configuration file.
+            config_path (str): Path to the configuration YAML file.
 
-        Raises:
-            FileNotFoundError: If the configuration file is not found at the given path.
+        Returns:
+            dict: Loaded configuration.
         """
         if not os.path.isfile(config_path):
             raise FileNotFoundError(f"Config file not found at {config_path}.")
 
         with open(config_path, "r") as file:
             self.config = yaml.safe_load(file)
+        return self.config
 
-    def select_statement_type(self):
+    def select_statement_type(self, statement_type_name=None):
         """
-        Prompts the user to select a statement type from the provided configuration.
+        Selects the statement type from the configuration.
+
+        Args:
+            statement_type_name (str): Name of the statement type to select.
 
         Returns:
-            tuple: A tuple containing the selected statement type and its corresponding environment variable.
+            tuple: Selected statement type and its corresponding environment variable.
+
+        Raises:
+            ValueError: If the statement type is not found in the configuration.
         """
         if not self.config:
             raise ValueError("Configuration not loaded.")
 
-        type_names = [stype["type_name"] for stype in self.config["statement_types"]]
-
-        print("Available Statement Types:")
-        for i, type_name in enumerate(type_names, start=1):
-            print(f"{i}. {type_name}")
-
-        while True:
-            try:
-                selection = int(input("Select a statement type (number): "))
-                if 1 <= selection <= len(type_names):
-                    selected_type = self.config["statement_types"][selection - 1]
-                    print(f"Selected statement type: {selected_type['type_name']}")
-                    return selected_type, selected_type["env_var"]
-                else:
-                    print("Invalid selection. Please select a number from the list.")
-            except ValueError:
-                print("Please enter a number.")
+        if statement_type_name:
+            for stype in self.config["statement_types"]:
+                if stype["type_name"] == statement_type_name:
+                    print(f"Selected statement type: {stype['type_name']}")
+                    return stype, stype["env_var"]
+            raise ValueError(f"Statement type '{statement_type_name}' not found in configuration.")
+        else:
+            raise ValueError("No statement_type_name provided.")
 
     def set_model_id(self, selected_env_var):
         """
-        Sets the MODEL_ID environment variable based on the selected statement type.
+        Sets the MODEL_ID based on the selected statement type.
 
         Args:
-            selected_env_var (str): The selected statement type.
+            selected_env_var (str): Environment variable name for the model ID.
+            env_vars (dict): Dictionary of environment variables.
 
         Returns:
-            str: The value of the MODEL_ID environment variable.
+            str: The model ID.
+
+        Raises:
+            ValueError: If the model ID is not found in env_vars.
         """
         model_id = os.getenv(selected_env_var)
         if model_id:
-            os.environ["MODEL_ID"] = model_id
             print(f"MODEL ID set to: {model_id}")
             return model_id
         else:
-            print(f"No corresponding MODEL ID variable found for {selected_env_var}.\nQuitting program.")
-            quit()
-
+            raise ValueError(f"No corresponding MODEL ID variable found for {selected_env_var}.")
+        
     def copy_files(self, source_folder, destination_folder):
         """
-        Copies files from the source folder to the destination folder.
+        Copies PDF files from the source folder to the destination folder.
 
         Args:
-            source_folder (str): The path of the source folder.
-            destination_folder (str): The path of the destination folder.
+            source_folder (str): Source directory.
+            destination_folder (str): Destination directory.
         """
         print(f"Copying files from {source_folder} to {destination_folder}...\n")
         for filename in os.listdir(source_folder):
             source_path = os.path.join(source_folder, filename)
             dest_path = os.path.join(destination_folder, filename)
-            if os.path.isfile(source_path):
+            if os.path.isfile(source_path) and filename.lower().endswith('.pdf'):
                 shutil.copy(source_path, dest_path)
         print("Files copied successfully.\n")

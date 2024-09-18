@@ -114,8 +114,6 @@ class CSVUtils:
             print(f"Could not convert {amount_str} to float. Mapping actual value.")
             return amount_str, False
 
-
-
     def extract_and_process_summary_info(self, document_analysis_results, statement_type):
         """
         Extracts summary information from a document's results, now including CIs,

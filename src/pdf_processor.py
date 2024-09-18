@@ -20,13 +20,9 @@ class PDFProcessor:
             output_folder (str): The folder where the split PDFs will be saved.
             manual_processing_folder (str): The folder where the PDF files without a known pattern will be moved.
         """
-        print(
-            f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n"
-        )
-        # Iterate through each PDF file in the input folder
+        print(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
         for pdf_file in Path(input_folder).glob("*.pdf"):
             pdf_path = str(pdf_file)
-            # Detect document type based on the initial pages content
             doc_type = self.detect_document_type(pdf_path)
 
             if doc_type == "standard_statement":
@@ -39,16 +35,13 @@ class PDFProcessor:
                 doc_starts = None
 
             if doc_starts:
-                # Split the PDF into separate documents.
                 self.split_pdf(pdf_path, output_folder, doc_starts)
                 print(f"{os.path.basename(pdf_file)} has been processed and split accordingly.\n")
             else:
-                # Copy the PDF file to the manual processing folder if can't be split.
                 print(
                     f"Could not identify document pattern for {os.path.basename(pdf_file)}, moving to manual processing folder.\n"
                 )
                 shutil.copy(pdf_path, manual_processing_folder)
-                # Create or update a manifest file for the unsplit files.
                 manifest_path = os.path.join(manual_processing_folder, "manifest-of-unsplit-files.txt")
                 with open(manifest_path, "a") as manifest_file:
                     manifest_file.write(f"{pdf_file.stem}\n")
