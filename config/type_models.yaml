@@ -268,3 +268,37 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
+
+  - type_name: "NAB - Bank Statement"
+    env_var: "MODEL_ID_NAB_BANK"
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "CR if Credit"
+      - field_name: "TotalDebits"
+        is_amount: true
+      - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+      - field_name: "CR if Credit"
+    transaction_static_fields:
+      - field_name: "StatementStartDate"
+        is_date: true
+      - field_name: "StatementEndDate"
+        is_date: true
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+      - field_name: "Particulars"
+      - field_name: "Debits"
+        is_amount: true
+      - field_name: "Credits"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
+      - field_name: "CR if Credit"

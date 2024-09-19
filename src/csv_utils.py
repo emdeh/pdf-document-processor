@@ -23,7 +23,6 @@ class CSVUtils:
             dict: A dictionary containing the extracted static information.
 
         """
-        
         def extract_label_value(label):
             """
             Nested helper function to extract concatenated text values for a given label.
@@ -38,17 +37,24 @@ class CSVUtils:
             for document in results.documents:
                 for name, field in document.fields.items():
                     if name == label:
-                        # Assuming fields have 'content' or 'value' attributes
-                        return ' '.join([field.content if field.content else field.value])
+                        # Use 'or' to select the first non-None value
+                        value = field.content or field.value
+                        if value is not None:
+                            return str(value)
+                        else:
+                            return ''
             return ""  # Return an empty string if the label is not found
 
         static_info = {
-            'OriginalFileName': original_file_name}
+            'OriginalFileName': original_file_name
+        }
+
         for field in statement_type["transaction_static_fields"]:
             field_name = field['field_name']
             static_info[field_name] = extract_label_value(field_name)
 
         return static_info
+
 
     def process_transactions(self, results, statement_type):
         """
