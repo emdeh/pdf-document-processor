@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from prep_env import EnvironmentPrep
 from doc_ai_utils import DocAIUtils
 from csv_utils import CSVUtils
+import pandas as pd
 
 def main():
     # Load environment variables
@@ -65,51 +66,63 @@ def main():
         # Analyze the document
         original_document_name = os.path.basename(document_path)
 
-        if model_id == "prebuilt-layout":
-            results = doc_ai_utils.analyse_layout_document(doc_ai_client, document_path)
-            static_info = {"DocumentName": original_document_name}
-            summary_info = {
-                "TotalPages": len(results.pages),
-                "DocumentName": original_document_name,
-            }
-            transactions = []
+        # Analyze document and extract static info, summary, transactions
+        results = doc_ai_utils.analyse_document(doc_ai_client, model_id, document_path)
+        print("Processing extracted data...\n")
+        if not results:
+            print(f"Error: No results found for {original_document_name}.")
+            continue
 
-            # Extract table data
-            tables = doc_ai_utils.extract_table_data(results)
-            for table_idx, table in tables:
-                for row in table:
-                    row_data = {
-                        "DocumentName": original_document_name,
-                        "TableIndex": table_idx,
-                    }
-                    for col_idx, content in enumerate(row):
-                        row_data[f"Column{col_idx + 1}"] = content
-                    all_table_data.append(row_data)
+        static_info = csv_utils.extract_static_info(results, original_document_name, statement_type)
+        summary_info = csv_utils.extract_and_process_summary_info(results, original_document_name, statement_type)
+        transactions = csv_utils.process_transactions(results, statement_type)
+
+        # **Debugging: Print summary_info**
+        # print(f"Summary Info for {original_document_name}: {summary_info}")
+
+        # **Assign years for each document’s transactions individually**
+        if 'StatementStartDate' in summary_info and 'StatementEndDate' in summary_info:
+            statement_start_date = summary_info['StatementStartDate']['value']
+            statement_end_date = summary_info['StatementEndDate']['value']
+
+            # Convert transactions list to a DataFrame
+            transactions_df = pd.DataFrame(transactions)
+            # print("Initial Transactions DataFrame:\n", transactions_df[['Date']].head())
+
+            # Debugging: Check if Date column is present and in the expected format
+            #if 'Date' in transactions_df.columns:
+            #    print("Initial Transactions DataFrame - Date Column:\n", transactions_df[['Date']].head())
+            #else:
+            #    print("Error: 'Date' column missing from transactions.")
+            #    continue  # Skip to next file if 'Date' is missing
+
+            # **Convert 'Date' column to datetime before assigning years**
+            transactions_df['Date'] = pd.to_datetime(
+                transactions_df['Date'], 
+                format='%d %b',  # Adjust format if necessary
+                errors='coerce'
+            )
+            # print("Transactions DataFrame after parsing 'Date':\n", transactions_df[['Date']].head())
+
+            # Assign years to transaction dates for this document
+            transactions_df = csv_utils.assign_years_to_dates(transactions_df, statement_start_date, statement_end_date)
+
+            # Verify the assignment
+            # print("Transactions DataFrame after assigning years:\n", transactions_df[['Date']].head())
+
+            # Convert back to list of dictionaries for consistency
+            transactions = transactions_df.to_dict(orient='records')
+
         else:
-            results = doc_ai_utils.analyse_document(doc_ai_client, model_id, document_path)
-            print("Processing extracted data...\n")
-            if not results:
-                print(f"Error: No results found for {original_document_name}.")
-                continue
-            static_info = csv_utils.extract_static_info(
-                results, original_document_name, statement_type
-            )
-            summary_info = csv_utils.extract_and_process_summary_info(
-                results, statement_type
-            )
-            transactions = csv_utils.process_transactions(results, statement_type)
+            print("Warning: 'StatementStartDate' or 'StatementEndDate' missing in summary_info.")
 
-        # Start post-processing
+        # Add static info to each transaction
         updated_transactions = []
-
         for transaction in transactions:
             combined_transaction = {**static_info, **transaction}
             updated_transactions.append(combined_transaction)
 
-        static_info["DocumentName"] = original_document_name
-        summary_info["DocumentName"] = original_document_name
-
-        # Aggregate transactions and summary info
+        # Aggregate transactions and summaries
         all_transactions.extend(updated_transactions)
         all_summaries.append(summary_info)
 
