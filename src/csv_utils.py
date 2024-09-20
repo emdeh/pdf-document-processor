@@ -241,68 +241,70 @@ class CSVUtils:
         return flattened
 
     def assign_years_to_dates(self, transactions_df, statement_start_date_str, statement_end_date_str):
-            """
-            Assigns years to dates that lack year information based on the statement period.
+        """
+        Assigns years to dates that lack year information based on the statement period.
 
-            Args:
-                transactions_df (pd.DataFrame): The transactions DataFrame.
-                statement_start_date_str (str): The statement start date as a string (e.g., '22 June 2022').
-                statement_end_date_str (str): The statement end date as a string (e.g., '22 July 2023').
+        Args:
+            transactions_df (pd.DataFrame): The transactions DataFrame.
+            statement_start_date_str (str): The statement start date as a string (e.g., '22 June 2022').
+            statement_end_date_str (str): The statement end date as a string (e.g., '22 July 2023').
 
-            Returns:
-                pd.DataFrame: The updated transactions DataFrame with years assigned to dates.
-            """
-            # Parse the statement start and end dates
-            statement_start_date = pd.to_datetime(statement_start_date_str, format='%d %B %Y', errors='coerce')
-            statement_end_date = pd.to_datetime(statement_end_date_str, format='%d %B %Y', errors='coerce')
+        Returns:
+            pd.DataFrame: The updated transactions DataFrame with years assigned to dates.
+        """
+        # Parse the statement start and end dates
+        statement_start_date = pd.to_datetime(statement_start_date_str, format='%d %B %Y', errors='coerce')
+        statement_end_date = pd.to_datetime(statement_end_date_str, format='%d %B %Y', errors='coerce')
 
-            if pd.isna(statement_start_date) or pd.isna(statement_end_date):
-                raise ValueError("Statement start or end date is invalid.")
+        if pd.isna(statement_start_date) or pd.isna(statement_end_date):
+            raise ValueError("Statement start or end date is invalid.")
 
-            # Get the years covered in the statement
-            start_year = statement_start_date.year
-            end_year = statement_end_date.year
+        # Get the years covered in the statement
+        start_year = statement_start_date.year
+        end_year = statement_end_date.year
 
-            # Initialize the current year
-            current_year = start_year
-            previous_month = None
-            dates_with_year = []
+        # Initialize the current year
+        current_year = start_year
+        previous_month = None
+        dates_with_year = []
 
-            # Ensure transactions are sorted by date
-            transactions_df = transactions_df.sort_values(by='Date').reset_index(drop=True)
+        # **Do not sort the transactions_df**
+        # Ensure transactions are in the order they appear in the statement
+        # transactions_df = transactions_df.sort_values(by='Date').reset_index(drop=True)
 
-            # Iterate over the 'Date' column
-            for idx, date in transactions_df['Date'].items():
-                if pd.isna(date):
-                    dates_with_year.append(pd.NaT)
-                    continue
+        # Iterate over the 'Date' column in the existing order
+        for idx, date in transactions_df['Date'].items():
+            if pd.isna(date):
+                dates_with_year.append(pd.NaT)
+                continue
 
-                # Extract day and month from the date
-                day = date.day
-                month = date.month
+            # Extract day and month from the date
+            day = date.day
+            month = date.month
 
-                # Detect year rollover
-                if previous_month and month < previous_month:
-                    current_year += 1
-                    if current_year > end_year:
-                        current_year = end_year  # Prevent exceeding the end year
+            # Detect year rollover
+            if previous_month and month < previous_month:
+                current_year += 1
+                if current_year > end_year:
+                    current_year = end_year  # Prevent exceeding the end year
 
-                # Create a new date with the assigned year
-                try:
-                    new_date = pd.Timestamp(year=current_year, month=month, day=day)
-                except ValueError:
-                    new_date = pd.NaT  # Handle invalid dates
+            # Create a new date with the assigned year
+            try:
+                new_date = pd.Timestamp(year=current_year, month=month, day=day)
+            except ValueError:
+                new_date = pd.NaT  # Handle invalid dates
 
-                dates_with_year.append(new_date)
-                previous_month = month
+            dates_with_year.append(new_date)
+            previous_month = month
 
-            # Assign the new dates to the DataFrame
-            transactions_df['Date'] = dates_with_year
+        # Assign the new dates to the DataFrame
+        transactions_df['Date'] = dates_with_year
 
-            # Debugging: Print a few rows to verify
-            print("Transactions DataFrame after assigning years:\n", transactions_df.head())
+        # Debugging: Print a few rows to verify
+        print("Transactions DataFrame after assigning years:\n", transactions_df.head())
 
-            return transactions_df
+        return transactions_df
+
 
     def write_transactions_and_summaries_to_excel(
             self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None
