@@ -301,33 +301,36 @@ statement_types:
         is_amount: true
       - field_name: "CR if Credit"
 
-    - type_name: "ANZ - Bank Statement"
-      env_var: "MODEL_ID_ANZ_BANK"
-      summary_fields:
-        - field_name: "OpeningBalance"
-          is_amount: true
-        - field_name: "TotalDeposits"
-          is_amount: true
-        - field_name: "TotalWithdrawals"
-          is_amount: true
-        - field_name: "ClosingBalance"
-          is_amount: true
-      transaction_static_fields:
-        - field_name: "StatementStartDate"
-          is_date: true
-        - field_name: "StatementEndDate"
-          is_date: true
-        - field_name: "AccountName"
-        - field_name: "BSB"
-        - field_name: "AccountNumber"
-        - field_name: "Address"
-      transaction_dynamic_fields:
-        - field_name: "Date"
-          is_date: true
-        - field_name: "TransactionDetails"
-        - field_name: "Withdrawals"
-          is_amount: true
-        - field_name: "Deposits"
-          is_amount: true
-        - field_name: "Balance"
-          is_amount: true
+  - type_name: "ANZ - Bank Statement"
+    env_var: "MODEL_ID_ANZ_BANK"
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "TotalDeposits"
+        is_amount: true
+      - field_name: "TotalWithdrawals"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+      - field_name: "StatementStartDate"
+        is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
+      - field_name: "StatementEndDate"
+        is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JULY 2023"
+    transaction_static_fields:
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+        date_format: "%d %b"  # For ANZ statements without the year (e.g., "01 Jan")
+      - field_name: "TransactionDetails"
+      - field_name: "Withdrawals"
+        is_amount: true
+      - field_name: "Deposits"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true

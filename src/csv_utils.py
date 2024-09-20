@@ -55,7 +55,6 @@ class CSVUtils:
 
         return static_info
 
-
     def process_transactions(self, results, statement_type):
         """
         Process transactions from the provided results based on the statement type.
@@ -241,13 +240,77 @@ class CSVUtils:
             print(f"Was passed a non-dict object: {type(summary_data)}")
         return flattened
 
-    def write_transactions_and_summaries_to_excel(
-    self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None
-):
+    def assign_years_to_dates(self, transactions_df, statement_start_date_str, statement_end_date_str):
+            """
+            Assigns years to dates that lack year information based on the statement period.
 
+            Args:
+                transactions_df (pd.DataFrame): The transactions DataFrame.
+                statement_start_date_str (str): The statement start date as a string (e.g., '22 June 2022').
+                statement_end_date_str (str): The statement end date as a string (e.g., '22 July 2023').
+
+            Returns:
+                pd.DataFrame: The updated transactions DataFrame with years assigned to dates.
+            """
+            # Parse the statement start and end dates
+            statement_start_date = pd.to_datetime(statement_start_date_str, format='%d %B %Y', errors='coerce')
+            statement_end_date = pd.to_datetime(statement_end_date_str, format='%d %B %Y', errors='coerce')
+
+            if pd.isna(statement_start_date) or pd.isna(statement_end_date):
+                raise ValueError("Statement start or end date is invalid.")
+
+            # Get the years covered in the statement
+            start_year = statement_start_date.year
+            end_year = statement_end_date.year
+
+            # Initialize the current year
+            current_year = start_year
+            previous_month = None
+            dates_with_year = []
+
+            # Ensure transactions are sorted by date
+            transactions_df = transactions_df.sort_values(by='Date').reset_index(drop=True)
+
+            # Iterate over the 'Date' column
+            for idx, date in transactions_df['Date'].items():
+                if pd.isna(date):
+                    dates_with_year.append(pd.NaT)
+                    continue
+
+                # Extract day and month from the date
+                day = date.day
+                month = date.month
+
+                # Detect year rollover
+                if previous_month and month < previous_month:
+                    current_year += 1
+                    if current_year > end_year:
+                        current_year = end_year  # Prevent exceeding the end year
+
+                # Create a new date with the assigned year
+                try:
+                    new_date = pd.Timestamp(year=current_year, month=month, day=day)
+                except ValueError:
+                    new_date = pd.NaT  # Handle invalid dates
+
+                dates_with_year.append(new_date)
+                previous_month = month
+
+            # Assign the new dates to the DataFrame
+            transactions_df['Date'] = dates_with_year
+
+            # Debugging: Print a few rows to verify
+            print("Transactions DataFrame after assigning years:\n", transactions_df.head())
+
+            return transactions_df
+
+    def write_transactions_and_summaries_to_excel(
+            self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None
+        ):
+        # Create DataFrames from records
         transactions_df = pd.DataFrame(transactions_records)
 
-        # Initialize an empty list for rows
+        # Process summary data
         summary_rows = []
         for summary in summary_data:
             flattened_summary = self.format_summary_for_excel(summary)
@@ -255,35 +318,49 @@ class CSVUtils:
 
         summaryinfo_df = pd.DataFrame(summary_rows)
 
-        # Extract amount and date columns from statement_type
+        # Debugging: Print summaryinfo_df columns and content
+        print("Summary DataFrame columns:", summaryinfo_df.columns.tolist())
+        print("Summary DataFrame content:\n", summaryinfo_df.head())
+
+        # Initialize sets for amount and date columns
         amount_columns = set()
         date_columns = set()
+        date_column_formats = {}  # Mapping from column names to date formats
 
-        # Ensure statement_type is passed to this method
+        # Extract field information from statement_type
         if statement_type:
-            # Extract from transaction_dynamic_fields
+            # Transaction Dynamic Fields
             for field in statement_type.get('transaction_dynamic_fields', []):
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
                 if field.get('is_date'):
                     date_columns.add(field_name)
+                    date_format = field.get('date_format')
+                    if date_format:
+                        date_column_formats[field_name] = date_format
 
-            # Extract from transaction_static_fields
+            # Transaction Static Fields
             for field in statement_type.get('transaction_static_fields', []):
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
                 if field.get('is_date'):
                     date_columns.add(field_name)
+                    date_format = field.get('date_format')
+                    if date_format:
+                        date_column_formats[field_name] = date_format
 
-            # Extract from summary_fields
+            # Summary Fields
             for field in statement_type.get('summary_fields', []):
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
                 if field.get('is_date'):
                     date_columns.add(field_name)
+                    date_format = field.get('date_format')
+                    if date_format:
+                        date_column_formats[field_name] = date_format
 
         # Convert amount columns to numeric
         for col in amount_columns:
@@ -294,18 +371,95 @@ class CSVUtils:
 
         # Convert date columns to datetime
         for col in date_columns:
+            date_format = date_column_formats.get(col)
             if col in transactions_df.columns:
-                transactions_df[col] = pd.to_datetime(transactions_df[col], errors='coerce', dayfirst=True)
+                if date_format:
+                    if transactions_df[col].dtype == object:
+                        transactions_df[col] = transactions_df[col].str.title()  # Convert to Title Case
+                    transactions_df[col] = pd.to_datetime(
+                        transactions_df[col],
+                        format=date_format,
+                        errors='coerce',
+                        dayfirst=True
+                    )
+                else:
+                    transactions_df[col] = pd.to_datetime(
+                        transactions_df[col],
+                        errors='coerce',
+                        dayfirst=True
+                    )
             if col in summaryinfo_df.columns:
-                summaryinfo_df[col] = pd.to_datetime(summaryinfo_df[col], errors='coerce', dayfirst=True)
+                if date_format:
+                    if summaryinfo_df[col].dtype == object:
+                        summaryinfo_df[col] = summaryinfo_df[col].str.title()  # Convert to Title Case
+                    summaryinfo_df[col] = pd.to_datetime(
+                        summaryinfo_df[col],
+                        format=date_format,
+                        errors='coerce',
+                        dayfirst=True
+                    )
+                else:
+                    summaryinfo_df[col] = pd.to_datetime(
+                        summaryinfo_df[col],
+                        errors='coerce',
+                        dayfirst=True
+                    )
 
+        # Determine if year assignment is necessary
+        assign_years = False
+        if 'Date' in transactions_df.columns and date_column_formats.get('Date') == '%d %b':
+            assign_years = True
+
+        if assign_years:
+            # Extract statement start and end dates from summaryinfo_df
+            # Access 'StatementStartDate_Value' and 'StatementEndDate_Value'
+            if 'StatementStartDate_Value' in summaryinfo_df.columns and 'StatementEndDate_Value' in summaryinfo_df.columns:
+                statement_start_date_str = summaryinfo_df['StatementStartDate_Value'].dropna().iloc[0]
+                statement_end_date_str = summaryinfo_df['StatementEndDate_Value'].dropna().iloc[0]
+                print(f"Statement Start Date: {statement_start_date_str}")
+                print(f"Statement End Date: {statement_end_date_str}")
+            else:
+                print("Warning: 'StatementStartDate_Value' or 'StatementEndDate_Value' is missing in the summary data.")
+                statement_start_date_str = statement_end_date_str = None
+
+            if statement_start_date_str and statement_end_date_str:
+                # Ensure the dates are strings in the correct format
+                if isinstance(statement_start_date_str, pd.Timestamp):
+                    statement_start_date_str = statement_start_date_str.strftime('%d %B %Y')  # '%d %B %Y'
+                elif isinstance(statement_start_date_str, str):
+                    statement_start_date_str = statement_start_date_str.title()
+
+                if isinstance(statement_end_date_str, pd.Timestamp):
+                    statement_end_date_str = statement_end_date_str.strftime('%d %B %Y')  # '%d %B %Y'
+                elif isinstance(statement_end_date_str, str):
+                    statement_end_date_str = statement_end_date_str.title()
+
+                try:
+                    # Assign years to transaction dates
+                    transactions_df = self.assign_years_to_dates(
+                        transactions_df,
+                        statement_start_date_str,
+                        statement_end_date_str
+                    )
+                except Exception as e:
+                    print(f"Error assigning years to dates: {e}")
+            else:
+                print("Warning: Statement start or end date is missing or invalid. Unable to assign years to transaction dates.")
+
+        # Define the output file path
         output_file_path = os.path.join(output_dir, excel_filename)
 
-        with pd.ExcelWriter(output_file_path, engine='xlsxwriter', datetime_format='dd/mm/yyyy', date_format='dd/mm/yyyy') as writer:
+        # Write DataFrames to Excel with formatting
+        with pd.ExcelWriter(
+            output_file_path,
+            engine='xlsxwriter',
+            datetime_format='dd/mm/yyyy',
+            date_format='dd/mm/yyyy'
+        ) as writer:
             transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
 
-            # Apply formats
+            # Access the workbook and sheets
             workbook = writer.book
             transactions_sheet = writer.sheets['Transactions']
             summary_sheet = writer.sheets['Summary']
