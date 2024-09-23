@@ -6,15 +6,15 @@ class ExcelHandler:
     """
     # Registry of tasks list
     task_registry = {
-        '1. fill_missing_dates': {
+        'fill_missing_dates': {
             'func': 'fill_missing_dates',
             'description': 'Fill missing dates in the "Date" column by propagating the last known date downward.'
         },
-        '2. another_task': {
+        'another_task': {
             'func': 'another_task',
             'description': 'Description of another task.'
         },
-        '3. yet_another_task': {
+        'yet_another_task': {
             'func': 'yet_another_task',
             'description': 'Description of yet another task.'
         }
@@ -53,6 +53,11 @@ class ExcelHandler:
             pd.DataFrame: Updated DataFrame with missing dates filled.
         """
         print("Filling missing dates in the 'Date' column...")
+
+        # Ensure the 'Date' column is in datetime format
+        transactions_df['Date'] = pd.to_datetime(transactions_df['Date'], errors='coerce')
+
+        # Forward-fill missing dates
         transactions_df['Date'] = transactions_df['Date'].ffill()
         return transactions_df
 
