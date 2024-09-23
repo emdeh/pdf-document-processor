@@ -55,10 +55,10 @@ class ExcelHandler:
         print("Filling missing dates in the 'Date' column...")
 
         # Ensure the 'Date' column is in datetime format
-        transactions_df['Date'] = pd.to_datetime(transactions_df['Date'], errors='coerce')
+        transactions_df['Date_Processed'] = pd.to_datetime(transactions_df['Date'], errors='coerce').dt.date
 
         # Forward-fill missing dates
-        transactions_df['Date'] = transactions_df['Date'].ffill()
+        transactions_df['Date_Processed'] = transactions_df['Date'].ffill()
         return transactions_df
 
 # Additional post-processing tasks can be defined similarly
