@@ -37,7 +37,11 @@ class ExcelHandler:
     def save(self, output_file):
         """Saves the DataFrames back to an Excel file."""
         print(f"Saving to: {output_file}")
-        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+        with pd.ExcelWriter(output_file, 
+                            engine='xlsxwriter',
+                            datetime_format="DD/MM/YYYY",
+                            date_format="DD/MM/YYYY",
+                            ) as writer:
             self.summary_df.to_excel(writer, sheet_name='summary', index=False)
             self.transactions_df.to_excel(writer, sheet_name='transactions', index=False)
 
@@ -56,16 +60,21 @@ class ExcelHandler:
         print("Filling missing dates in the 'Date' column...")
 
         # Ensure the 'Date' column is in datetime format (without time component)
-        transactions_df['Date_Processed'] = pd.to_datetime(transactions_df['Date'], errors='coerce').dt.normalize()
+        #transactions_df['Date_Processed'] = pd.to_datetime(transactions_df['Date'], errors='coerce').dt.normalize()
 
         # Forward-fill missing dates
-        transactions_df['Date_Processed'] = transactions_df['Date_Processed'].ffill().dt.date
+        transactions_df['Date_Processed'] = transactions_df['Date'].ffill()
+
+        #transactions_df['Date_Processed'] = pd.to_datetime(transactions_df)['Date_Processed']
 
         # Reorder the columns to place 'Date_Processed' next to 'Date'
         columns = transactions_df.columns.tolist()
         date_idx = columns.index('Date')
         columns.insert(date_idx + 1, columns.pop(columns.index('Date_Processed')))
         transactions_df = transactions_df[columns]
+
+        # Reset the index to ensure proper ordering
+        transactions_df.reset_index(drop=True, inplace=True)
 
         return transactions_df
     # TODO: The date formatting is partially duplicated from write_transactions_and_summaries_to_excel in csv_utils.py. Consider refactoring to a common function.
