@@ -5,12 +5,17 @@ from pathlib import Path
 import shutil
 import fitz  # PyMuPDF
 import os
+import pytesseract
+from PIL import Image
+import io
 
 
 class PDFProcessor:
     def __init__(self):
+        # Set the Tesseract command path if necessary
+        pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
         pass
-
+        
     def process_all_pdfs(self, input_folder, output_folder, manual_processing_folder):
         """
         Processes all PDF files in a given folder, splitting them into separate documents based on identified patterns.
@@ -23,16 +28,17 @@ class PDFProcessor:
         print(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
         for pdf_file in Path(input_folder).glob("*.pdf"):
             pdf_path = str(pdf_file)
-            doc_type = self.detect_document_type(pdf_path)
+            is_machine_readable = self.is_pdf_machine_readable(pdf_path)
 
-            if doc_type == "standard_statement":
-                doc_starts = self.find_standard_statement_starts(pdf_path)
-            elif doc_type == "bom_statement":
-                doc_starts = self.find_bom_statement_starts(pdf_path)
-            elif doc_type == "bendigo_statement":
-                doc_starts = self.find_bendigo_statement_starts(pdf_path)
+            if is_machine_readable:
+                # Proceed with existing logic
+                doc_type = self.detect_document_type(pdf_path)
+                doc_starts = self.get_doc_starts_by_type(pdf_path, doc_type)
             else:
-                doc_starts = None
+                print(f"{os.path.basename(pdf_file)} is scanned. Performing OCR to extract text.\n")
+                # Use OCR to extract text
+                doc_type = self.detect_document_type(pdf_path, use_ocr=True)
+                doc_starts = self.get_doc_starts_by_type(pdf_path, doc_type, use_ocr=True)
 
             if doc_starts:
                 self.split_pdf(pdf_path, output_folder, doc_starts)
@@ -48,47 +54,52 @@ class PDFProcessor:
 
         print(f"Splitting complete.\n\n")
 
-    def detect_document_type(self, pdf_path):
+    def detect_document_type(self, pdf_path, use_ocr=False):
         """
         Detects the type of a PDF document based on its content.
 
         Parameters:
-        pdf_path (str): The path to the PDF document.
+            pdf_path (str): The path to the PDF document.
+            use_ocr (bool): Whether to use OCR for text extraction.
 
         Returns:
-        str: The detected document type. Possible values are 'bendigo_statement',
-             'bom_statement', 'standard_statement', or 'unknown'.
+            str: The detected document type. Possible values are 'bendigo_statement',
+                'bom_statement', 'standard_statement', or 'unknown'.
         """
         doc = fitz.open(pdf_path)
-        first_pages_text = "".join(
-            [doc.load_page(i).get_text() for i in range(min(12, len(doc)))]
-        )  # Analyze the first 9 pages
+        first_pages_text = ""
+        for i in range(min(12, len(doc))):
+            page = doc.load_page(i)
+            page_text = self.extract_text_from_page(page, use_ocr)
+            first_pages_text += page_text
+
+        doc.close()
 
         if "Bendigo" in first_pages_text:
-            doc.close()
             print("Bendigo Bank statement detected.")
             return "bendigo_statement"
 
         elif "FREEDOM" in first_pages_text:
-            doc.close()
             print("Bank of Melbourne OR St. George statement detected.")
             return "bom_statement"
 
         elif re.search(r"\b1 of \d", first_pages_text):
-            doc.close()
             print("Standard statement detected.")
             return "standard_statement"
+        
+        elif "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE" in first_pages_text:
+            print("ANZ statement detected.")
+            return "anz_statement"
 
-        doc.close()
         return "unknown"
 
-    def find_standard_statement_starts(self, pdf_path):
+    def find_standard_statement_starts(self, pdf_path, use_ocr=False):
         """
-        Standard function for statements that have '1 of x' pattern.
-        Identifies the starting pages of documents within a PDF file.
+        Identifies the starting pages of standard statements within a PDF file.
 
         Args:
             pdf_path (str): The file path of the PDF to be processed.
+            use_ocr (bool): Whether to use OCR for text extraction.
 
         Returns:
             list: A list of page numbers where new documents start.
@@ -96,29 +107,32 @@ class PDFProcessor:
         doc_starts = []
         doc = fitz.open(pdf_path)
         for page_num in range(len(doc)):
-            page_text = doc.load_page(page_num).get_text()
+            page = doc.load_page(page_num)
+            page_text = self.extract_text_from_page(page, use_ocr)
             if re.search(r"\b1 of \d+", page_text):
                 doc_starts.append(page_num)
         doc.close()
         return doc_starts
 
-    def find_bendigo_statement_starts(self, pdf_path):
+    def find_bendigo_statement_starts(self, pdf_path, use_ocr=False):
         """
         Identifies the starting pages of documents within a PDF file based on 'Statement Number'.
 
         Args:
             pdf_path (str): The file path of the PDF to be processed.
+            use_ocr (bool): Whether to use OCR for text extraction.
 
         Returns:
             dict: A dictionary with keys as the statement number and values as dictionaries
-                  containing 'start' and 'end' pages for each document.
+                containing 'start' and 'end' pages for each document.
         """
         doc = fitz.open(pdf_path)
         statement_starts = {}
         current_statement = None
 
         for page_num in range(len(doc)):
-            page_text = doc.load_page(page_num).get_text()
+            page = doc.load_page(page_num)
+            page_text = self.extract_text_from_page(page, use_ocr)
             match = re.search(r"Statement number\s+(\d+)", page_text)
             if match:
                 statement_number = int(match.group(1))
@@ -138,12 +152,21 @@ class PDFProcessor:
         doc.close()
         return statement_starts
 
-    def find_bom_statement_starts(self, pdf_path):
+
+        # Ensure the last statement is closed if it doesn't end explicitly
+        if current_statement and "end" not in statement_starts[current_statement]:
+            statement_starts[current_statement]["end"] = len(doc) - 1
+
+        doc.close()
+        return statement_starts
+
+    def find_bom_statement_starts(self, pdf_path, use_ocr=False):
         """
         Identifies the starting pages of Bank of Melbourne and St. George statements.
 
         Args:
             pdf_path (str): The file path of the PDF to be processed.
+            use_ocr (bool): Whether to use OCR for text extraction.
 
         Returns:
             list: A list of page numbers where new documents start.
@@ -151,8 +174,30 @@ class PDFProcessor:
         doc_starts = []
         doc = fitz.open(pdf_path)
         for page_num in range(len(doc)):
-            page_text = doc.load_page(page_num).get_text()
+            page = doc.load_page(page_num)
+            page_text = self.extract_text_from_page(page, use_ocr)
             if re.search(r"\(page\s+1 of \d+\)", page_text):
+                doc_starts.append(page_num)
+        doc.close()
+        return doc_starts
+    
+    def find_anz_statement_starts(self, pdf_path, use_ocr=False):
+        """
+        Identifies the starting pages of ANZ statements within a PDF file.
+
+        Args:
+            pdf_path (str): The file path of the PDF to be processed.
+            use_ocr (bool): Whether to use OCR for text extraction.
+
+        Returns:
+            list: A list of page numbers where new documents start.
+        """
+        doc_starts = []
+        doc = fitz.open(pdf_path)
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            page_text = self.extract_text_from_page(page, use_ocr)
+            if "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE" in page_text:
                 doc_starts.append(page_num)
         doc.close()
         return doc_starts
@@ -176,8 +221,7 @@ class PDFProcessor:
                 end_page = doc_starts[i + 1] if i + 1 < len(doc_starts) else total_pages
                 output_path = f"{output_folder}/{pdf_name}_document_{i + 1}.pdf"
                 new_doc = fitz.open()
-                for page_num in range(start_page, end_page):
-                    new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+                new_doc.insert_pdf(doc, from_page=start_page, to_page=end_page - 1)
                 new_doc.save(output_path)
                 new_doc.close()
 
@@ -188,9 +232,58 @@ class PDFProcessor:
                 end_page = pages["end"]
                 output_path = f"{output_folder}/{pdf_name}_statement_{statement}.pdf"
                 new_doc = fitz.open()
-                for page_num in range(start_page, end_page + 1):  # '+1' to include end page
-                    new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+                new_doc.insert_pdf(doc, from_page=start_page, to_page=end_page)
                 new_doc.save(output_path)
                 new_doc.close()
 
         doc.close()
+
+    def is_pdf_machine_readable(self, pdf_path):
+        """
+        Checks if the PDF is machine-readable by attempting to extract text from the first page.
+
+        Args:
+            pdf_path (str): The path to the PDF file.
+
+        Returns:
+            bool: True if the PDF is machine-readable, False if it is scanned (image-based).
+        """
+        doc = fitz.open(pdf_path)
+        first_page = doc.load_page(0)
+        text = first_page.get_text().strip()
+        doc.close()
+        # If text is empty or very short, assume it's scanned
+        return len(text) > 20  # Adjust threshold as needed
+
+    def get_doc_starts_by_type(self, pdf_path, doc_type, use_ocr=False):
+        if doc_type == "standard_statement":
+            return self.find_standard_statement_starts(pdf_path, use_ocr)
+        elif doc_type == "bom_statement":
+            return self.find_bom_statement_starts(pdf_path, use_ocr)
+        elif doc_type == "bendigo_statement":
+            return self.find_bendigo_statement_starts(pdf_path, use_ocr)
+        elif doc_type == "anz_statement":
+            return self.find_anz_statement_starts(pdf_path, use_ocr)
+        else:
+            return None
+        
+    def extract_text_from_page(self, page, use_ocr=False):
+        """
+        Extracts text from a PDF page, using OCR if specified or if no text is found.
+
+        Args:
+            page (fitz.Page): The PDF page object.
+            use_ocr (bool): Whether to force OCR extraction.
+
+        Returns:
+            str: The extracted text from the page.
+        """
+        text = page.get_text().strip()
+        if not text or use_ocr:
+            # Perform OCR
+            pix = page.get_pixmap()
+            img_data = pix.tobytes("png")
+            image = Image.open(io.BytesIO(img_data))
+            text = pytesseract.image_to_string(image)
+        return text
+

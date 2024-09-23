@@ -210,5 +210,18 @@ python process.py \
 - Investigate ways to improve the processing speed.
 - Consider parallel processing of PDFs if appropriate.
 
-### Delete redundant code:
-- Clean up old code folder.
+### Handling scenarios where transaction dates are already fully provided
+
+To handle scenarios where some statement types have transaction dates that already include the year, while others have partial dates (without the year).
+
+To achieve this flexibility, need to update the YAML configuration and the relevant methods in your CSVUtils class to allow the system to intelligently determine whether to append the year to transaction dates based on the presence of year information in the date format.
+
+To the YAML:
+- add an additional flag `has_year` for the transaction date field.
+- This will indicate whether the transaction date includes the year
+- values are `true` or `false`
+
+In `assign_years_to_dates()`
+- dtermine whether to assign the year based on the `has_year` flag
+
+```
