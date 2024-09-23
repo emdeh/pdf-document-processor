@@ -1,7 +1,7 @@
 # pdf-document-processor
 env file requirements
 
-```
+```bash
 # INITIAL_INPUT_FOLDER=
 # CONFIG_PATH
 # MODEL_ENDPOINT=
