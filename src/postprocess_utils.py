@@ -45,6 +45,7 @@ class ExcelHandler:
     def fill_missing_dates(transactions_df, **kwargs):
         """
         Fills missing dates in the 'Date' column by propagating the last known date downward.
+        A new column 'Date_Processed' is created for the processed dates and placed next to the original 'Date' column.
 
         Args:
             transactions_df (pd.DataFrame): DataFrame containing transaction data.
@@ -54,11 +55,18 @@ class ExcelHandler:
         """
         print("Filling missing dates in the 'Date' column...")
 
-        # Ensure the 'Date' column is in datetime format
-        transactions_df['Date_Processed'] = pd.to_datetime(transactions_df['Date'], errors='coerce').dt.date
+        # Ensure the 'Date' column is in datetime format (without time component)
+        transactions_df['Date_Processed'] = pd.to_datetime(transactions_df['Date'], errors='coerce').dt.normalize()
 
         # Forward-fill missing dates
-        transactions_df['Date_Processed'] = transactions_df['Date'].ffill()
-        return transactions_df
+        transactions_df['Date_Processed'] = transactions_df['Date_Processed'].ffill().dt.date
 
-# Additional post-processing tasks can be defined similarly
+        # Reorder the columns to place 'Date_Processed' next to 'Date'
+        columns = transactions_df.columns.tolist()
+        date_idx = columns.index('Date')
+        columns.insert(date_idx + 1, columns.pop(columns.index('Date_Processed')))
+        transactions_df = transactions_df[columns]
+
+        return transactions_df
+    # TODO: The date formatting is partially duplicated from write_transactions_and_summaries_to_excel in csv_utils.py. Consider refactoring to a common function.
+
