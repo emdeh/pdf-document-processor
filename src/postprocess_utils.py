@@ -63,10 +63,10 @@ class ExcelHandler:
         #transactions_df['Date_Processed'] = pd.to_datetime(transactions_df['Date'], errors='coerce').dt.normalize()
 
         # Forward-fill missing dates
-        # transactions_df['Date_Processed'] = transactions_df['Date'].ffill()
+        #transactions_df['Date_Processed'] = transactions_df['Date'].ffill()
 
         # Forward-fill missing dates within each statement
-        transactions_df['Date_Processed'] = transactions_df.groupby('OriginalFileName')['Date_Processed'].apply(lambda group: group.ffill())
+        transactions_df['Date_Processed'] = transactions_df.groupby('OriginalFileName')['Date'].transform(lambda group: group.ffill())
 
         #transactions_df['Date_Processed'] = pd.to_datetime(transactions_df)['Date_Processed']
 
