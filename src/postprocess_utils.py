@@ -65,7 +65,8 @@ class ExcelHandler:
         # Forward-fill missing dates
         #transactions_df['Date_Processed'] = transactions_df['Date'].ffill()
 
-        # Forward-fill missing dates within each statement
+         # Forward-fill missing dates within each statement, but grouped by statement name to stop the transform from overflowing dates
+         # from the preceding statement, when a statement's first transaction is missing a date.
         transactions_df['Date_Processed'] = transactions_df.groupby('OriginalFileName')['Date'].transform(lambda group: group.ffill())
 
         #transactions_df['Date_Processed'] = pd.to_datetime(transactions_df)['Date_Processed']
