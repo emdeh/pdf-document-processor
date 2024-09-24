@@ -18,9 +18,8 @@
 # The is_amount field was originally used to specify what values needed to be transformed into amounts during processing, 
 # but this is now handled by the field type in the model itself. 
 # It has been retained here (and "is_date") added for backwards compatibility and to ensure future flexibility.
+# The date fields have the formatting specified in the date_format field. This is used to parse the date correctly.
 # 
-# NOTE: The extraction model's struggle with dates, so it may be easier to train all fields as strings and parse 
-# them in the code as the appropriate type.
 #
 # Example format:
 #
@@ -67,8 +66,12 @@ statement_types:
       - field_name: "CorporateID"
       - field_name: "MembershipNumber"
       - field_name: "StatementDate"
+        is_date: true
+        date_format: "%d-%b-%Y"  # For dates like "01-Jan-2022"
     transaction_dynamic_fields:
       - field_name: "Date"
+        is_date: true
+        date_format: "%d %b" # For dates like "01 Jan"
       - field_name: "Description"
       - field_name: "Amount"
         is_amount: true
@@ -89,8 +92,10 @@ statement_types:
       - field_name: "StatementNumber"
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
       - field_name: "AccountName"
       - field_name: "CustomerID"
       - field_name: "BSB"
@@ -99,6 +104,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d/%m/%y"  # For dates like "01/01/22"
       - field_name: "Description"
       - field_name: "Debit"
         is_amount: true
@@ -121,8 +127,10 @@ statement_types:
     transaction_static_fields:
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
       - field_name: "AccountName"
       - field_name: "CustomerID"
       - field_name: "BSB"
@@ -131,6 +139,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d %b %y"  # For dates like "01 Jan 22"
       - field_name: "Description"
       - field_name: "Withdrawals"
         is_amount: true
@@ -153,8 +162,10 @@ statement_types:
     transaction_static_fields:
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d/%m/%Y"  # For dates like "01/01/2022"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d/%m/%Y"  # For dates like "01/01/2022"
       - field_name: "AccountName"
       - field_name: "BSB"
       - field_name: "AccountNumber"
@@ -162,6 +173,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d %b" # For dates like "01 Jan"
       - field_name: "Description"
       - field_name: "Debit"
         is_amount: true
@@ -170,7 +182,7 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
-  - type_name: "St. George - Bank Statement" # Duplicate of Bank of Melbourne, but kept separate for future flexibility
+  - type_name: "St. George - Bank Statement"
     env_var: "MODEL_ID_STGEORGE_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -184,8 +196,10 @@ statement_types:
     transaction_static_fields:
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d/%m/%Y"  # For dates like "01/01/2022"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d/%m/%Y"  # For dates like "01/01/2022"
       - field_name: "AccountName"
       - field_name: "BSB"
       - field_name: "AccountNumber"
@@ -193,6 +207,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d %b" # For dates like "01 Jan"
       - field_name: "Description"
       - field_name: "Debit"
         is_amount: true
@@ -215,8 +230,10 @@ statement_types:
     transaction_static_fields:
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d/%m/%Y"  # For dates like "01/01/2022"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d/%m/%Y"  # For dates like "01/01/2022"
       - field_name: "AccountName"
       - field_name: "BSB"
       - field_name: "AccountNumber"
@@ -224,6 +241,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
       - field_name: "Description"
       - field_name: "Withdrawal"
         is_amount: true
@@ -238,7 +256,7 @@ statement_types:
     transaction_static_fields: []
     transaction_dynamic_fields: []
 
-  - type_name: "CBA - Bank Statement"
+  - type_name: "CBA - Bank Statement (Foreign)"
     env_var: "MODEL_ID_CBA_BANK"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -252,8 +270,10 @@ statement_types:
     transaction_static_fields:
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d/%m/%y" # For dates like "01/01/22"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d/%m/%y" # For dates like "01/01/22"
       - field_name: "AccountName"
       - field_name: "BSB"
       - field_name: "AccountNumber"
@@ -261,6 +281,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
       - field_name: "Transaction"
       - field_name: "Debit"
         is_amount: true
@@ -268,6 +289,40 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
+
+  - type_name: "CBA - Bank Statement (Standard)"
+  env_var: "MODEL_ID_CBA_BANK"
+  summary_fields:
+    - field_name: "OpeningBalance"
+      is_amount: true
+    - field_name: "TotalDebits"
+      is_amount: true
+    - field_name: "TotalCredits"
+      is_amount: true
+    - field_name: "ClosingBalance"
+      is_amount: true
+  transaction_static_fields:
+    - field_name: "StatementStartDate"
+      is_date: true
+      date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
+    - field_name: "StatementEndDate"
+      is_date: true
+      date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
+    - field_name: "AccountName"
+    - field_name: "BSB"
+    - field_name: "AccountNumber"
+    - field_name: "Address"
+  transaction_dynamic_fields:
+    - field_name: "Date"
+      is_date: true
+      date_format: "%d %b"  # For dates like "01 Jan"
+    - field_name: "Transaction"
+    - field_name: "Debit"
+      is_amount: true
+    - field_name: "Credit"
+      is_amount: true
+    - field_name: "Balance"
+      is_amount: true
 
   - type_name: "NAB - Bank Statement"
     env_var: "MODEL_ID_NAB_BANK"
@@ -283,8 +338,10 @@ statement_types:
     transaction_static_fields:
       - field_name: "StatementStartDate"
         is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
       - field_name: "StatementEndDate"
         is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
       - field_name: "AccountName"
       - field_name: "BSB"
       - field_name: "AccountNumber"
@@ -292,6 +349,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
       - field_name: "Particulars"
       - field_name: "Debits"
         is_amount: true
@@ -326,7 +384,7 @@ statement_types:
     transaction_dynamic_fields:
       - field_name: "Date"
         is_date: true
-        date_format: "%d %b"  # For ANZ statements without the year (e.g., "01 Jan")
+        date_format: "%d %b"  # For dates like "01 Jan"
       - field_name: "TransactionDetails"
       - field_name: "Withdrawals"
         is_amount: true
