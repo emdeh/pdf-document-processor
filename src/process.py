@@ -7,8 +7,11 @@ from prep_env import EnvironmentPrep
 from doc_ai_utils import DocAIUtils
 from csv_utils import CSVUtils
 import pandas as pd
+import time
 
 def main():
+    # Start time
+    start_time = time.time()
     # Load environment variables
     load_dotenv()
 
@@ -151,6 +154,10 @@ def main():
         statement_type=statement_type,  # Pass statement_type here
         static_info=static_info
     )
+    # end time
+    end_time = time.time()
+    # Calculate time taken and print as hh:mm:ss
+    print(f"Time taken: {time.strftime('%H:%M:%S', time.gmtime(end_time - start_time))}")
 
 if __name__ == "__main__":
     main()
