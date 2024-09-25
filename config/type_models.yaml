@@ -113,6 +113,42 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
+  - type_name: "Westpac - Bank Statement (Receipt style)" # For Westpac statements that look like receipts
+    env_var: "MODEL_ID_WESTPAC_BANK_RECEIPT_STYLE"
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "TotalDebits"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+    transaction_static_fields:
+      - field_name: "StatementNumber"
+      - field_name: "StatementStartDate"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "22 JUN 2022"
+      - field_name: "StatementEndDate"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "22 APR 2022"
+      - field_name: "AccountName"
+      - field_name: "CustomerID"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+        date_format: "%d%b" # For dates like "01JAN"
+      - field_name: "Description"
+      - field_name: "Debit"
+        is_amount: true
+      - field_name: "Credit"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
+
   - type_name: "Bendigo - Bank Statement"
     env_var: "MODEL_ID_BENDIGO_BANK"
     summary_fields:
@@ -291,38 +327,38 @@ statement_types:
         is_amount: true
 
   - type_name: "CBA - Bank Statement (Standard)"
-  env_var: "MODEL_ID_CBA_BANK"
-  summary_fields:
-    - field_name: "OpeningBalance"
-      is_amount: true
-    - field_name: "TotalDebits"
-      is_amount: true
-    - field_name: "TotalCredits"
-      is_amount: true
-    - field_name: "ClosingBalance"
-      is_amount: true
-  transaction_static_fields:
-    - field_name: "StatementStartDate"
-      is_date: true
-      date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
-    - field_name: "StatementEndDate"
-      is_date: true
-      date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
-    - field_name: "AccountName"
-    - field_name: "BSB"
-    - field_name: "AccountNumber"
-    - field_name: "Address"
-  transaction_dynamic_fields:
-    - field_name: "Date"
-      is_date: true
-      date_format: "%d %b"  # For dates like "01 Jan"
-    - field_name: "Transaction"
-    - field_name: "Debit"
-      is_amount: true
-    - field_name: "Credit"
-      is_amount: true
-    - field_name: "Balance"
-      is_amount: true
+    env_var: "MODEL_ID_CBA_BANK"
+    summary_fields:
+      - field_name: "OpeningBalance"
+        is_amount: true
+      - field_name: "TotalDebits"
+        is_amount: true
+      - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "ClosingBalance"
+        is_amount: true
+    transaction_static_fields:
+      - field_name: "StatementStartDate"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
+      - field_name: "StatementEndDate"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+      - field_name: "Address"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+        date_format: "%d %b"  # For dates like "01 Jan"
+      - field_name: "Transaction"
+      - field_name: "Debit"
+        is_amount: true
+      - field_name: "Credit"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
 
   - type_name: "NAB - Bank Statement"
     env_var: "MODEL_ID_NAB_BANK"
