@@ -90,6 +90,10 @@ class PDFProcessor:
         elif "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE" in first_pages_text:
             print("ANZ statement detected.")
             return "anz_statement"
+        
+        elif "Westpac" in first_pages_text:
+            print("Westpac statement detected.")
+            return "westpac_statement"
 
         return "unknown"
 
@@ -181,6 +185,35 @@ class PDFProcessor:
         doc.close()
         return doc_starts
     
+    def find_westpac_statement_starts(self, pdf_path, use_ocr=False):
+        """
+        Identifies the starting pages of Westpac Group statements based on the pattern
+        "STATEMENT NO. X PAGE 1 OF Y".
+
+        Args:
+            pdf_path (str): The file path of the PDF to be processed.
+            use_ocr (bool): Whether to use OCR for text extraction.
+
+        Returns:
+            list: A list of page numbers where new documents start.
+        """
+        doc_starts = []
+        doc = fitz.open(pdf_path)
+
+        # Define regex pattern
+        statement_pattern = r"STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+"
+
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            page_text = self.extract_text_from_page(page, use_ocr)
+            
+            # Search for the statement pattern
+            if re.search(statement_pattern, page_text, re.IGNORECASE):
+                doc_starts.append(page_num)
+        
+        doc.close()
+        return doc_starts
+    
     def find_anz_statement_starts(self, pdf_path, use_ocr=False):
         """
         Identifies the starting pages of ANZ statements within a PDF file.
@@ -260,6 +293,8 @@ class PDFProcessor:
             return self.find_standard_statement_starts(pdf_path, use_ocr)
         elif doc_type == "bom_statement":
             return self.find_bom_statement_starts(pdf_path, use_ocr)
+        elif doc_type == "westpac_statement":
+            return self.find_westpac_statement_starts(pdf_path, use_ocr)
         elif doc_type == "bendigo_statement":
             return self.find_bendigo_statement_starts(pdf_path, use_ocr)
         elif doc_type == "anz_statement":
