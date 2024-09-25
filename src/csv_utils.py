@@ -283,8 +283,8 @@ class CSVUtils:
         )
 
     def write_transactions_and_summaries_to_excel(
-        self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None
-    ):
+            self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None
+        ):
         # Create DataFrames from records
         transactions_df = pd.DataFrame(transactions_records)
 
@@ -296,13 +296,10 @@ class CSVUtils:
 
         summaryinfo_df = pd.DataFrame(summary_rows)
 
-        # Debugging: Print summaryinfo_df columns and content
-        # print("Summary DataFrame columns:", summaryinfo_df.columns.tolist())
-        # print("Summary DataFrame content:\n", summaryinfo_df.head())
-
-        # Initialize sets for amount columns (we won't touch date columns here)
+        # Initialize sets for amount and date columns
         amount_columns = set()
-        
+        date_columns = {}
+
         # Extract field information from statement_type
         if statement_type:
             # Transaction Dynamic Fields
@@ -310,14 +307,20 @@ class CSVUtils:
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
+                if field.get('is_date'):
+                    # Get date format from YAML, default to 'dd/mm/yyyy' if not specified
+                    date_columns[field_name] = field.get('date_format', 'dd/mm/yyyy')
 
             # Transaction Static Fields
             for field in statement_type.get('transaction_static_fields', []):
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
+                if field.get('is_date'):
+                    # Get date format from YAML, default to 'dd/mm/yyyy'
+                    date_columns[field_name] = field.get('date_format', 'dd/mm/yyyy')
 
-            # Summary Fields
+            # Summary Fields (if date handling required, apply similar logic)
             for field in statement_type.get('summary_fields', []):
                 field_name = field['field_name']
                 if field.get('is_amount'):
@@ -329,6 +332,21 @@ class CSVUtils:
                 transactions_df[col] = pd.to_numeric(transactions_df[col], errors='coerce')
             if col in summaryinfo_df.columns:
                 summaryinfo_df[col] = pd.to_numeric(summaryinfo_df[col], errors='coerce')
+
+        # Convert and handle date columns
+        for col, date_format in date_columns.items():
+            if col in transactions_df.columns:
+                try:
+                    # Convert to datetime for consistency in date values
+                    transactions_df[col] = pd.to_datetime(transactions_df[col], errors='coerce', format=date_format)
+                except ValueError as e:
+                    print(f"Error parsing dates in column {col}: {e}")
+
+            if col in summaryinfo_df.columns:
+                try:
+                    summaryinfo_df[col] = pd.to_datetime(summaryinfo_df[col], errors='coerce', format=date_format)
+                except ValueError as e:
+                    print(f"Error parsing dates in column {col}: {e}")
 
         # Define the output file path
         output_file_path = os.path.join(output_dir, excel_filename)
@@ -350,21 +368,29 @@ class CSVUtils:
 
             # Define formats
             money_fmt = workbook.add_format({'num_format': '$#,##0.00'})
-            date_fmt = workbook.add_format({'num_format': 'dd/mm/yyyy'})
 
-            # Apply formats to Transactions sheet (skip re-parsing date columns)
+            # Apply formats to Transactions sheet
             for idx, col in enumerate(transactions_df.columns):
                 if col in amount_columns:
                     transactions_sheet.set_column(idx, idx, None, money_fmt)
-                elif col == 'Date':  # Ensure only formatting, not re-parsing
+                elif col in date_columns:
+                    # Convert YAML format to Excel-compatible date format
+                    date_format_str = date_columns[col]
+                    excel_date_format = date_format_str.replace('%d', 'dd').replace('%b', 'mmm').replace('%Y', 'yyyy').replace('%y', 'yy')
+                    
+                    # Create Excel-compatible format
+                    date_fmt = workbook.add_format({'num_format': excel_date_format})
+                    
+                    # Apply the date format to the column
                     transactions_sheet.set_column(idx, idx, None, date_fmt)
 
-            # Apply formats to Summary sheet
+            # Apply formats to Summary sheet (similar if there are amounts)
             for idx, col in enumerate(summaryinfo_df.columns):
                 if col in amount_columns:
                     summary_sheet.set_column(idx, idx, None, money_fmt)
 
         print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
+
 
     def assign_years_to_dates(self, transactions_df, statement_start_date_str, statement_end_date_str):
         """

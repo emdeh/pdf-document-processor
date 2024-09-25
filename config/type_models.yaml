@@ -141,6 +141,7 @@ statement_types:
       - field_name: "Date"
         is_date: true
         date_format: "%d%b" # For dates like "01JAN"
+        #date_format: "%d %b"  # For dates like "01 Jan"
       - field_name: "Description"
       - field_name: "Debit"
         is_amount: true
