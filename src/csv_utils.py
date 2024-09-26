@@ -329,18 +329,31 @@ class CSVUtils:
         # Group by 'OriginalFileName' and apply the transformation
         def apply_year_assignment(group):
             file_name = group['OriginalFileName'].iloc[0]  # Get the file name for this group
-            statement_start_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementStartDate'].iloc[0]
-            statement_end_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementEndDate'].iloc[0]
+            try:
+                statement_start_date_str = group['StatementStartDate'].iloc[0]
+                statement_end_date_str = group['StatementEndDate'].iloc[0]
+
+                # statement_start_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementStartDate'].iloc[0]
+                # statement_end_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementEndDate'].iloc[0]
             
-            # Convert the start and end dates using the format from YAML or a default
-            statement_start_date_format = date_columns.get('StatementStartDate', '%d %b %Y')
-            statement_end_date_format = date_columns.get('StatementEndDate', '%d %b %Y')
+                # Convert the start and end dates using the format from YAML or a default
+                statement_start_date_format = date_columns.get('StatementStartDate', '%d %b %Y')
+                statement_end_date_format = date_columns.get('StatementEndDate', '%d %b %Y')
 
-            # Convert the 'Date' column to datetime if not already done
-            group['Date'] = pd.to_datetime(group['Date'], errors='coerce', format=date_columns.get('Date', '%d %b'))
+                # Convert the 'Date' column to datetime if not already done
+                group['Date'] = pd.to_datetime(group['Date'], errors='coerce', format=date_columns.get('Date', '%d %b'))
 
-            # Now apply the assign_years_to_dates function to the grouped data
-            return self.assign_years_to_dates(group, statement_start_date_str, statement_end_date_str, statement_start_date_format, statement_end_date_format)
+                # Now apply the assign_years_to_dates function to the grouped data
+                return self.assign_years_to_dates(
+                    group,
+                    statement_start_date_str,
+                    statement_end_date_str,
+                    statement_start_date_format,
+                    statement_end_date_format
+                    )
+            except Exception as e:
+                print(f"Error processing file '{file_name}': {e}")
+                return group
 
         # Apply the transformation for each group (OriginalFileName)
         transactions_df = transactions_df.groupby('OriginalFileName').apply(apply_year_assignment).reset_index(drop=True)
@@ -415,7 +428,10 @@ class CSVUtils:
         statement_end_date = pd.to_datetime(statement_end_date_str, format=statement_end_date_format, errors='coerce')
 
         if pd.isna(statement_start_date) or pd.isna(statement_end_date):
-            raise ValueError("Statement start or end date is invalid.")
+            # Log a warning instead of raising an exception
+            file_name = transactions_df['OriginalFileName'].iloc[0]
+            print(f"Warning: Statement start or end date is invalid for file '{file_name}'. Skipping year assignment for this file.")
+            return transactions_df  # Return the DataFrame without modifying dates
 
         # Generate a mapping of months to years in the statement period
         from dateutil.relativedelta import relativedelta
