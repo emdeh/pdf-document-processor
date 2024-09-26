@@ -7,8 +7,11 @@ from prep_env import EnvironmentPrep
 from doc_ai_utils import DocAIUtils
 from csv_utils import CSVUtils
 import pandas as pd
+import time
 
 def main():
+    # Start time
+    start_time = time.time()
     # Load environment variables
     load_dotenv()
 
@@ -85,6 +88,10 @@ def main():
             statement_start_date = summary_info['StatementStartDate']['value']
             statement_end_date = summary_info['StatementEndDate']['value']
 
+                # Add these lines to include dates in static_info
+            static_info['StatementStartDate'] = statement_start_date
+            static_info['StatementEndDate'] = statement_end_date
+
             # Convert transactions list to a DataFrame
             transactions_df = pd.DataFrame(transactions)
             # print("Initial Transactions DataFrame:\n", transactions_df[['Date']].head())
@@ -144,8 +151,13 @@ def main():
         output_folder,
         "extracted-data.xlsx",
         table_data=all_table_data,
-        statement_type=statement_type  # Pass statement_type here
+        statement_type=statement_type,  # Pass statement_type here
+        static_info=static_info
     )
+    # end time
+    end_time = time.time()
+    # Calculate time taken and print as hh:mm:ss
+    print(f"Time taken: {time.strftime('%H:%M:%S', time.gmtime(end_time - start_time))}")
 
 if __name__ == "__main__":
     main()
