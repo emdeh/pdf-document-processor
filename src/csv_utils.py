@@ -409,7 +409,7 @@ class CSVUtils:
                 if col in amount_columns:
                     summary_sheet.set_column(idx, idx, None, money_fmt)
 
-        print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
+        self.logger.info(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
 
 
     def assign_years_to_dates(self, transactions_df, statement_start_date_str, statement_end_date_str, statement_start_date_format, statement_end_date_format):
