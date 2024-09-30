@@ -28,7 +28,7 @@ class PDFProcessor:
             output_folder (str): The folder where the split PDFs will be saved.
             manual_processing_folder (str): The folder where the PDF files without a known pattern will be moved.
         """
-        print(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
+        self.logger.info(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
         for pdf_file in Path(input_folder).glob("*.pdf"):
             pdf_path = str(pdf_file)
             is_machine_readable = self.is_pdf_machine_readable(pdf_path)
@@ -38,16 +38,16 @@ class PDFProcessor:
                 doc_type = self.detect_document_type(pdf_path)
                 doc_starts = self.get_doc_starts_by_type(pdf_path, doc_type)
             else:
-                print(f"{os.path.basename(pdf_file)} is scanned. Performing OCR to extract text.\n")
+                self.logger.info(f"{os.path.basename(pdf_file)} is scanned. Performing OCR to extract text.\n")
                 # Use OCR to extract text
                 doc_type = self.detect_document_type(pdf_path, use_ocr=True)
                 doc_starts = self.get_doc_starts_by_type(pdf_path, doc_type, use_ocr=True)
 
             if doc_starts:
                 self.split_pdf(pdf_path, output_folder, doc_starts)
-                print(f"{os.path.basename(pdf_file)} has been processed and split accordingly.\n")
+                self.logger.info(f"{os.path.basename(pdf_file)} has been processed and split accordingly.\n")
             else:
-                print(
+                self.logger.info(
                     f"Could not identify document pattern for {os.path.basename(pdf_file)}, moving to manual processing folder.\n"
                 )
                 shutil.copy(pdf_path, manual_processing_folder)
@@ -55,7 +55,7 @@ class PDFProcessor:
                 with open(manifest_path, "a") as manifest_file:
                     manifest_file.write(f"{pdf_file.stem}\n")
 
-        print(f"Splitting complete.\n\n")
+        self.logger.info(f"Splitting complete.\n\n")
 
     def detect_document_type(self, pdf_path, use_ocr=False):
         """
