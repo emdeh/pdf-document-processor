@@ -3,11 +3,14 @@
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 import os
+import logging
 
 
 class DocAIUtils:
     def __init__(self):
-        pass
+        
+        # Assign logger to class attribute
+        self.logger = self.get_logger()
 
     def initialise_analysis_client(self, endpoint, api_key, doc_model_id):
         """
@@ -21,17 +24,19 @@ class DocAIUtils:
         Returns:
             DocumentAnalysisClient: The initialized Document Intelligence Client.
         """
-        print("Initializing Document Intelligence Client...\n")
+        self.logger.info("Initializing Document Intelligence Client...\n")
         credential = AzureKeyCredential(api_key)
         client = DocumentAnalysisClient(endpoint=endpoint, credential=credential)
-        print(
-            f"Document Intelligence Client established with Endpoint: {endpoint}.\nUsing {doc_model_id}.\nPreparing to extract data...\n\n"
+        self.logger.info(
+            "Document Intelligence Client established with Endpoint: %s.\nUsing %s.\nPreparing to extract data...\n\n",
+            endpoint, 
+            doc_model_id
         )
         return client
 
     def analyse_document(self, client, model_id, document_path):
         """
-        Analyzes a document using the specified client and model ID.
+        Analyses a document using the specified client and model ID.
 
         Args:
             client (DocumentAnalysisClient): The client object used to interact with the document analysis service.
@@ -41,14 +46,14 @@ class DocAIUtils:
         Returns:
             AnalysisResult: The result of the document analysis.
         """
-        print(f"Analyzing:\n{os.path.basename(document_path)}.\n\n")
+        self.logger.info(f"Analysing:\n{os.path.basename(document_path)}.\n\n")
         try:
             with open(document_path, "rb") as document:
                 poller = client.begin_analyze_document(model_id=model_id, document=document)
                 result = poller.result()
-            print(f"Analyzed:\n{os.path.basename(document_path)}.\n")
-        except Exception as e:
-            print(f"Error analyzing {os.path.basename(document_path)}: {e}")
+            self.logger.info(f"Analysed:\n{os.path.basename(document_path)}.\n")
+        except Exception as analysis_error:
+            self.logger.error("Error analysing %s: %s", os.path.basename(document_path), analysis_error)
             result = None
         return result
 
