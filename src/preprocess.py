@@ -8,13 +8,35 @@ from count_pdfs import PDFCounter
 
 def main():
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description='PDF Preprocessing Script')
-    parser.add_argument('--input', type=str, required=True, help='Path to the input folder containing PDFs')
-    parser.add_argument('--name', type=str, required=True, help='Name of the pre-process run')
+    parser = argparse.ArgumentParser(
+        description='''PDF Preprocessing Script.
+        
+        This script splits PDF files containing multiple statements into individual files to prepare them for processing. 
+        It creates a folder within the --input folder based on the --name given.
+        Within this folder it creates necessary folders, counts PDFs before and after splitting them, saves the counts to Excel files,
+        and stores the split files.''',
+        
+        epilog='For more information, please refer to the documentation.'
+        )
+    
+    parser.add_argument(
+        '--input',
+        type=str,
+        required=True,
+        help='Path to the input folder containing PDFs that need to be split.'
+        )
+    
+    parser.add_argument(
+        '--name',
+        type=str,
+        required=True,
+        help='Name of the pre-process run - the folder created within the input folder will be named after this.'
+        )
+    
     args = parser.parse_args()
     
     input_dir = args.input
-    output_folder = input_dir # Output folder for preprocessed PDFs will be created inside the initial input folder
+    output_folder = input_dir # Output folder for preprocessed PDFs will be created inside the given input folder
     name = args.name
     
     # Create necessary folders
