@@ -79,23 +79,23 @@ class PDFProcessor:
         doc.close()
 
         if "Bendigo" in first_pages_text:
-            print("Bendigo Bank statement detected.")
+            self.logger.info("Bendigo Bank statement detected.")
             return "bendigo_statement"
 
         elif "FREEDOM" in first_pages_text:
-            print("Bank of Melbourne OR St. George statement detected.")
+            self.logger.info("Bank of Melbourne OR St. George statement detected.")
             return "bom_statement"
 
         elif re.search(r"\b1 of \d", first_pages_text):
-            print("Standard statement detected.")
+            self.logger.info("Standard statement detected.")
             return "standard_statement"
         
         elif "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE" in first_pages_text:
-            print("ANZ statement detected.")
+            self.logger.info("ANZ statement detected.")
             return "anz_statement"
         
         elif "Westpac" in first_pages_text:
-            print("Westpac statement detected.")
+            self.logger.info("Westpac statement detected.")
             return "westpac_statement"
 
         return "unknown"
