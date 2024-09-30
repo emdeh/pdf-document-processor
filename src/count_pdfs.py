@@ -27,7 +27,7 @@ class PDFCounter:
             with fitz.open(pdf_path) as doc:
                 return len(doc)
         except Exception as e:
-            print(f"Error processing {pdf_path}: {e}")
+            self.logger.error("Error processing %s: %s", pdf_path, e)
             return 0
 
     def process_pdf_count(self, folders):
@@ -50,7 +50,7 @@ class PDFCounter:
         total_pages = 0
 
         for folder in folders:
-            print(f"Counting files and pages in {os.path.basename(folder)}...\n")
+            self.logger.info(f"Counting files and pages in {os.path.basename(folder)}...\n")
 
             folder_path = Path(folder)
             folder_files = 0
@@ -90,12 +90,12 @@ class PDFCounter:
             with pd.ExcelWriter(output_file_path, engine="openpyxl", mode="a", if_sheet_exists="new") as writer:
                 detailed_df.to_excel(writer, sheet_name="Pages Per Document", index=False, header=True)
                 summary_df.to_excel(writer, sheet_name="Summary", index=False, header=True)
-            print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.")
+            self.logger.info(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.")
         else:
             with pd.ExcelWriter(output_file_path, engine="openpyxl") as writer:
                 detailed_df.to_excel(writer, sheet_name="Pages Per Document", index=False, header=True)
                 summary_df.to_excel(writer, sheet_name="Summary", index=False, header=True)
-            print(
+            self.logger.info(
                 f"New file '{output_filename}' created in {os.path.basename(output_excel_path)}.\n"
-                f"Data written to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.\n"
+                f"Data written to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}."
             )
