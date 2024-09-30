@@ -68,14 +68,14 @@ class DocAIUtils:
         Returns:
             AnalysisResult: The analysis result if successful, None otherwise.
         """
-        print(f"Analyzing with pre-built layout model: {os.path.basename(document_path)}.\n\n")
+        self.logger.info(f"Analysing with pre-built layout model: {os.path.basename(document_path)}.\n\n")
         try:
             with open(document_path, "rb") as document:
                 poller = client.begin_analyze_document("prebuilt-layout", document=document)
                 result = poller.result()
-            print(f"Analyzed: {os.path.basename(document_path)}.\n")
-        except Exception as e:
-            print(f"Error analyzing {os.path.basename(document_path)}: {e}")
+            self.logger.info(f"Analysed: {os.path.basename(document_path)}.\n")
+        except Exception as analysis_error:
+            self.logger.error("Error analysing %s: %s", os.path.basename(document_path), analysis_error)
             result = None
         return result
 
