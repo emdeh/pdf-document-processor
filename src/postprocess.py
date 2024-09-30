@@ -1,6 +1,11 @@
 import argparse
 import os
-from postprocess_utils import ExcelHandler
+from postprocess_utils import
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def main():
     # Dynamically generate the task list and descriptions for the help message
