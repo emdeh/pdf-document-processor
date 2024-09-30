@@ -4,11 +4,14 @@ import csv
 import pandas as pd
 import os
 import re
+import logging
 
 
 class CSVUtils:
     def __init__(self):
-        pass
+        
+        # Assign logger to class attribute
+        self.logger = logging.getLogger(__name__) # Initialise logger for the class
 
     def extract_static_info(self, results, original_file_name, statement_type):
         """
