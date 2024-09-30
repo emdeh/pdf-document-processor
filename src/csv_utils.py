@@ -411,7 +411,6 @@ class CSVUtils:
 
         self.logger.info(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
 
-
     def assign_years_to_dates(self, transactions_df, statement_start_date_str, statement_end_date_str, statement_start_date_format, statement_end_date_format):
         """
         Assigns years to dates that lack year information based on the statement period.
@@ -433,7 +432,7 @@ class CSVUtils:
         if pd.isna(statement_start_date) or pd.isna(statement_end_date):
             # Log a warning instead of raising an exception
             file_name = transactions_df['OriginalFileName'].iloc[0]
-            print(f"Warning: Statement start or end date is invalid for file '{file_name}'. Skipping year assignment for this file.")
+            self.logger.warning(f"Warning: Statement start or end date is invalid for file '{file_name}'. Skipping year assignment for this file.")
             return transactions_df  # Return the DataFrame without modifying dates
 
         # Generate a mapping of months to years in the statement period
