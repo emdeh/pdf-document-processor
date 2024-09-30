@@ -63,7 +63,7 @@ class EnvironmentPrep:
             dict: Loaded configuration.
         """
         if not os.path.isfile(config_path):
-            self.logger.error("Config file not found at %s.", config_path)
+            self.logger.error("Config file not found.")
             raise FileNotFoundError(f"Config file not found at {config_path}.")
 
         with open(config_path, "r") as file:
