@@ -3,8 +3,13 @@
 import os
 import shutil
 import yaml
+import logging
 
 class EnvironmentPrep:
+    def __init__(self):
+        # Assign logger to class attribute
+        self.logger = logging.getLogger(__name__) # Initialise logger for the class
+
     def create_folders(self, statement_set_name, base_folder):
         """
         Creates the necessary folders for processing the files.
@@ -18,19 +23,19 @@ class EnvironmentPrep:
         """
         new_folder = os.path.join(base_folder, statement_set_name)
         os.makedirs(new_folder, exist_ok=True)
-        print(f"Using folder '{os.path.basename(statement_set_name)}' to hold processed files.\n")
+        self.logger.info(f"Using folder '{os.path.basename(statement_set_name)}' to hold processed files.\n")
 
         ready_for_analysis = os.path.join(new_folder, 'split-files')
         os.makedirs(ready_for_analysis, exist_ok=True)
-        print("Created 'split-files' folder to hold files ready for analysis.\n")
+        self.logger.info("Created 'split-files' folder to hold files ready for analysis.\n")
 
         manual_splitting_folder = os.path.join(new_folder, 'manual-splitting required')
         os.makedirs(manual_splitting_folder, exist_ok=True)
-        print("Created 'manual-splitting required' folder to hold files that fail auto-splitting.\n")
+        self.logger.info("Created 'manual-splitting required' folder to hold files that fail auto-splitting.\n")
 
         analysed_files_folder = os.path.join(new_folder, 'analysed-files')
         os.makedirs(analysed_files_folder, exist_ok=True)
-        print("Created 'analysed-files' folder to hold files that have been analysed.\n")
+        self.logger.info("Created 'analysed-files' folder to hold files that have been analysed.\n")
 
         return new_folder, ready_for_analysis, manual_splitting_folder, analysed_files_folder
 
