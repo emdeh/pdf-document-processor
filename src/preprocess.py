@@ -2,9 +2,14 @@
 
 import os
 import argparse
+import logging
 from prep_env import EnvironmentPrep
 from pdf_processor import PDFProcessor
 from count_pdfs import PDFCounter
+
+# set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def main():
     # Parse command-line arguments
