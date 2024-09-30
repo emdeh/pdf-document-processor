@@ -32,7 +32,7 @@ def main():
 
     # Verify input file exists
     if not os.path.exists(input_file):
-        print(f"Input file does not exist: {input_file}")
+        logger.warning(f"Input file does not exist: {input_file}")
         exit(1)
 
     # Load the Excel file
@@ -42,20 +42,20 @@ def main():
     if args.tasks:
         for task_name in args.tasks:
             if task_name in ExcelHandler.task_registry:
-                print(f"Performing task: {task_name}")
+                logger.info(f"Performing task: {task_name}")
                 task_func_name = ExcelHandler.task_registry[task_name]['func']
                 task_func = getattr(ExcelHandler, task_func_name)  # Use ExcelHandler here because it's a static method
                 excel_handler.transactions_df = task_func(excel_handler.transactions_df)
             else:
-                print(f"Task '{task_name}' not recognized. Skipping.")
+                logger.warning(f"Task '{task_name}' not recognized. Skipping.")
     else:
-        print("No tasks specified. Exiting.")
+        logger.info("No tasks specified. Exiting.")
         exit(1)
 
     # Save the processed data to the output file
     excel_handler.save(output_file)
 
-    print(f"Postprocessing complete. Output saved to: {output_file}")
+    logger.info(f"Postprocessing complete. Output saved to: {output_file}")
 
 if __name__ == '__main__':
     main()
