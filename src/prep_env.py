@@ -124,10 +124,10 @@ class EnvironmentPrep:
             source_folder (str): Source directory.
             destination_folder (str): Destination directory.
         """
-        print(f"Copying files from {source_folder} to {destination_folder}...\n")
+        self.logger.info(f"Copying files from {source_folder} to {destination_folder}...\n")
         for filename in os.listdir(source_folder):
             source_path = os.path.join(source_folder, filename)
             dest_path = os.path.join(destination_folder, filename)
             if os.path.isfile(source_path) and filename.lower().endswith('.pdf'):
                 shutil.copy(source_path, dest_path)
-        print("Files copied successfully.\n")
+        self.logger.info("Files copied successfully.\n")
