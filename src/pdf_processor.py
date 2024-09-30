@@ -8,13 +8,16 @@ import os
 import pytesseract
 from PIL import Image
 import io
+import logging
 
 
 class PDFProcessor:
     def __init__(self):
         # Set the Tesseract command path if necessary
         pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
-        pass
+        
+        # Assign logger to class attribute
+        self.logger = logging.getLogger(__name__)
         
     def process_all_pdfs(self, input_folder, output_folder, manual_processing_folder):
         """
