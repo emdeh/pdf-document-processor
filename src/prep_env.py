@@ -89,7 +89,7 @@ class EnvironmentPrep:
         if statement_type_name:
             for stype in self.config["statement_types"]:
                 if stype["type_name"] == statement_type_name:
-                    print(f"Selected statement type: {stype['type_name']}")
+                    self.logger.info(f"Selected statement type: {stype['type_name']}")
                     return stype, stype["env_var"]
             raise ValueError(f"Statement type '{statement_type_name}' not found in configuration.")
         else:
