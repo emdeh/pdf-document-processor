@@ -119,6 +119,7 @@ class CSVUtils:
             else:
                 raise ValueError("No numeric value found")
         except ValueError:
+            self.logger.error(f"Could not convert {amount_str} to float. Mapping actual value.")
             print(f"Could not convert {amount_str} to float. Mapping actual value.")
             return amount_str, False
 
