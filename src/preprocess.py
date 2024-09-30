@@ -16,18 +16,19 @@ def main():
         Within this folder it creates necessary folders, counts PDFs before and after splitting them, saves the counts to Excel files,
         and stores the split files.''',
         
-        epilog='For more information, please refer to the documentation.'
-        )
+        epilog='''Exmaple: python src/preprocess.py --input PATH/TO/PDFS --name statement_run_1'''
+    )
+
     
     parser.add_argument(
-        '--input',
+        '-i', '--input',
         type=str,
         required=True,
         help='Path to the input folder containing PDFs that need to be split.'
         )
     
     parser.add_argument(
-        '--name',
+        '-n', '--name',
         type=str,
         required=True,
         help='Name of the pre-process run - the folder created within the input folder will be named after this.'
