@@ -47,10 +47,10 @@ class EnvironmentPrep:
             document_path (str): Path to the document to be moved.
             analysed_files_folder (str): Destination folder.
         """
-        print(f"Moving {os.path.basename(document_path)} to the analysed-files folder.\n")
+        self.logger.info(f"Moving {os.path.basename(document_path)} to the analysed-files folder.\n")
         destination_path = os.path.join(analysed_files_folder, os.path.basename(document_path))
         shutil.move(document_path, destination_path)
-        print(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
+        self.logger.info(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
 
     def load_statement_config(self, config_path):
         """
