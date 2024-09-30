@@ -10,7 +10,7 @@ class DocAIUtils:
     def __init__(self):
         
         # Assign logger to class attribute
-        self.logger = self.get_logger()
+        self.logger = logging.getLogger(__name__) # Initialise logger for the class
 
     def initialise_analysis_client(self, endpoint, api_key, doc_model_id):
         """
@@ -24,7 +24,7 @@ class DocAIUtils:
         Returns:
             DocumentAnalysisClient: The initialized Document Intelligence Client.
         """
-        self.logger.info("Initializing Document Intelligence Client...\n")
+        self.logger.info("Initialising Document Intelligence Client...\n")
         credential = AzureKeyCredential(api_key)
         client = DocumentAnalysisClient(endpoint=endpoint, credential=credential)
         self.logger.info(
