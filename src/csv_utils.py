@@ -120,7 +120,6 @@ class CSVUtils:
                 raise ValueError("No numeric value found")
         except ValueError:
             self.logger.error(f"Could not convert {amount_str} to float. Mapping actual value.")
-            print(f"Could not convert {amount_str} to float. Mapping actual value.")
             return amount_str, False
 
     def extract_and_process_summary_info(self, document_analysis_results, original_document_name, statement_type):
@@ -241,9 +240,9 @@ class CSVUtils:
                     flattened[f"{key}_Value"] = info['value']
                     flattened[f"{key}_Confidence"] = info.get('confidence', 'N/A')
                 else:
-                    print(f"Unexpected structure for {key}: {info}")
+                    self.logger.error(f"Unexpected structure for {key}: {info}")
         else:
-            print(f"Was passed a non-dict object: {type(summary_data)}")
+            self.logger.warning(f"Was passed a non-dict object: {type(summary_data)}")
         return flattened
 
     def process_multiple_statements(self, input_files, output_dir, excel_filename, config):
