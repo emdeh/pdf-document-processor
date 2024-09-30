@@ -9,14 +9,13 @@ from count_pdfs import PDFCounter
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='PDF Preprocessing Script')
-    parser.add_argument('--input_folder', type=str, required=True, help='Path to the input folder containing PDFs')
-    parser.add_argument('--output_folder', type=str, required=True, help='Path to the output folder for preprocessed PDFs')
-    parser.add_argument('--statement_set_name', type=str, required=True, help='Name of the statement set')
+    parser.add_argument('--input', type=str, required=True, help='Path to the input folder containing PDFs')
+    parser.add_argument('--name', type=str, required=True, help='Name of the pre-process run')
     args = parser.parse_args()
     
-    input_folder = args.input_folder
-    output_folder = args.output_folder
-    statement_set_name = args.statement_set_name
+    input_dir = args.input
+    output_folder = input_dir # Output folder for preprocessed PDFs will be created inside the initial input folder
+    name = args.name
     
     # Create necessary folders
     env_prep = EnvironmentPrep()
@@ -25,7 +24,7 @@ def main():
         ready_for_analysis,
         manual_splitting_folder,
         analysed_files_folder,
-    ) = env_prep.create_folders(statement_set_name, output_folder)
+    ) = env_prep.create_folders(name, output_folder)
     
     # Count input PDFs
     pdf_counter = PDFCounter()
@@ -34,7 +33,7 @@ def main():
         summary_data_before,
         total_pre_files,
         total_pre_pages,
-    ) = pdf_counter.process_pdf_count([input_folder])
+    ) = pdf_counter.process_pdf_count([input_dir])
     
     # Save pre-split counts
     pdf_counter.save_to_excel(
@@ -44,7 +43,7 @@ def main():
     # Process PDFs
     pdf_processor = PDFProcessor()
     pdf_processor.process_all_pdfs(
-        input_folder,
+        input_dir,
         ready_for_analysis,
         manual_splitting_folder,
     )
