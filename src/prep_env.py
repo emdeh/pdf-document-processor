@@ -111,7 +111,7 @@ class EnvironmentPrep:
         """
         model_id = os.getenv(selected_env_var)
         if model_id:
-            print(f"MODEL ID set to: {model_id}")
+            self.logger.info(f"MODEL ID set to: {model_id}")
             return model_id
         else:
             raise ValueError(f"No corresponding MODEL ID variable found for {selected_env_var}.")
