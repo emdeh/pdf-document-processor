@@ -4,11 +4,14 @@ import pandas as pd
 import fitz  # PyMuPDF
 import os
 from pathlib import Path
+import logging
 
 
 class PDFCounter:
     def __init__(self):
-        pass
+        
+        # Assign logger to class attribute
+        self.logger = logging.getLogger(__name__)
 
     def count_pdf_pages(self, pdf_path):
         """
