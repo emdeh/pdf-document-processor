@@ -18,21 +18,21 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='PDF Processing Script')
     parser.add_argument('--input', type=str, required=True, help='Path to the input folder containing preprocessed PDFs')
-    parser.add_argument('--config_path', type=str, required=True, help='Path to the statement types configuration YAML file')
-    parser.add_argument('--name', type=str, required=True, help='Name of the statement type to use')
+    parser.add_argument('--config_type', type=str, default='/config/type_models.yaml', help='Path to the statement types configuration YAML file')
+    parser.add_argument('--type', type=str, required=True, help='Name of the statement type to use')
     args = parser.parse_args()
 
     input_dir = args.input
     output_folder = args.input_dir #Output folder for processed PDFs will be created inside the initial input folder
-    config_path = args.config_path
-    name = args.name
+    config_type = args.config_type
+    type = args.type
 
     # Load configuration
     env_prep = EnvironmentPrep()
-    config = env_prep.load_statement_config(config_path)
+    config = env_prep.load_statement_config(config_type)
 
     # Select statement type
-    statement_type, selected_env_var = env_prep.select_statement_type(name)
+    statement_type, selected_env_var = env_prep.select_statement_type(type)
 
     # Set model_id using the environment variable from .env
     model_id = env_prep.set_model_id(selected_env_var)
