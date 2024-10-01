@@ -17,23 +17,22 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='PDF Processing Script')
-    parser.add_argument('--input_folder', type=str, required=True, help='Path to the folder containing PDFs to process')
-    parser.add_argument('--output_folder', type=str, required=True, help='Path to the output folder for results')
+    parser.add_argument('--input', type=str, required=True, help='Path to the input folder containing preprocessed PDFs')
     parser.add_argument('--config_path', type=str, required=True, help='Path to the statement types configuration YAML file')
-    parser.add_argument('--statement_type_name', type=str, required=True, help='Name of the statement type to use')
+    parser.add_argument('--name', type=str, required=True, help='Name of the statement type to use')
     args = parser.parse_args()
 
-    input_folder = args.input_folder
-    output_folder = args.output_folder
+    input_dir = args.input
+    output_folder = args.input_dir #Output folder for processed PDFs will be created inside the initial input folder
     config_path = args.config_path
-    statement_type_name = args.statement_type_name
+    name = args.name
 
     # Load configuration
     env_prep = EnvironmentPrep()
     config = env_prep.load_statement_config(config_path)
 
     # Select statement type
-    statement_type, selected_env_var = env_prep.select_statement_type(statement_type_name)
+    statement_type, selected_env_var = env_prep.select_statement_type(name)
 
     # Set model_id using the environment variable from .env
     model_id = env_prep.set_model_id(selected_env_var)
@@ -58,7 +57,7 @@ def main():
     all_summaries = []
     all_table_data = []
 
-    files_to_process = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.lower().endswith('.pdf')]
+    files_to_process = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.lower().endswith('.pdf')]
     files_to_go = len(files_to_process)
 
     # Create the analysed-files folder under output_folder
