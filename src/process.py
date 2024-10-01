@@ -16,10 +16,30 @@ def main():
     load_dotenv()
 
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description='PDF Processing Script')
-    parser.add_argument('--input', type=str, required=True, help='Path to the input folder containing preprocessed PDFs')
-    parser.add_argument('--config_type', type=str, default='/config/type_models.yaml', help='Path to the statement types configuration YAML file')
-    parser.add_argument('--type', type=str, required=True, help='Name of the statement type to use')
+    parser = argparse.ArgumentParser(description='''PDF Processing Script
+                                     
+                                     This script takes a user inputed preprocessed folder of PDFs each containing individual statements and extracts the information into an excel file.
+                                     The input requires the user to specify what type of statement is being accessed. The available types can be found in the type_models.yaml.
+                                     The config argument is pre-defined but can be changed if required.
+                                     ''',
+                                     
+                                     epilog = '''Example: python src/process.py --input PATH/TO/PREPROCESSED PDFS --type "AMEX - Card Statement"
+                                     ''')
+    parser.add_argument('--input', 
+                        type=str, 
+                        required=True, 
+                        help='Path to the input folder containing preprocessed PDFs'
+                        )
+    parser.add_argument('--config_type', 
+                        type=str, 
+                        default='/config/type_models.yaml', 
+                        help='Path to the statement types configuration YAML file'
+                        )
+    parser.add_argument('--type', 
+                        type=str, 
+                        required=True, 
+                        help='Name of the statement type to use'
+                        )
     args = parser.parse_args()
 
     input_dir = args.input
