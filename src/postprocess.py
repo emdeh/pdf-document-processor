@@ -11,27 +11,36 @@ def main():
         description=f'Postprocessing Script for Transaction Data.\n\nAvailable tasks:\n{task_help}',
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument('--input_file', type=str, required=True, help='Path to the input Excel file')
-    parser.add_argument('--output_file', type=str, help='Path to the output Excel file (optional). If not provided, will save in the same dir as input.')
-    parser.add_argument('--tasks', type=str, nargs='+', help='List of postprocessing tasks to perform.')
+    parser.add_argument(
+        '-i', '--input', 
+        type=str, 
+        required=True, 
+        help='Path to the input Excel file'
+        )
+    parser.add_argument(
+        '--tasks', 
+        type=str, 
+        nargs='+', 
+        help='List of postprocessing tasks to perform.'
+        )
     args = parser.parse_args()
 
-    input_file = args.input_file
+    input_dir = args.input
 
     # If output_file is not provided, create a new file path in the same directory
     if args.output_file:
-        output_file = args.output_file
+        output_file = args.input_dir
     else:
-        file_name, file_extension = os.path.splitext(input_file)
+        file_name, file_extension = os.path.splitext(input_dir)
         output_file = f"{file_name}_processed{file_extension}"
 
     # Verify input file exists
-    if not os.path.exists(input_file):
-        print(f"Input file does not exist: {input_file}")
+    if not os.path.exists(input_dir):
+        print(f"Input file does not exist: {input_dir}")
         exit(1)
 
     # Load the Excel file
-    excel_handler = ExcelHandler(input_file)
+    excel_handler = ExcelHandler(input_dir)
 
     # Perform selected tasks on the 'transactions' sheet
     if args.tasks:
