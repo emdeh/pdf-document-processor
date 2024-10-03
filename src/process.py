@@ -48,7 +48,7 @@ def main():
     args = parser.parse_args()
 
     input_dir = args.input
-    output_folder = args.input_dir #Output folder for processed PDFs will be created inside the initial input folder
+    output_folder = args.input #Output folder for processed PDFs will be created inside the initial input folder
     config_type = args.config_type
     type = args.type
 
