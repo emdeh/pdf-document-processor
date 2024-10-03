@@ -26,9 +26,10 @@ def main():
     args = parser.parse_args()
 
     input_dir = args.input
+    output_file = (lambda fn: f"{os.path.splitext(fn)[0]}_processed{os.path.splitext(fn)[1]}")(input_dir)
 
     # If output_file is not provided, create a new file path in the same directory
-    if args.output_file:
+    '''if args.output_file:
         output_file = args.input_dir
     else:
         file_name, file_extension = os.path.splitext(input_dir)
@@ -37,7 +38,7 @@ def main():
     # Verify input file exists
     if not os.path.exists(input_dir):
         print(f"Input file does not exist: {input_dir}")
-        exit(1)
+        exit(1)'''
 
     # Load the Excel file
     excel_handler = ExcelHandler(input_dir)
