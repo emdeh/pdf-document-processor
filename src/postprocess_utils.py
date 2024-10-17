@@ -119,6 +119,7 @@ class PDFPostProcessor:
         """
         Categorise PDF statements into folders based on a value pattern derived from a provided example.
         """
+        # TODO: Instead of prompting for an example, consider storing in yaml and calling from there.
         field_name = input("Please enter a name for the field (e.g., 'Account Number', 'Statement ID'):\n")
         print(f"Categorising PDF statements by {field_name}...")
 

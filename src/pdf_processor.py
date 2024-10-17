@@ -66,6 +66,7 @@ class PDFProcessor:
             str: The detected document type. Possible values are 'bendigo_statement',
                 'bom_statement', 'standard_statement', or 'unknown'.
         """
+        # TODO: The pattern matching could be moved into the yaml file and loaded here
         doc = fitz.open(pdf_path)
         first_pages_text = ""
         for i in range(min(12, len(doc))):
