@@ -209,7 +209,7 @@ class PDFPostProcessor:
 
     def extract_value_from_pdf(self, pdf_path, pattern):
         """
-        Extracts a value from a PDF using a regex pattern.
+        Extracts a value from a PDF using a regex pattern..
 
         Args:
             pdf_path (str): The path to the PDF file.
