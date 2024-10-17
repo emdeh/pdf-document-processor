@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 import string
+import math
 
 class ExcelHandler:
     """
@@ -217,20 +218,67 @@ class PDFPostProcessor:
 
         Returns:
             str: The extracted value.
+
+        Explanation for of the "for block in page_dict['blocks']" loop:
+        (Full disclosure, I needed ChatGPT to help me with this.)
+
+        Text Orientation Filtering:
+
+        The dir attribute of each text span provides the direction vector (dx, dy).
+        By calculating the angle of the text, we can determine its orientation.
+        Angles around 0° or 180° indicate horizontal text; angles around 90° or -90° indicate vertical text.
+        We then include only the text spans that are within a certain angle range (e.g., -30° to 30° or 150° to 210°).
+        
+        This excludes any text that is on the side and not left to right
+
+        Limiting the Search Area:
+
+        We obtain the bbox (bounding box) of each span to get its vertical position.
+        By comparing the y coordinates to the page height, we can limit the text to the top portion of the page.
+        We can adjust the proportion (e.g., 0.2 for 20%) as needed based on the document layout.
+        
+        Accumulating Text:
+
+        Then we concatenate the text from the desired spans into a single string.
+        This text is then used for pattern matching.
+
+        Wow.
         """
         doc = fitz.open(pdf_path)
         text = ""
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
-            text += page.get_text()
+            page_height = page.rect.height
+
+            # Get text as a dictionary
+            page_dict = page.get_text("dict")  # Use "dict"
+
+            for block in page_dict["blocks"]:
+                # Process only text blocks
+                if block["type"] == 0:
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            bbox = span["bbox"]
+                            x0, y0, x1, y1 = bbox
+                            width = x1 - x0
+                            height = y1 - y0
+
+                            # If width is greater than height, consider it horizontal text
+                            if width > height:
+                                # Optionally, limit to a specific area (e.g., top 20% of the page)
+                                if y1 < page_height * 0.2:
+                                    text += span["text"] + " "
+                            else:
+                                # Skip vertical or rotated text
+                                continue
+
         doc.close()
-        # NormaliSe whitespace in text
+        # Normalize whitespace in text
         text = re.sub(r'\s+', ' ', text)
         # Search for the pattern
         matches = re.findall(pattern, text)
         if matches:
-            #TODO: If multiple matches are found, decide how to handle them.
-            # For now, return the first match.
+            # If multiple matches are found, return the first match
             return matches[0].strip()
         return None
 
