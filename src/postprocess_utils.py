@@ -161,23 +161,32 @@ class PDFPostProcessor:
         Returns:
             str: The regex pattern.
         """
-        example = input(f"Please enter an example of how the {field_name} appears in the statement (use <VALUE> where the variable part is):\n")
+        example = input(f"Please enter an example of how the {field_name} appears in the statement:\n")
         pattern = self.generate_regex_from_example(example)
+        if pattern:
+            print(f"Generated pattern: {pattern}\n")
+        else:
+            print(f"Failed to generate pattern for {field_name}.\n")
         return pattern
 
     def generate_regex_from_example(self, example):
         """
-        Generates a regex pattern from a user-provided example.
+        Generates a regex pattern from a user-provided example by replacing sequences of digits with regex groups.
 
         Args:
-            example (str): An example string to generate a regex pattern from.
+            example (str): The example string provided by the user.
 
         Returns:
-            str: The regex pattern.
+            str: The generated regex pattern.
         """
+        # Define the variable part as sequences of alphanumeric characters
+        variable_part_pattern = r'[A-Za-z0-9]+'
+        # Escape the example to handle special characters
         escaped_example = re.escape(example)
-        pattern = escaped_example.replace(r'\<VALUE\>', r'(.+)')
+        # Replace variable parts with regex groups
+        pattern = re.sub(variable_part_pattern, r'([A-Za-z0-9]+)', escaped_example)
         return pattern
+
 
     def extract_field(self, pdf_path, pattern):
         """
@@ -194,11 +203,10 @@ class PDFPostProcessor:
         # TODO: Consider refactoring to a common function.
         doc = fitz.open(pdf_path)
         text = ""
-        for page_num in range(min(5, len(doc))):
+        for page_num in range(min(5, len(doc))):  # Limit to the first few pages for efficiency
             page = doc.load_page(page_num)
             text += page.get_text()
-        
-        doc
+        doc.close()
         match = re.search(pattern, text)
         if match:
             return match.group(1).strip()
