@@ -1,4 +1,10 @@
 import pandas as pd
+import fitz # PyMuPDF
+import re
+import os
+import shutil
+from pathlib import Path
+from datetime import datetime
 
 class ExcelHandler:
     """
@@ -83,3 +89,98 @@ class ExcelHandler:
         return transactions_df
     # TODO: The date formatting is partially duplicated from write_transactions_and_summaries_to_excel in csv_utils.py. Consider refactoring to a common function.
 
+class PDFPostProcessor:
+    """
+    A class to handle post-processing of PDF files.
+    """
+    # Registry of PDF tasks
+    task_registry = {
+        'categorise_by_account_number': {
+            'func': 'categorise_by_account_number',
+            'description': 'Categorise PDF statements into folders based on account number.'
+        },
+        'add_date_prefix_to_filenames': {
+            'func': 'add_date_prefix_to_filenames',
+            'description': 'Add statement start date as prefix to PDF filenames for chronological ordering.'
+        },
+        'identify_and_move_duplicates': {
+            'func': 'identify_and_move_duplicates',
+            'description': 'Identify duplicate statements and move them to a duplicates folder.'
+        }
+        # Add more tasks here as needed
+    }
+
+    def __init__(self, input_folder):
+        self.input_folder = input_folder
+        self.pdf_files = list(Path(input_folder).glob("*.pdf"))
+
+    @staticmethod
+    def categorise_by_account_number(self):
+        """
+        Categorise PDF statements into folders based on account number.
+        """
+        pass
+
+    @staticmethod
+    def add_date_prefix_to_filenames(self):
+        """
+        Add statement start date as prefix to PDF filenames for chronological ordering.
+        """
+        pass
+
+    @staticmethod
+    def identify_and_move_duplicates(self):
+        """
+        Identify duplicate statements and move them to a duplicates folder.
+        """
+        pass
+
+    def get_pattern_from_user(self, field_name):
+        """
+        Prompts the user for an example and generates a regex pattern.
+
+        Args:
+            field_name (str): The name of the field to extract.
+
+        Returns:
+            str: The regex pattern.
+        """
+        pass
+
+    def generate_regex_from_example(self, example):
+        """
+        Generates a regex pattern from a user-provided example.
+
+        Args:
+            example (str): An example string to generate a regex pattern from.
+
+        Returns:
+            str: The regex pattern.
+        """
+        pass
+
+    def extract_field(self, pdf_path, pattern):
+        """
+        Extracts a field from a PDF using a regex pattern.
+
+        Args:
+            pdf_path (str): The path to the PDF file.
+            pattern (str): The regex pattern to search for.
+
+        Returns:
+            str: The extracted field.
+        """
+        pass
+
+    def format_date(self, date_str):
+        """
+        Formats a date string extracted from a PDF.
+
+        Args:
+            date_str (str): The date string to format.
+
+        Returns:
+            str: The formatted date.
+        """
+        pass
+    
