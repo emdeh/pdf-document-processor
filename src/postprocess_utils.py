@@ -145,10 +145,13 @@ class PDFPostProcessor:
                 folder_path = os.path.join(self.input_folder, folder_name)
                 os.makedirs(folder_path, exist_ok=True)
 
-                # Move file
-                destination = os.path.join(folder_path, pdf_file.name)
+                # Rename the file to include the extracted value
+                new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
+                destination = os.path.join(folder_path, new_filename)
+
+                # Move and rename the file                
                 shutil.move(pdf_path, destination)
-                print(f"Moved {pdf_file.name} to {folder_path}")
+                print(f"Moved {pdf_file.name} to {folder_path} and renamed to {new_filename}")
             else:
                 print(f"Value not found in {pdf_file.name}")
 
