@@ -190,7 +190,19 @@ class PDFPostProcessor:
         Returns:
             str: The extracted field.
         """
-        pass
+        # This is very similar to detect_document_type() and find_x_statements() in pdf_processor.py. 
+        # TODO: Consider refactoring to a common function.
+        doc = fitz.open(pdf_path)
+        text = ""
+        for page_num in range(min(5, len(doc))):
+            page = doc.load_page(page_num)
+            text += page.get_text()
+        
+        doc
+        match = re.search(pattern, text)
+        if match:
+            return match.group(1).strip()
+        return None
 
     def format_date(self, date_str):
         """
