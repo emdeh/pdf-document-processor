@@ -149,11 +149,12 @@ class PDFPostProcessor:
                 # This renaming part is purposely kept seperate from the prefix_date function so that function can
                 # be called independently from the task registry specifically for date prefixes.
                 new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
+                print(f"File {pdf_file.name} renamed to {new_filename}")
                 destination = os.path.join(folder_path, new_filename)
 
                 # Move and rename the file                
                 shutil.move(pdf_path, destination)
-                print(f"Moved {pdf_file.name} to {folder_path} and renamed to {new_filename}")
+                print(f"Moved to Folder: {sanitised_value}")
             else:
                 print(f"Value not found in {pdf_file.name}")
 
@@ -223,13 +224,13 @@ class PDFPostProcessor:
             page = doc.load_page(page_num)
             text += page.get_text()
         doc.close()
-        # Normalize whitespace in text
+        # NormaliSe whitespace in text
         text = re.sub(r'\s+', ' ', text)
         # Search for the pattern
         matches = re.findall(pattern, text)
         if matches:
-            # If multiple matches are found, you may decide how to handle them.
-            # For now, we'll return the first match.
+            #TODO: If multiple matches are found, decide how to handle them.
+            # For now, return the first match.
             return matches[0].strip()
         return None
 
