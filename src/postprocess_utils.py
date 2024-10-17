@@ -115,14 +115,14 @@ class PDFPostProcessor:
         self.input_folder = input_folder
         self.pdf_files = list(Path(input_folder).glob("*.pdf"))
 
-    @staticmethod
     def categorise_by_field(self):
         """
         Categorise PDF statements into folders based on a specified field.
         """
-        field_name = input("Please enter the field name to categorise by (e.g., 'account number', 'statement number'):\n")
+        field_name = input("Please enter the field name to categorise by as it appears on the statement (e.g., 'Account Number', 'Statement Number'):\n")
         print(f"Categorising PDF statements by {field_name}...")
-        pattern = self.get_pattern_from_user(field_name)
+        example = input(f"Please enter an example of how the {field_name} value appears in the statement, including the field name. For example Account Number: 123 (not just 123):\n")
+        pattern = self.generate_regex_from_example(field_name, example)
         if not pattern:
             print("Pattern generation failed. Exiting task.")
             return
@@ -144,67 +144,65 @@ class PDFPostProcessor:
                 shutil.move(pdf_path, destination)
                 print(f"Moved {pdf_file.name} to {folder_path}")
             else:
-                print(f"{field_name.capitalize()} not found in {pdf_file.name}")
+                print(f"{field_name} not found in {pdf_file.name}")
 
-    @staticmethod
-    def add_date_prefix_to_filenames(self):
+    def generate_regex_from_example(self, field_name, example):
         """
-        Add statement start date as prefix to PDF filenames for chronological ordering.
-        """
-        pass
-
-    @staticmethod
-    def identify_and_move_duplicates(self):
-        """
-        Identify duplicate statements and move them to a duplicates folder.
-        """
-        pass
-
-    def get_pattern_from_user(self, field_name):
-        """
-        Prompts the user for an example and generates a regex pattern.
+        Generates a regex pattern from the field name and a user-provided example.
 
         Args:
             field_name (str): The name of the field to extract.
-
-        Returns:
-            str: The regex pattern.
-        """
-        example = input(f"Please enter an example of how the {field_name} appears in the statement:\n")
-        pattern = self.generate_regex_from_example(example)
-        if pattern:
-            print(f"Generated pattern: {pattern}\n")
-        else:
-            print(f"Failed to generate pattern for {field_name}.\n")
-        return pattern
-
-    def generate_regex_from_example(self, example):
-        """
-        Generates a regex pattern from a user-provided example by replacing sequences of digits with regex groups.
-
-        Args:
-            example (str): The example string provided by the user.
+            example (str): An example of how the field appears in the statement. (INCLUDING THE FIELD NAME)
 
         Returns:
             str: The generated regex pattern.
         """
-        # Define the variable part as sequences of alphanumeric characters
+        # Escape field name and example
+        escaped_field_name = re.escape(field_name.strip())
+        escaped_example = re.escape(example.strip())
+
+        # Check if field name is present in the example
+        field_pos = escaped_example.lower().find(escaped_field_name.lower())
+        if field_pos == -1:
+            print("The field name was not found in your example. Please provide an example that includes the field name as it appears in the statement.")
+            return None
+
+        # Find the variable part in the example
+        # We assume the variable part is the sequence of alphanumeric characters that is not part of the field name
         variable_part_pattern = r'[A-Za-z0-9\-]+'
-        escaped_example = re.escape(example)
-        # Find all matches of the variable part pattern
         matches = list(re.finditer(variable_part_pattern, escaped_example))
-        if matches:
-            # Replace only the last occurrence with a capture group
-            last_match = matches[-1]
-            start, end = last_match.span()
-            pattern = escaped_example[:start] + r'([A-Za-z0-9\-]+)' + escaped_example[end:]
-            # Make the pattern case-insensitive and flexible with whitespace
-            pattern = re.sub(r'\\\s+', r'\\s+', pattern)  # Replace escaped whitespace with \s+
-            pattern = r'(?i)' + pattern  # Add case-insensitive flag
-            return pattern
-        else:
+
+        if not matches:
             print("No variable part found in the example.")
             return None
+
+        # Identify the variable part (value) that is not part of the field name
+        field_name_positions = [(m.start(), m.end()) for m in re.finditer(re.escape(escaped_field_name), escaped_example, re.IGNORECASE)]
+        variable_part = None
+        for match in matches:
+            start, end = match.span()
+            # Check if this match overlaps with the field name
+            if not any(f_start <= start < f_end for f_start, f_end in field_name_positions):
+                variable_part = (start, end)
+                break
+
+        if variable_part is None:
+            print("Could not identify the variable part in the example.")
+            return None
+
+        variable_start, variable_end = variable_part
+        # Build the pattern
+        prefix = escaped_example[:variable_start]
+        suffix = escaped_example[variable_end:]
+
+        # Allow optional characters between field name and value (like colon, whitespace)
+        prefix = prefix.rstrip('\\') + r'[:\s\-]*'
+
+        pattern = f"(?i){prefix}([A-Za-z0-9\\-]+){suffix}"
+        # Replace escaped whitespace with \s+
+        pattern = re.sub(r'\\\s+', r'\\s+', pattern)
+        print(f"Generated pattern: {pattern}\n")
+        return pattern
 
     def extract_field(self, pdf_path, pattern):
         """
@@ -217,8 +215,6 @@ class PDFPostProcessor:
         Returns:
             str: The extracted field.
         """
-        # This is very similar to detect_document_type() and find_x_statements() in pdf_processor.py. 
-        # TODO: Consider refactoring to a common function.
         doc = fitz.open(pdf_path)
         text = ""
         for page_num in range(min(5, len(doc))):
@@ -232,7 +228,7 @@ class PDFPostProcessor:
         if match:
             return match.group(1).strip()
         return None
-    
+
     def sanitise_folder_name(self, name):
         """
         Sanitises the folder name by removing or replacing invalid characters.
@@ -250,5 +246,19 @@ class PDFPostProcessor:
 
         Returns:
             str: The formatted date.
+        """
+        pass
+
+    @staticmethod
+    def add_date_prefix_to_filenames(self):
+        """
+        Add statement start date as prefix to PDF filenames for chronological ordering.
+        """
+        pass
+
+    @staticmethod
+    def identify_and_move_duplicates(self):
+        """
+        Identify duplicate statements and move them to a duplicates folder.
         """
         pass

@@ -63,7 +63,7 @@ def main():
                     print(f"Performing PDF task: {task_name}")
                     task_func_name = PDFPostProcessor.task_registry[task_name]['func']
                     task_func = getattr(pdf_processor, task_func_name)
-                    task_func(pdf_processor)
+                    task_func()
                 else:
                     print(f"Task '{task_name}' not recognized for PDFs. Skipping.")
         else:
