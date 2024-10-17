@@ -219,25 +219,26 @@ class PDFPostProcessor:
         Returns:
             str: The extracted value.
 
-        Explanation for of the "for block in page_dict['blocks']" loop:
+        Explanation of the "for block in page_dict['blocks']" loop:
         (Full disclosure, I needed ChatGPT to help me with this.)
 
-        Text Orientation Filtering:
+        **Text Orientation Filtering:**
 
-        The dir attribute of each text span provides the direction vector (dx, dy).
-        By calculating the angle of the text, we can determine its orientation.
-        Angles around 0° or 180° indicate horizontal text; angles around 90° or -90° indicate vertical text.
-        We then include only the text spans that are within a certain angle range (e.g., -30° to 30° or 150° to 210°).
-        
-        This excludes any text that is on the side and not left to right
+        We use the bounding box dimensions (`'bbox'`) of each text span to determine its orientation.
+        By comparing the width and height of the bounding box, we can infer the text direction.
+        - If the **width** is greater than the **height**, the text is considered **horizontal**.
+        - If the **height** is greater than or equal to the **width**, the text is likely **vertical** or rotated.
+        We include only the text spans where `width > height`, effectively filtering out vertical or rotated text.
 
-        Limiting the Search Area:
+        This excludes any text that is on the side and not left-to-right.
 
-        We obtain the bbox (bounding box) of each span to get its vertical position.
-        By comparing the y coordinates to the page height, we can limit the text to the top portion of the page.
-        We can adjust the proportion (e.g., 0.2 for 20%) as needed based on the document layout.
-        
-        Accumulating Text:
+        **Limiting the Search Area:**
+
+        We obtain the `'bbox'` (bounding box) of each span to get its vertical position on the page.
+        By comparing the y-coordinates (`y0`, `y1`) to the page height, we can limit the text to the top portion of the page.
+        We adjust the proportion (e.g., `0.2` for 20%) as needed based on the document layout.
+
+        **Accumulating Text:**
 
         Then we concatenate the text from the desired spans into a single string.
         This text is then used for pattern matching.
