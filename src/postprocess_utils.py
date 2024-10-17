@@ -98,7 +98,7 @@ class PDFPostProcessor:
     task_registry = {
         'categorise_by_value': {
             'func': 'categorise_by_value',
-            'description': 'Categorise PDF statements into folders based on a specified field.'
+            'description': 'Categorise PDF statements into folders based on a specified value pattern.'
         },
         'add_date_prefix_to_filenames': {
             'func': 'add_date_prefix_to_filenames',
