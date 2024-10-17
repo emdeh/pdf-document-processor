@@ -5,6 +5,7 @@ import os
 import shutil
 from pathlib import Path
 from datetime import datetime
+import string
 
 class ExcelHandler:
     """
@@ -95,9 +96,9 @@ class PDFPostProcessor:
     """
     # Registry of PDF tasks
     task_registry = {
-        'categorise_by_account_number': {
-            'func': 'categorise_by_account_number',
-            'description': 'Categorise PDF statements into folders based on account number.'
+        'categorise_by_field': {
+            'func': 'categorise_by_field',
+            'description': 'Categorise PDF statements into folders based on a specified field.'
         },
         'add_date_prefix_to_filenames': {
             'func': 'add_date_prefix_to_filenames',
@@ -115,27 +116,35 @@ class PDFPostProcessor:
         self.pdf_files = list(Path(input_folder).glob("*.pdf"))
 
     @staticmethod
-    def categorise_by_account_number(self):
+    def categorise_by_field(self):
         """
-        Categorise PDF statements into folders based on account number.
+        Categorise PDF statements into folders based on a specified field.
         """
-        print("Categorising PDF statements by account number...")
-        pattern = self.get_pattern_from_user("account_number")
+        field_name = input("Please enter the field name to categorise by (e.g., 'account number', 'statement number'):\n")
+        print(f"Categorising PDF statements by {field_name}...")
+        pattern = self.get_pattern_from_user(field_name)
+        if not pattern:
+            print("Pattern generation failed. Exiting task.")
+            return
+
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
-            account_number = self.extract_field(pdf_path, pattern)
+            extracted_value = self.extract_field(pdf_path, pattern)
 
-            if account_number:
-                # Create account-specific folder
-                account_folder = os.path.join(self.input_folder, account_number)
-                os.makedirs(account_folder, exist_ok=True)
-
-                # Move PDF file to account-specific folder
-                destination = os.path.join(account_folder, pdf_file.name)
+            if extracted_value:
+                # Construct folder name using the field name and extracted value
+                sanitised_field_name = self.sanitise_folder_name(field_name.replace(" ", ""))
+                sanitised_value = self.sanitise_folder_name(extracted_value)
+                folder_name = f"{sanitised_field_name}-{sanitised_value}"
+                folder_path = os.path.join(self.input_folder, folder_name)
+                os.makedirs(folder_path, exist_ok=True)
+                
+                # Move file
+                destination = os.path.join(folder_path, pdf_file.name)
                 shutil.move(pdf_path, destination)
-                print(f"Moved {pdf_file.name} to {account_folder}")
+                print(f"Moved {pdf_file.name} to {folder_path}")
             else:
-                print(f"ACcount number not found in {pdf_file.name}")
+                print(f"{field_name.capitalize()} not found in {pdf_file.name}")
 
     @staticmethod
     def add_date_prefix_to_filenames(self):
@@ -180,13 +189,22 @@ class PDFPostProcessor:
             str: The generated regex pattern.
         """
         # Define the variable part as sequences of alphanumeric characters
-        variable_part_pattern = r'[A-Za-z0-9]+'
-        # Escape the example to handle special characters
+        variable_part_pattern = r'[A-Za-z0-9\-]+'
         escaped_example = re.escape(example)
-        # Replace variable parts with regex groups
-        pattern = re.sub(variable_part_pattern, r'([A-Za-z0-9]+)', escaped_example)
-        return pattern
-
+        # Find all matches of the variable part pattern
+        matches = list(re.finditer(variable_part_pattern, escaped_example))
+        if matches:
+            # Replace only the last occurrence with a capture group
+            last_match = matches[-1]
+            start, end = last_match.span()
+            pattern = escaped_example[:start] + r'([A-Za-z0-9\-]+)' + escaped_example[end:]
+            # Make the pattern case-insensitive and flexible with whitespace
+            pattern = re.sub(r'\\\s+', r'\s+', pattern)  # Replace escaped whitespace with \s+
+            pattern = r'(?i)' + pattern  # Add case-insensitive flag
+            return pattern
+        else:
+            print("No variable part found in the example.")
+            return None
 
     def extract_field(self, pdf_path, pattern):
         """
@@ -203,14 +221,25 @@ class PDFPostProcessor:
         # TODO: Consider refactoring to a common function.
         doc = fitz.open(pdf_path)
         text = ""
-        for page_num in range(min(5, len(doc))):  # Limit to the first few pages for efficiency
+        for page_num in range(min(5, len(doc))):
             page = doc.load_page(page_num)
             text += page.get_text()
         doc.close()
+        # Normalize whitespace in text
+        text = re.sub(r'\s+', ' ', text)
+        # Search for the pattern
         match = re.search(pattern, text)
         if match:
             return match.group(1).strip()
         return None
+    
+    def sanitise_folder_name(self, name):
+        """
+        Sanitises the folder name by removing or replacing invalid characters.
+        """
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        sanitised_name = ''.join(c for c in name if c in valid_chars)
+        return sanitised_name
 
     def format_date(self, date_str):
         """
