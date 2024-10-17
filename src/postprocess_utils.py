@@ -146,6 +146,8 @@ class PDFPostProcessor:
                 os.makedirs(folder_path, exist_ok=True)
 
                 # Rename the file to include the extracted value
+                # This renaming part is purposely kept seperate from the prefix_date function so that function can
+                # be called independently from the task registry specifically for date prefixes.
                 new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
                 destination = os.path.join(folder_path, new_filename)
 
