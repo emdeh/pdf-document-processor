@@ -199,7 +199,7 @@ class PDFPostProcessor:
             start, end = last_match.span()
             pattern = escaped_example[:start] + r'([A-Za-z0-9\-]+)' + escaped_example[end:]
             # Make the pattern case-insensitive and flexible with whitespace
-            pattern = re.sub(r'\\\s+', r'\s+', pattern)  # Replace escaped whitespace with \s+
+            pattern = re.sub(r'\\\s+', r'\\s+', pattern)  # Replace escaped whitespace with \s+
             pattern = r'(?i)' + pattern  # Add case-insensitive flag
             return pattern
         else:
