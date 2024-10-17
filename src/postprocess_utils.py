@@ -96,8 +96,8 @@ class PDFPostProcessor:
     """
     # Registry of PDF tasks
     task_registry = {
-        'categorise_by_field': {
-            'func': 'categorise_by_field',
+        'categorise_by_value': {
+            'func': 'categorise_by_value',
             'description': 'Categorise PDF statements into folders based on a specified field.'
         },
         'add_date_prefix_to_filenames': {
@@ -115,22 +115,27 @@ class PDFPostProcessor:
         self.input_folder = input_folder
         self.pdf_files = list(Path(input_folder).glob("*.pdf"))
 
-    def categorise_by_field(self):
+    def categorise_by_value(self):
         """
-        Categorise PDF statements into folders based on a specified field.
+        Categorise PDF statements into folders based on a value pattern derived from a provided example.
         """
-        field_name = input("Please enter the field name to categorise by as it appears on the statement (e.g., 'Account Number', 'Statement Number'):\n")
+        field_name = input("Please enter a name for the field (e.g., 'Account Number', 'Statement ID'):\n")
         print(f"Categorising PDF statements by {field_name}...")
-        example = input(f"Please enter an example of how the {field_name} value appears in the statement, including the field name. For example Account Number: 123 (not just 123):\n")
-        pattern = self.generate_regex_from_example(field_name, example)
+
+        # Prompt the user for an example value
+        value_example = input(f"Please enter an example of the {field_name} value (e.g., '123-456-789'):\n")
+
+        # Generate the value pattern based on the example
+        pattern = self.generate_regex_from_value_example(value_example)
         if not pattern:
             print("Pattern generation failed. Exiting task.")
             return
 
+        print(f"Generated value pattern: {pattern}\n")
+
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
-            extracted_value = self.extract_field(pdf_path, pattern)
-
+            extracted_value = self.extract_value_from_pdf(pdf_path, pattern)
             if extracted_value:
                 # Construct folder name using the field name and extracted value
                 sanitised_field_name = self.sanitise_folder_name(field_name.replace(" ", ""))
@@ -138,95 +143,88 @@ class PDFPostProcessor:
                 folder_name = f"{sanitised_field_name}-{sanitised_value}"
                 folder_path = os.path.join(self.input_folder, folder_name)
                 os.makedirs(folder_path, exist_ok=True)
-                
+
                 # Move file
                 destination = os.path.join(folder_path, pdf_file.name)
                 shutil.move(pdf_path, destination)
                 print(f"Moved {pdf_file.name} to {folder_path}")
             else:
-                print(f"{field_name} not found in {pdf_file.name}")
+                print(f"Value not found in {pdf_file.name}")
 
-    def generate_regex_from_example(self, field_name, example):
+    def generate_regex_from_value_example(self, value_example):
         """
-        Generates a regex pattern from the field name and a user-provided example.
+        Generates a regex pattern based on a value example.
 
         Args:
-            field_name (str): The name of the field to extract.
-            example (str): An example of how the field appears in the statement. (INCLUDING THE FIELD NAME)
+            value_example (str): An example of the value to generate the pattern from.
 
         Returns:
             str: The generated regex pattern.
         """
-        # Escape field name and example
-        escaped_field_name = re.escape(field_name.strip())
-        escaped_example = re.escape(example.strip())
-
-        # Check if field name is present in the example
-        field_pos = escaped_example.lower().find(escaped_field_name.lower())
-        if field_pos == -1:
-            print("The field name was not found in your example. Please provide an example that includes the field name as it appears in the statement.")
-            return None
-
-        # Find the variable part in the example
-        # We assume the variable part is the sequence of alphanumeric characters that is not part of the field name
-        variable_part_pattern = r'[A-Za-z0-9\-]+'
-        matches = list(re.finditer(variable_part_pattern, escaped_example))
-
-        if not matches:
-            print("No variable part found in the example.")
-            return None
-
-        # Identify the variable part (value) that is not part of the field name
-        field_name_positions = [(m.start(), m.end()) for m in re.finditer(re.escape(escaped_field_name), escaped_example, re.IGNORECASE)]
-        variable_part = None
-        for match in matches:
-            start, end = match.span()
-            # Check if this match overlaps with the field name
-            if not any(f_start <= start < f_end for f_start, f_end in field_name_positions):
-                variable_part = (start, end)
-                break
-
-        if variable_part is None:
-            print("Could not identify the variable part in the example.")
-            return None
-
-        variable_start, variable_end = variable_part
-        # Build the pattern
-        prefix = escaped_example[:variable_start]
-        suffix = escaped_example[variable_end:]
-
-        # Allow optional characters between field name and value (like colon, whitespace)
-        prefix = prefix.rstrip('\\') + r'[:\s\-]*'
-
-        pattern = f"(?i){prefix}([A-Za-z0-9\\-]+){suffix}"
-        # Replace escaped whitespace with \s+
-        pattern = re.sub(r'\\\s+', r'\\s+', pattern)
-        print(f"Generated pattern: {pattern}\n")
+        pattern = ''
+        i = 0
+        value_example = value_example.strip()
+        while i < len(value_example):
+            c = value_example[i]
+            if c.isdigit():
+                # Start of a digit sequence
+                j = i
+                while j < len(value_example) and value_example[j].isdigit():
+                    j += 1
+                num_digits = j - i
+                # Append \d{n}
+                pattern += r'\d{' + str(num_digits) + r'}'
+                i = j
+            elif c.isalpha():
+                # Start of a letter sequence
+                j = i
+                while j < len(value_example) and value_example[j].isalpha():
+                    j += 1
+                num_letters = j - i
+                # Append [A-Za-z]{n}
+                pattern += r'[A-Za-z]{' + str(num_letters) + r'}'
+                i = j
+            elif c.isspace():
+                # Handle whitespace
+                pattern += r'\s+'
+                i += 1
+                # Skip additional whitespace
+                while i < len(value_example) and value_example[i].isspace():
+                    i += 1
+            else:
+                # Special character
+                # Escape special regex characters
+                pattern += re.escape(c)
+                i += 1
+        # Make the pattern case-insensitive
+        pattern = f"(?i){pattern}"
         return pattern
 
-    def extract_field(self, pdf_path, pattern):
+    def extract_value_from_pdf(self, pdf_path, pattern):
         """
-        Extracts a field from a PDF using a regex pattern.
+        Extracts a value from a PDF using a regex pattern.
 
         Args:
             pdf_path (str): The path to the PDF file.
             pattern (str): The regex pattern to search for.
 
         Returns:
-            str: The extracted field.
+            str: The extracted value.
         """
         doc = fitz.open(pdf_path)
         text = ""
-        for page_num in range(min(5, len(doc))):
+        for page_num in range(len(doc)):
             page = doc.load_page(page_num)
             text += page.get_text()
         doc.close()
         # Normalize whitespace in text
         text = re.sub(r'\s+', ' ', text)
         # Search for the pattern
-        match = re.search(pattern, text)
-        if match:
-            return match.group(1).strip()
+        matches = re.findall(pattern, text)
+        if matches:
+            # If multiple matches are found, you may decide how to handle them.
+            # For now, we'll return the first match.
+            return matches[0].strip()
         return None
 
     def sanitise_folder_name(self, name):
