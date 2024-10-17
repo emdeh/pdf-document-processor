@@ -175,7 +175,9 @@ class PDFPostProcessor:
         Returns:
             str: The regex pattern.
         """
-        pass
+        escaped_example = re.escape(example)
+        pattern = escaped_example.replace(r'\<VALUE\>', r'(.+)')
+        return pattern
 
     def extract_field(self, pdf_path, pattern):
         """
