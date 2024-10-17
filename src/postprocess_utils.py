@@ -92,7 +92,7 @@ class ExcelHandler:
 
 class PDFPostProcessor:
     """
-    A class to handle post-processing of PDF files.
+    A class to handle post-processing of PDF files..
     """
     # Registry of PDF tasks
     task_registry = {
