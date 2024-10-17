@@ -161,7 +161,9 @@ class PDFPostProcessor:
         Returns:
             str: The regex pattern.
         """
-        pass
+        example = input(f"Please enter an example of how the {field_name} appears in the statement (use <VALUE> where the variable part is):\n")
+        pattern = self.generate_regex_from_example(example)
+        return pattern
 
     def generate_regex_from_example(self, example):
         """
