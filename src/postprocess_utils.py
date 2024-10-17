@@ -119,7 +119,23 @@ class PDFPostProcessor:
         """
         Categorise PDF statements into folders based on account number.
         """
-        pass
+        print("Categorising PDF statements by account number...")
+        pattern = self.get_pattern_from_user("account_number")
+        for pdf_file in self.pdf_files:
+            pdf_path = str(pdf_file)
+            account_number = self.extract_field(pdf_path, pattern)
+
+            if account_number:
+                # Create account-specific folder
+                account_folder = os.path.join(self.input_folder, account_number)
+                os.makedirs(account_folder, exist_ok=True)
+
+                # Move PDF file to account-specific folder
+                destination = os.path.join(account_folder, pdf_file.name)
+                shutil.move(pdf_path, destination)
+                print(f"Moved {pdf_file.name} to {account_folder}")
+            else:
+                print(f"ACcount number not found in {pdf_file.name}")
 
     @staticmethod
     def add_date_prefix_to_filenames(self):
@@ -183,4 +199,3 @@ class PDFPostProcessor:
             str: The formatted date.
         """
         pass
-    
