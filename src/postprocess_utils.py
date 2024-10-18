@@ -96,6 +96,7 @@ class PDFPostProcessor:
     A class to handle post-processing of PDF files..
     """
     # Registry of PDF tasks
+    # This makes the tasks appear for selection when running `python src/postprocess.py -h`
     task_registry = {
         'categorise_by_value': {
             'func': 'categorise_by_value',
@@ -120,14 +121,17 @@ class PDFPostProcessor:
         """
         Categorise PDF statements into folders based on a value pattern derived from a provided example.
         """
-        # TODO: Instead of prompting for an example, consider storing in yaml and calling from there.
+        # TODO: Instead of prompting for an example, consider storing in yaml and loading patterns from there.
+        # Prompt the user for a field name, used to append a description to the folder and filename.
         field_name = input("Please enter a name for the field (e.g., 'Account Number', 'Statement ID'):\n")
         print(f"Categorising PDF statements by {field_name}...")
 
         # Prompt the user for an example value
+        # This example will be used to generate a regex pattern to extract the value from the PDF
         value_example = input(f"Please enter an example of the {field_name} value (e.g., '123-456-789'):\n")
 
-        # Generate the value pattern based on the example
+        # Generate the value pattern based on the example.
+        # Calls the `generate_regex_from_value_example` function to generate the pattern based on the example.
         pattern = self.generate_regex_from_value_example(value_example)
         if not pattern:
             print("Pattern generation failed. Exiting task.")
@@ -137,18 +141,24 @@ class PDFPostProcessor:
 
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
+
+            # Find and extract the value from the PDF based on the pattern
             extracted_value = self.extract_value_from_pdf(pdf_path, pattern)
             if extracted_value:
-                # Construct folder name using the field name and extracted value
+                # Construct folder name using the field name and extracted value found in the PDF.
                 sanitised_field_name = self.sanitise_folder_name(field_name.replace(" ", ""))
                 sanitised_value = self.sanitise_folder_name(extracted_value)
                 folder_name = f"{sanitised_field_name}-{sanitised_value}"
                 folder_path = os.path.join(self.input_folder, folder_name)
+
+                # Create the folder based on the constructed folder name
                 os.makedirs(folder_path, exist_ok=True)
 
                 # Rename the file to include the extracted value
-                # This renaming part is purposely kept seperate from the prefix_date function so that function can
-                # be called independently from the task registry specifically for date prefixes.
+                ### NOTE:
+                #   This renaming part is purposely kept seperate from the prefix_date function so that function can
+                #   be called independently from the task registry specifically for date prefixes.
+                ###
                 new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
                 print(f"File {pdf_file.name} renamed to {new_filename}")
                 destination = os.path.join(folder_path, new_filename)
@@ -245,37 +255,54 @@ class PDFPostProcessor:
 
         Wow.
         """
+        # Open the PDF file
         doc = fitz.open(pdf_path)
+
+        # Initialize an empty string to store the extracted text
         text = ""
+
+        # Iterate over each page in the PDF
         for page_num in range(len(doc)):
+            # Load the page
             page = doc.load_page(page_num)
+            # Get the height of the page
             page_height = page.rect.height
 
             # Get text as a dictionary
             page_dict = page.get_text("dict")  # Use "dict"
 
+            # Iterate over each block in the page
             for block in page_dict["blocks"]:
                 # Process only text blocks
                 if block["type"] == 0:
+                    # Iterate over each line in the block
                     for line in block["lines"]:
+                        # Iterate over each span in the line
                         for span in line["spans"]:
+                            # Get the bounding box of the span
                             bbox = span["bbox"]
+                            # Extract the text of the span
                             x0, y0, x1, y1 = bbox
+                            # Calculate the width and height of the span
                             width = x1 - x0
+                            # Calculate the height of the span
                             height = y1 - y0
 
                             # If width is greater than height, consider it horizontal text
                             if width > height:
                                 # Optionally, limit to a specific area (e.g., top 20% of the page)
                                 if y1 < page_height * 0.2:
+                                    # Append the text of the span to the accumulated text
                                     text += span["text"] + " "
                             else:
                                 # Skip vertical or rotated text
                                 continue
-
+        # Close the PDF
         doc.close()
-        # Normalize whitespace in text
+
+        # Normalise whitespace in text
         text = re.sub(r'\s+', ' ', text)
+        
         # Search for the pattern
         matches = re.findall(pattern, text)
         if matches:
@@ -287,8 +314,13 @@ class PDFPostProcessor:
         """
         Sanitises the folder name by removing or replacing invalid characters.
         """
-        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        # Define valid characters
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)\
+        
+        # Remove invalid characters
         sanitised_name = ''.join(c for c in name if c in valid_chars)
+
+        # Replace spaces with underscores
         return sanitised_name
 
     def format_date(self, date_str):
