@@ -323,3 +323,16 @@ class PDFProcessor:
             text = pytesseract.image_to_string(image)
         return text
 
+    def extract_statement_start_date(self, pdf_path):
+        '''
+        Extracts the start date of the statement and forces the format into the YYYYMMDD form.
+
+        Args:
+        pdf_path (str): The path to the PDF file.
+
+        Returns:
+        start_date (date): The start date of the statement in YYYY MM DD format.
+        '''
+        #TODO - develop a function that extracts the start date of the statement.
+        
+        pass
