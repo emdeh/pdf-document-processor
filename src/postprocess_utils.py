@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 import string
 import math
+import dateutil.parser
 
 class ExcelHandler:
     """
@@ -325,13 +326,11 @@ class PDFPostProcessor:
 
     def extract_statement_start_date(self, pdf_path, pattern):
         '''
-        Extracts the start date of the statement. Method requests user to input format of date and outputs first hit for that type of date.
+        Extracts the start date of the statement. Currently just calls a different method and executes it. Might not need to be used.
 
         Args:
             pdf_path (str): The path to the PDF file.
-            
-        Requested inputs:
-            pattern: 
+            pattern (): Regex pattern to seek
         Returns:
             start_date (str): A date type in an unknown format.
         '''
@@ -342,14 +341,14 @@ class PDFPostProcessor:
         Formats a date string extracted from a PDF.
 
         Args:
-            date_str (str): The date string to format.
+            date_str (str): The date string
 
         Returns:
-            str: The formatted date.
+            str: A string of the date in form YYYYMMDD. E.g., 20230130
         """
-        # Move import to top when working
-        import dateutil.parser
+        # Dateutil's parser is designed to capture most date formats. If it fails, adjust to a try statement, with the except section parsing the atypical format.
         parsed_date = dateutil.parser.parse(date_str)
+
         str = parsed_date.strftime("%Y%m%d")
         return str
 
@@ -357,10 +356,11 @@ class PDFPostProcessor:
         """
         Add statement start date as prefix to PDF filenames for chronological ordering.
         """
-        # NOTE: Likely to not work for all types. May need concat with identifer such as "Statement Start Date" depending on format.
+        # NOTE: Need to gain insight into which date target is the "correct" date.
         date_example = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
-        # Insert pattern into extract_value_from_pdf and output
+        # Develop regex pattern from input example
         pattern = self.generate_regex_from_value_example(date_example)
+        # Insert pattern into extract_value_from_pdf and output
         if not pattern:
             print("Pattern generation failed. Exiting task.")
             return
@@ -369,22 +369,17 @@ class PDFPostProcessor:
             date_str = self.extract_statement_start_date(pdf_path, pattern)
             if date_str:
                 date_prefix = self.format_date(date_str)
-                # Rename the file to include the extracted value
-                ### NOTE:
-                #   This renaming part is purposely kept seperate from the prefix_date function so that function can
-                #   be called independently from the task registry specifically for date prefixes.
-                ###
+                # Determine new file name
                 new_filename = (f"{date_prefix}-{pdf_file.name}")
-                
+                # Specify start/end path, currently the same location.
                 origin = os.path.join(self.input_folder, pdf_file.name)
                 destination = os.path.join(self.input_folder, new_filename)
 
-                # Move and rename the file                
+                # Rename the file                
                 os.rename(origin, destination)
                 print(f"File {pdf_file.name} renamed to {new_filename}")
             else:
                 print(f"Value not found in {pdf_file.name}")
-        pass
 
     @staticmethod
     def identify_and_move_duplicates(self):
