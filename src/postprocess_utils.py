@@ -109,6 +109,11 @@ class PDFPostProcessor:
         'identify_and_move_duplicates': {
             'func': 'identify_and_move_duplicates',
             'description': 'Identify duplicate statements and move them to a duplicates folder.'
+        },
+        #TODO: Delete me after confirmed working
+        'extract_statement_start_date': {
+            'func': 'extract_statement_start_date',
+            'description': 'extract start date of statement. For testing purposes. Will be incorporated into add_date_prefix_to_filenames.'
         }
         # Add more tasks here as needed
     }
@@ -323,7 +328,7 @@ class PDFPostProcessor:
         # Replace spaces with underscores
         return sanitised_name
 
-    def extract_statement_start_date(self, pdf_path):
+    def extract_statement_start_date(self):
         '''
         Extracts the start date of the statement. Method requests user to input format of date and outputs first hit for that type of date.
 
@@ -340,10 +345,16 @@ class PDFPostProcessor:
         # Obtain pattern from user
         # TODO - Remove this requirement when the program can self-determine format/type.
         # NOTE: Likely to not work for all types. May need concat with identifer such as "Statement Start Date" depending on format.
-        pattern = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
+        value_example = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
         # Insert pattern into extract_value_from_pdf and output
-        start_date = self.extract_value_from_pdf(pdf_path, pattern)
-        print(start_date)
+        pattern = self.generate_regex_from_value_example(value_example)
+        if not pattern:
+            print("Pattern generation failed. Exiting task.")
+            return
+        for pdf_file in self.pdf_files:
+            pdf_path = str(pdf_file)
+            start_date = self.extract_value_from_pdf(pdf_path, pattern)
+            print(start_date)
         return start_date
     def format_date(self, date_str):
         """
