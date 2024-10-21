@@ -323,6 +323,28 @@ class PDFPostProcessor:
         # Replace spaces with underscores
         return sanitised_name
 
+    def extract_statement_start_date(self, pdf_path):
+        '''
+        Extracts the start date of the statement. Method requests user to input format of date and outputs first hit for that type of date.
+
+        Args:
+            pdf_path (str): The path to the PDF file.
+            
+        Requested inputs:
+            pattern: 
+        Returns:
+            start_date (str): A date type in an unknown format.
+        '''
+        # Initialise
+        print("Now extracting statement start date")
+        # Obtain pattern from user
+        # TODO - Remove this requirement when the program can self-determine format/type.
+        # NOTE: Likely to not work for all types. May need concat with identifer such as "Statement Start Date" depending on format.
+        pattern = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
+        # Insert pattern into extract_value_from_pdf and output
+        start_date = self.extract_value_from_pdf(pdf_path, pattern)
+        print(start_date)
+        return start_date
     def format_date(self, date_str):
         """
         Formats a date string extracted from a PDF.
