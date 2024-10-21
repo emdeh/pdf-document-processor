@@ -109,11 +109,6 @@ class PDFPostProcessor:
         'identify_and_move_duplicates': {
             'func': 'identify_and_move_duplicates',
             'description': 'Identify duplicate statements and move them to a duplicates folder.'
-        },
-        #TODO: Delete me after confirmed working
-        'extract_statement_start_date': {
-            'func': 'extract_statement_start_date',
-            'description': 'extract start date of statement. For testing purposes. Will be incorporated into add_date_prefix_to_filenames.'
         }
         # Add more tasks here as needed
     }
@@ -328,7 +323,7 @@ class PDFPostProcessor:
         # Replace spaces with underscores
         return sanitised_name
 
-    def extract_statement_start_date(self, pdf_path):
+    def extract_statement_start_date(self, pdf_path, pattern):
         '''
         Extracts the start date of the statement. Method requests user to input format of date and outputs first hit for that type of date.
 
@@ -340,8 +335,6 @@ class PDFPostProcessor:
         Returns:
             start_date (str): A date type in an unknown format.
         '''
-        # Initialise
-        print("Now extracting statement start date")
         start_date = self.extract_value_from_pdf(pdf_path, pattern)
         return start_date
     def format_date(self, date_str):
@@ -357,7 +350,7 @@ class PDFPostProcessor:
         # Move import to top when working
         import dateutil.parser
         parsed_date = dateutil.parser.parse(date_str)
-        str = parsed_date.isoformat
+        str = parsed_date.strftime("%Y%m%d")
         return str
 
     def add_date_prefix_to_filenames(self):
@@ -373,30 +366,22 @@ class PDFPostProcessor:
             return
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
-            date_str = self.extract_statement_start_date(pdf_path)
+            date_str = self.extract_statement_start_date(pdf_path, pattern)
             if date_str:
-                name = self.format_date(date_str)
-                # Construct folder name using the field name and extracted value found in the PDF.
-                sanitised_field_name = self.sanitise_folder_name(date_example.replace(" ", ""))
-                sanitised_value = self.sanitise_folder_name(date_str)
-                folder_name = f"{sanitised_field_name}-{sanitised_value}"
-                folder_path = os.path.join(self.input_folder, folder_name)
-
-                # Create the folder based on the constructed folder name
-                os.makedirs(folder_path, exist_ok=True)
-
+                date_prefix = self.format_date(date_str)
                 # Rename the file to include the extracted value
                 ### NOTE:
                 #   This renaming part is purposely kept seperate from the prefix_date function so that function can
                 #   be called independently from the task registry specifically for date prefixes.
                 ###
-                new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
-                print(f"File {pdf_file.name} renamed to {new_filename}")
-                destination = os.path.join(folder_path, new_filename)
+                new_filename = (f"{date_prefix}-{pdf_file.name}")
+                
+                origin = os.path.join(self.input_folder, pdf_file.name)
+                destination = os.path.join(self.input_folder, new_filename)
 
                 # Move and rename the file                
-                shutil.move(pdf_path, destination)
-                print(f"Moved to Folder: {sanitised_value}")
+                os.rename(origin, destination)
+                print(f"File {pdf_file.name} renamed to {new_filename}")
             else:
                 print(f"Value not found in {pdf_file.name}")
         pass
