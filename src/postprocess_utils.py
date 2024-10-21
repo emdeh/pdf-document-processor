@@ -328,7 +328,7 @@ class PDFPostProcessor:
         # Replace spaces with underscores
         return sanitised_name
 
-    def extract_statement_start_date(self):
+    def extract_statement_start_date(self, pdf_path):
         '''
         Extracts the start date of the statement. Method requests user to input format of date and outputs first hit for that type of date.
 
@@ -342,19 +342,7 @@ class PDFPostProcessor:
         '''
         # Initialise
         print("Now extracting statement start date")
-        # Obtain pattern from user
-        # TODO - Remove this requirement when the program can self-determine format/type.
-        # NOTE: Likely to not work for all types. May need concat with identifer such as "Statement Start Date" depending on format.
-        value_example = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
-        # Insert pattern into extract_value_from_pdf and output
-        pattern = self.generate_regex_from_value_example(value_example)
-        if not pattern:
-            print("Pattern generation failed. Exiting task.")
-            return
-        for pdf_file in self.pdf_files:
-            pdf_path = str(pdf_file)
-            start_date = self.extract_value_from_pdf(pdf_path, pattern)
-            print(start_date)
+        start_date = self.extract_value_from_pdf(pdf_path, pattern)
         return start_date
     def format_date(self, date_str):
         """
@@ -366,13 +354,51 @@ class PDFPostProcessor:
         Returns:
             str: The formatted date.
         """
-        pass
+        # Move import to top when working
+        import dateutil.parser
+        parsed_date = dateutil.parser.parse(date_str)
+        str = parsed_date.isoformat
+        return str
 
-    @staticmethod
     def add_date_prefix_to_filenames(self):
         """
         Add statement start date as prefix to PDF filenames for chronological ordering.
         """
+        # NOTE: Likely to not work for all types. May need concat with identifer such as "Statement Start Date" depending on format.
+        date_example = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
+        # Insert pattern into extract_value_from_pdf and output
+        pattern = self.generate_regex_from_value_example(date_example)
+        if not pattern:
+            print("Pattern generation failed. Exiting task.")
+            return
+        for pdf_file in self.pdf_files:
+            pdf_path = str(pdf_file)
+            date_str = self.extract_statement_start_date(pdf_path)
+            if date_str:
+                name = self.format_date(date_str)
+                # Construct folder name using the field name and extracted value found in the PDF.
+                sanitised_field_name = self.sanitise_folder_name(date_example.replace(" ", ""))
+                sanitised_value = self.sanitise_folder_name(date_str)
+                folder_name = f"{sanitised_field_name}-{sanitised_value}"
+                folder_path = os.path.join(self.input_folder, folder_name)
+
+                # Create the folder based on the constructed folder name
+                os.makedirs(folder_path, exist_ok=True)
+
+                # Rename the file to include the extracted value
+                ### NOTE:
+                #   This renaming part is purposely kept seperate from the prefix_date function so that function can
+                #   be called independently from the task registry specifically for date prefixes.
+                ###
+                new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
+                print(f"File {pdf_file.name} renamed to {new_filename}")
+                destination = os.path.join(folder_path, new_filename)
+
+                # Move and rename the file                
+                shutil.move(pdf_path, destination)
+                print(f"Moved to Folder: {sanitised_value}")
+            else:
+                print(f"Value not found in {pdf_file.name}")
         pass
 
     @staticmethod
