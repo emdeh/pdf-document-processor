@@ -100,7 +100,6 @@ class CSVUtils:
         return transactions
 
     def convert_amount(self, amount_str):
-        import re
 
         try:
             # Use regex to extract numeric part
