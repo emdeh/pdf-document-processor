@@ -383,9 +383,30 @@ class PDFPostProcessor:
             else:
                 print(f"Value not found in {pdf_file.name}")
 
+    def extract_statement_number(self, pdf_path, pattern):
+        """
+        Extract the statement number from the document
+
+        Args:
+            pdf_path (str): The path to the PDF file.
+            pattern (): The structure of the date to seek
+
+        Returns:
+            start_date (str): A date type in an unknown format.
+        """
+
+        # implement in same fashion as start date extractor
+        # To help identify statement number, consider inputing a prefix ID 
+        statement_num_extract = self.extract_value_from_pdf(pdf_path, pattern, page_size=1)
+
+        statement_number = ''.join(c for c in statement_num_extract if c.isdigit())
+        return statement_number
+        pass
+
     @staticmethod
     def identify_and_move_duplicates(self):
         """
         Identify duplicate statements and move them to a duplicates folder.
         """
+        
         pass
