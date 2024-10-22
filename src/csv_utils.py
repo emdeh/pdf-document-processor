@@ -327,8 +327,6 @@ class CSVUtils:
         with pd.ExcelWriter(
             output_file_path,
             engine='xlsxwriter',
-            datetime_format='dd/mm/yyyy',
-            date_format='dd/mm/yyyy'
         ) as writer:
             transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
