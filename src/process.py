@@ -104,49 +104,6 @@ def main():
         summary_info = csv_utils.extract_and_process_summary_info(results, original_document_name, statement_type)
         transactions = csv_utils.process_transactions(results, statement_type)
 
-        # **Debugging: Print summary_info**
-        # print(f"Summary Info for {original_document_name}: {summary_info}")
-
-        # **Assign years for each document’s transactions individually**
-        if 'StatementStartDate' in summary_info and 'StatementEndDate' in summary_info:
-            statement_start_date = summary_info['StatementStartDate']['value']
-            statement_end_date = summary_info['StatementEndDate']['value']
-
-                # Add these lines to include dates in static_info
-            static_info['StatementStartDate'] = statement_start_date
-            static_info['StatementEndDate'] = statement_end_date
-
-            # Convert transactions list to a DataFrame
-            transactions_df = pd.DataFrame(transactions)
-            # print("Initial Transactions DataFrame:\n", transactions_df[['Date']].head())
-
-            # Debugging: Check if Date column is present and in the expected format
-            #if 'Date' in transactions_df.columns:
-            #    print("Initial Transactions DataFrame - Date Column:\n", transactions_df[['Date']].head())
-            #else:
-            #    print("Error: 'Date' column missing from transactions.")
-            #    continue  # Skip to next file if 'Date' is missing
-
-            # **Convert 'Date' column to datetime before assigning years**
-            transactions_df['Date'] = pd.to_datetime(
-                transactions_df['Date'], 
-                format='%d %b',  # Adjust format if necessary
-                errors='coerce'
-            )
-            # print("Transactions DataFrame after parsing 'Date':\n", transactions_df[['Date']].head())
-
-            # Assign years to transaction dates for this document
-            transactions_df = csv_utils.assign_years_to_dates(transactions_df, statement_start_date, statement_end_date)
-
-            # Verify the assignment
-            # print("Transactions DataFrame after assigning years:\n", transactions_df[['Date']].head())
-
-            # Convert back to list of dictionaries for consistency
-            transactions = transactions_df.to_dict(orient='records')
-
-        else:
-            print("Warning: 'StatementStartDate' or 'StatementEndDate' missing in summary_info.")
-
         # Add static info to each transaction
         updated_transactions = []
         for transaction in transactions:
@@ -175,7 +132,7 @@ def main():
         output_folder,
         "extracted-data.xlsx",
         table_data=all_table_data,
-        statement_type=statement_type,  # Pass statement_type here
+        statement_type=statement_type,  # Pass statement_type here #TODO: Check if this is needed, might have been related to date processing.
         static_info=static_info
     )
     # end time

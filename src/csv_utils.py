@@ -100,7 +100,6 @@ class CSVUtils:
         return transactions
 
     def convert_amount(self, amount_str):
-        import re
 
         try:
             # Use regex to extract numeric part
@@ -242,46 +241,6 @@ class CSVUtils:
             print(f"Was passed a non-dict object: {type(summary_data)}")
         return flattened
 
-    def process_multiple_statements(self, input_files, output_dir, excel_filename, config):
-        all_transactions = []
-        all_summaries = []
-
-        # Loop through each statement file
-        for file_path in input_files:
-            # Load the results from the file (adjust this line to your actual logic)
-            results = self.load_results_from_file(file_path)
-
-            # Get the statement type config for the current file from YAML
-            statement_type = self.get_statement_type_config(file_path, config)
-
-            # Process transactions
-            transactions_records = self.process_transactions(results, statement_type)
-
-            # Process summary info
-            summary_data = self.extract_and_process_summary_info(results, statement_type)
-
-            # **Assign years to dates for each statement**
-            # Extract start and end dates for the current statement
-            if 'StatementStartDate_Value' in summary_data[0] and 'StatementEndDate_Value' in summary_data[0]:
-                statement_start_date = summary_data[0]['StatementStartDate_Value']
-                statement_end_date = summary_data[0]['StatementEndDate_Value']
-
-                # Assign years to transaction dates
-                transactions_records = self.assign_years_to_dates(transactions_records, statement_start_date, statement_end_date)
-
-            # Append the processed transactions and summaries for final aggregation
-            all_transactions.extend(transactions_records)
-            all_summaries.extend(summary_data)
-
-        # Write all transactions and summaries to a single Excel file
-        self.write_transactions_and_summaries_to_excel(
-            all_transactions,
-            all_summaries,
-            output_dir,
-            excel_filename,
-            statement_type=statement_type
-        )
-
     def write_transactions_and_summaries_to_excel(
         self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None, static_info=None
     ):
@@ -296,9 +255,8 @@ class CSVUtils:
 
         summaryinfo_df = pd.DataFrame(summary_rows)
 
-        # Initialize sets for amount and date columns
+        # Initialise set for amount columns
         amount_columns = set()
-        date_columns = {}
 
         # Extract field information from statement_type
         if statement_type:
@@ -307,56 +265,12 @@ class CSVUtils:
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
-                if field.get('is_date'):
-                    # Get date format from YAML, default to 'dd/mm/yyyy' if not specified
-                    date_columns[field_name] = field.get('date_format', 'dd/mm/yyyy')
 
-            # Transaction Static Fields (Get StatementStartDate and StatementEndDate)
-            statement_start_date_str = None
-            statement_end_date_str = None
+            # Transaction Static Fields
             for field in statement_type.get('transaction_static_fields', []):
                 field_name = field['field_name']
                 if field.get('is_amount'):
                     amount_columns.add(field_name)
-                if field.get('is_date'):
-                    # Add date columns for static fields like StatementStartDate and StatementEndDate
-                    date_columns[field_name] = field.get('date_format', 'dd/mm/yyyy')
-
-        # Ensure both StatementStartDate and StatementEndDate are available in transactions_df
-        if 'StatementStartDate' not in transactions_df.columns or 'StatementEndDate' not in transactions_df.columns:
-            raise KeyError("'StatementStartDate' or 'StatementEndDate' is missing from transactions_df.")
-
-        # Group by 'OriginalFileName' and apply the transformation
-        def apply_year_assignment(group):
-            file_name = group['OriginalFileName'].iloc[0]  # Get the file name for this group
-            try:
-                statement_start_date_str = group['StatementStartDate'].iloc[0]
-                statement_end_date_str = group['StatementEndDate'].iloc[0]
-
-                # statement_start_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementStartDate'].iloc[0]
-                # statement_end_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementEndDate'].iloc[0]
-            
-                # Convert the start and end dates using the format from YAML or a default
-                statement_start_date_format = date_columns.get('StatementStartDate', '%d %b %Y')
-                statement_end_date_format = date_columns.get('StatementEndDate', '%d %b %Y')
-
-                # Convert the 'Date' column to datetime if not already done
-                group['Date'] = pd.to_datetime(group['Date'], errors='coerce', format=date_columns.get('Date', '%d %b'))
-
-                # Now apply the assign_years_to_dates function to the grouped data
-                return self.assign_years_to_dates(
-                    group,
-                    statement_start_date_str,
-                    statement_end_date_str,
-                    statement_start_date_format,
-                    statement_end_date_format
-                    )
-            except Exception as e:
-                print(f"Error processing file '{file_name}': {e}")
-                return group
-
-        # Apply the transformation for each group (OriginalFileName)
-        transactions_df = transactions_df.groupby('OriginalFileName').apply(apply_year_assignment).reset_index(drop=True)
 
         # Convert amount columns to numeric
         for col in amount_columns:
@@ -372,8 +286,6 @@ class CSVUtils:
         with pd.ExcelWriter(
             output_file_path,
             engine='xlsxwriter',
-            datetime_format='dd/mm/yyyy',
-            date_format='dd/mm/yyyy'
         ) as writer:
             transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
             summaryinfo_df.to_excel(writer, sheet_name='Summary', index=False)
@@ -390,85 +302,13 @@ class CSVUtils:
             for idx, col in enumerate(transactions_df.columns):
                 if col in amount_columns:
                     transactions_sheet.set_column(idx, idx, None, money_fmt)
-                elif col in date_columns:
-                    # Convert YAML format to Excel-compatible date format
-                    date_format_str = date_columns[col]
-                    excel_date_format = date_format_str.replace('%d', 'dd').replace('%b', 'mmm').replace('%Y', 'yyyy').replace('%y', 'yy')
-                    
-                    # Create Excel-compatible format
-                    date_fmt = workbook.add_format({'num_format': excel_date_format})
-                    
-                    # Apply the date format to the column
-                    transactions_sheet.set_column(idx, idx, None, date_fmt)
+                # No date formatting applied
 
             # Apply formats to Summary sheet (similar if there are amounts)
             for idx, col in enumerate(summaryinfo_df.columns):
                 if col in amount_columns:
                     summary_sheet.set_column(idx, idx, None, money_fmt)
+                # No date formatting applied
 
         print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
-
-
-    def assign_years_to_dates(self, transactions_df, statement_start_date_str, statement_end_date_str, statement_start_date_format, statement_end_date_format):
-        """
-        Assigns years to dates that lack year information based on the statement period.
-
-        Args:
-            transactions_df (pd.DataFrame): The transactions DataFrame.
-            statement_start_date_str (str): The statement start date as a string.
-            statement_end_date_str (str): The statement end date as a string.
-            statement_start_date_format (str): The format for the statement start date.
-            statement_end_date_format (str): The format for the statement end date.
-
-        Returns:
-            pd.DataFrame: The updated transactions DataFrame with years assigned to dates.
-        """
-        # Parse the statement start and end dates using the formats from the YAML
-        statement_start_date = pd.to_datetime(statement_start_date_str, format=statement_start_date_format, errors='coerce')
-        statement_end_date = pd.to_datetime(statement_end_date_str, format=statement_end_date_format, errors='coerce')
-
-        if pd.isna(statement_start_date) or pd.isna(statement_end_date):
-            # Log a warning instead of raising an exception
-            file_name = transactions_df['OriginalFileName'].iloc[0]
-            print(f"Warning: Statement start or end date is invalid for file '{file_name}'. Skipping year assignment for this file.")
-            return transactions_df  # Return the DataFrame without modifying dates
-
-        # Generate a mapping of months to years in the statement period
-        from dateutil.relativedelta import relativedelta
-        month_to_year = {}
-
-        current_date = statement_start_date.replace(day=1)
-        end_date = statement_end_date.replace(day=1)
-
-        while current_date <= end_date:
-            month_to_year[current_date.month] = current_date.year
-            current_date += relativedelta(months=1)
-
-        # Now, assign years to dates
-        dates_with_year = []
-        for idx, date in transactions_df['Date'].items():
-            if pd.isna(date):
-                dates_with_year.append(pd.NaT)
-                continue
-
-            day = date.day
-            month = date.month
-
-            # Get the year for this month from the mapping
-            year = month_to_year.get(month)
-            if year is None:
-                # If month not in mapping, assign to the closest year
-                # For simplicity, assign to statement_start_date's year
-                year = statement_start_date.year
-
-            # Create a new date with the assigned year
-            try:
-                new_date = pd.Timestamp(year=year, month=month, day=day)
-            except ValueError:
-                new_date = pd.NaT
-
-            dates_with_year.append(new_date)
-
-        transactions_df['Date'] = dates_with_year
-
-        return transactions_df
+        
