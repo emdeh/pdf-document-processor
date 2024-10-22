@@ -132,7 +132,7 @@ def main():
         output_folder,
         "extracted-data.xlsx",
         table_data=all_table_data,
-        statement_type=statement_type,  # Pass statement_type here
+        statement_type=statement_type,  # Pass statement_type here #TODO: Check if this is needed, might have been related to date processing.
         static_info=static_info
     )
     # end time
