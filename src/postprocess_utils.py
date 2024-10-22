@@ -392,22 +392,22 @@ class PDFPostProcessor:
             pattern (): The structure of the date to seek
 
         Returns:
-            start_date (str): A date type in an unknown format.
+            statement_num (str): The statement number as a string.
         """
 
-        # implement in same fashion as start date extractor
-        # To help identify statement number, consider inputing a prefix ID 
-        statement_num_extract = self.extract_value_from_pdf(pdf_path, pattern, page_size=1)
-        if statement_num_extract:
-            statement_number = ''.join(c for c in statement_num_extract if c.isdigit())
+        # Implemented like statement date, however is capable and prefers accepting prefix identifier such as "Statement no."
+        statement_num = self.extract_value_from_pdf(pdf_path, pattern, page_size=1)
+        if statement_num:
+            # Strips prefix identfiers to isolate the statement number
+            statement_number = ''.join(c for c in statement_num if c.isdigit())
             return statement_number
-        return statement_num_extract
+        return statement_num
 
     def identify_and_move_duplicates(self):
         """
         Identify duplicate statements and move them to a duplicates folder.
         """
-        # Initialise
+        # Initialise variables
         items = []
         folder_path = os.path.join(self.input_folder, 'duplicate')
         os.makedirs(folder_path, exist_ok=True)
@@ -435,19 +435,26 @@ class PDFPostProcessor:
             print("Statement start date number pattern generation failed. Exiting task.")
             return
         
+        # Loop over each pdf file
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
             identifier = ''
+            # Create a string of each item to assess individuality
             acc_str = self.extract_value_from_pdf(pdf_path, acc_pattern)
             state_str = self.extract_statement_number(pdf_path, state_pattern)
             date_str = self.extract_statement_start_date(pdf_path, date_pattern)
+            # Combine items to create unique identifier
             identifier = ''.join(filter(None, [acc_str, state_str, date_str]))
+            # In case of empty identifier
             if identifier:
+                # Add identifier to list of known identifiers
                 if identifier not in items:
                     items.append(identifier)
+                # If identifier seen, move pdf to duplicates folder
                 else:
                     destination = os.path.join(folder_path, pdf_file.name)
                     shutil.move(pdf_path, destination)
+                    # Track total number of duplicates
                     counter += 1
                     print('File moved to duplicate')
             else:
