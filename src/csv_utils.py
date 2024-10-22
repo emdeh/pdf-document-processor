@@ -296,7 +296,22 @@ class CSVUtils:
 
         summaryinfo_df = pd.DataFrame(summary_rows)
 
-        #TODO: Add amount column back in
+        # Initialise set for amount columns
+        amount_columns = set()
+
+        # Extract field information from statement_type
+        if statement_type:
+            # Transaction Dynamic Fields
+            for field in statement_type.get('transaction_dynamic_fields', []):
+                field_name = field['field_name']
+                if field.get('is_amount'):
+                    amount_columns.add(field_name)
+
+            # Transaction Static Fields
+            for field in statement_type.get('transaction_static_fields', []):
+                field_name = field['field_name']
+                if field.get('is_amount'):
+                    amount_columns.add(field_name)
 
         # Convert amount columns to numeric
         for col in amount_columns:
