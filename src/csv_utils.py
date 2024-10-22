@@ -338,23 +338,7 @@ class CSVUtils:
             transactions_sheet = writer.sheets['Transactions']
             summary_sheet = writer.sheets['Summary']
 
-            # Define formats
-            money_fmt = workbook.add_format({'num_format': '$#,##0.00'})
-
-            # Apply formats to Transactions sheet
-            for idx, col in enumerate(transactions_df.columns):
-                if col in amount_columns:
-                    transactions_sheet.set_column(idx, idx, None, money_fmt)
-                elif col in date_columns:
-                    # Convert YAML format to Excel-compatible date format
-                    date_format_str = date_columns[col]
-                    excel_date_format = date_format_str.replace('%d', 'dd').replace('%b', 'mmm').replace('%Y', 'yyyy').replace('%y', 'yy')
-                    
-                    # Create Excel-compatible format
-                    date_fmt = workbook.add_format({'num_format': excel_date_format})
-                    
-                    # Apply the date format to the column
-                    transactions_sheet.set_column(idx, idx, None, date_fmt)
+            
 
             # Apply formats to Summary sheet (similar if there are amounts)
             for idx, col in enumerate(summaryinfo_df.columns):
