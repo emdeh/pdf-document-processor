@@ -298,42 +298,6 @@ class CSVUtils:
 
         #TODO: Add amount column back in
 
-        # Ensure both StatementStartDate and StatementEndDate are available in transactions_df
-        if 'StatementStartDate' not in transactions_df.columns or 'StatementEndDate' not in transactions_df.columns:
-            raise KeyError("'StatementStartDate' or 'StatementEndDate' is missing from transactions_df.")
-
-        # Group by 'OriginalFileName' and apply the transformation
-        def apply_year_assignment(group):
-            file_name = group['OriginalFileName'].iloc[0]  # Get the file name for this group
-            try:
-                statement_start_date_str = group['StatementStartDate'].iloc[0]
-                statement_end_date_str = group['StatementEndDate'].iloc[0]
-
-                # statement_start_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementStartDate'].iloc[0]
-                # statement_end_date_str = transactions_df.loc[transactions_df['OriginalFileName'] == file_name, 'StatementEndDate'].iloc[0]
-            
-                # Convert the start and end dates using the format from YAML or a default
-                statement_start_date_format = date_columns.get('StatementStartDate', '%d %b %Y')
-                statement_end_date_format = date_columns.get('StatementEndDate', '%d %b %Y')
-
-                # Convert the 'Date' column to datetime if not already done
-                group['Date'] = pd.to_datetime(group['Date'], errors='coerce', format=date_columns.get('Date', '%d %b'))
-
-                # Now apply the assign_years_to_dates function to the grouped data
-                return self.assign_years_to_dates(
-                    group,
-                    statement_start_date_str,
-                    statement_end_date_str,
-                    statement_start_date_format,
-                    statement_end_date_format
-                    )
-            except Exception as e:
-                print(f"Error processing file '{file_name}': {e}")
-                return group
-
-        # Apply the transformation for each group (OriginalFileName)
-        transactions_df = transactions_df.groupby('OriginalFileName').apply(apply_year_assignment).reset_index(drop=True)
-
         # Convert amount columns to numeric
         for col in amount_columns:
             if col in transactions_df.columns:
