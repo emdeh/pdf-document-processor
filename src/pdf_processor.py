@@ -322,4 +322,3 @@ class PDFProcessor:
             image = Image.open(io.BytesIO(img_data))
             text = pytesseract.image_to_string(image)
         return text
-
