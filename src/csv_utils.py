@@ -296,31 +296,7 @@ class CSVUtils:
 
         summaryinfo_df = pd.DataFrame(summary_rows)
 
-        # Initialize sets for amount and date columns
-        amount_columns = set()
-        date_columns = {}
-
-        # Extract field information from statement_type
-        if statement_type:
-            # Transaction Dynamic Fields
-            for field in statement_type.get('transaction_dynamic_fields', []):
-                field_name = field['field_name']
-                if field.get('is_amount'):
-                    amount_columns.add(field_name)
-                if field.get('is_date'):
-                    # Get date format from YAML, default to 'dd/mm/yyyy' if not specified
-                    date_columns[field_name] = field.get('date_format', 'dd/mm/yyyy')
-
-            # Transaction Static Fields (Get StatementStartDate and StatementEndDate)
-            statement_start_date_str = None
-            statement_end_date_str = None
-            for field in statement_type.get('transaction_static_fields', []):
-                field_name = field['field_name']
-                if field.get('is_amount'):
-                    amount_columns.add(field_name)
-                if field.get('is_date'):
-                    # Add date columns for static fields like StatementStartDate and StatementEndDate
-                    date_columns[field_name] = field.get('date_format', 'dd/mm/yyyy')
+        #TODO: Add amount column back in
 
         # Ensure both StatementStartDate and StatementEndDate are available in transactions_df
         if 'StatementStartDate' not in transactions_df.columns or 'StatementEndDate' not in transactions_df.columns:
