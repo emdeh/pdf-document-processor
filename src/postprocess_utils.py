@@ -398,15 +398,58 @@ class PDFPostProcessor:
         # implement in same fashion as start date extractor
         # To help identify statement number, consider inputing a prefix ID 
         statement_num_extract = self.extract_value_from_pdf(pdf_path, pattern, page_size=1)
+        if statement_num_extract:
+            statement_number = ''.join(c for c in statement_num_extract if c.isdigit())
+            return statement_number
+        return statement_num_extract
 
-        statement_number = ''.join(c for c in statement_num_extract if c.isdigit())
-        return statement_number
-        pass
-
-    @staticmethod
     def identify_and_move_duplicates(self):
         """
         Identify duplicate statements and move them to a duplicates folder.
         """
+        # Initialise
+        items = []
+        folder_path = os.path.join(self.input_folder, 'duplicate')
+        os.makedirs(folder_path, exist_ok=True)
+        counter = 0
+
+        # Gather user inputs
+        acc_input = input("Please provide an example of the account number. (e.g., '44-1234'):\n")
+        state_input = input("Please provide an example of the statement number. (e.g., 'Statement no. 12'): \n")
+        date_input = input("Please provide an example of the statement start date. (e.g., '12 NOV 2023'): \n")
+
+        # regex inputs
+        acc_pattern = self.generate_regex_from_value_example(acc_input)
+        state_pattern = self.generate_regex_from_value_example(state_input)
+        date_pattern = self.generate_regex_from_value_example(date_input)
+
+
+        # Regex error handling
+        if not acc_pattern:
+            print("Account number pattern generation failed. Exiting task.")
+            return
+        if not state_pattern:
+            print("Statement number pattern generation failed. Exiting task.")
+            return
+        if not date_pattern:
+            print("Statement start date number pattern generation failed. Exiting task.")
+            return
         
-        pass
+        for pdf_file in self.pdf_files:
+            pdf_path = str(pdf_file)
+            identifier = ''
+            acc_str = self.extract_value_from_pdf(pdf_path, acc_pattern)
+            state_str = self.extract_statement_number(pdf_path, state_pattern)
+            date_str = self.extract_statement_start_date(pdf_path, date_pattern)
+            identifier = ''.join(filter(None, [acc_str, state_str, date_str]))
+            if identifier:
+                if identifier not in items:
+                    items.append(identifier)
+                else:
+                    destination = os.path.join(folder_path, pdf_file.name)
+                    shutil.move(pdf_path, destination)
+                    counter += 1
+                    print('File moved to duplicate')
+            else:
+                print(f"Value not found in {pdf_file.name}")
+        return print(f"A total of {counter} duplicates were found")
