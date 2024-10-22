@@ -219,13 +219,14 @@ class PDFPostProcessor:
         pattern = f"(?i){pattern}"
         return pattern
 
-    def extract_value_from_pdf(self, pdf_path, pattern):
+    def extract_value_from_pdf(self, pdf_path, pattern, page_size = 0.2):
         """
         Extracts a value from a PDF using a regex pattern..
 
         Args:
             pdf_path (str): The path to the PDF file.
             pattern (str): The regex pattern to search for.
+            OPTIONAL page_size (float): How much of the page the scanner will examine for the pattern.
 
         Returns:
             str: The extracted value.
@@ -292,7 +293,7 @@ class PDFPostProcessor:
                             # If width is greater than height, consider it horizontal text
                             if width > height:
                                 # Optionally, limit to a specific area (e.g., top 20% of the page)
-                                if y1 < page_height * 0.2:
+                                if y1 < page_height * page_size:
                                     # Append the text of the span to the accumulated text
                                     text += span["text"] + " "
                             else:
@@ -330,11 +331,12 @@ class PDFPostProcessor:
 
         Args:
             pdf_path (str): The path to the PDF file.
-            pattern (): Regex pattern to seek
+            pattern (): The structure of the date to seek
+
         Returns:
             start_date (str): A date type in an unknown format.
         '''
-        start_date = self.extract_value_from_pdf(pdf_path, pattern)
+        start_date = self.extract_value_from_pdf(pdf_path, pattern, page_size=1)
         return start_date
     def format_date(self, date_str):
         """
