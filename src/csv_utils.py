@@ -242,46 +242,6 @@ class CSVUtils:
             print(f"Was passed a non-dict object: {type(summary_data)}")
         return flattened
 
-    def process_multiple_statements(self, input_files, output_dir, excel_filename, config):
-        all_transactions = []
-        all_summaries = []
-
-        # Loop through each statement file
-        for file_path in input_files:
-            # Load the results from the file (adjust this line to your actual logic)
-            results = self.load_results_from_file(file_path)
-
-            # Get the statement type config for the current file from YAML
-            statement_type = self.get_statement_type_config(file_path, config)
-
-            # Process transactions
-            transactions_records = self.process_transactions(results, statement_type)
-
-            # Process summary info
-            summary_data = self.extract_and_process_summary_info(results, statement_type)
-
-            # **Assign years to dates for each statement**
-            # Extract start and end dates for the current statement
-            if 'StatementStartDate_Value' in summary_data[0] and 'StatementEndDate_Value' in summary_data[0]:
-                statement_start_date = summary_data[0]['StatementStartDate_Value']
-                statement_end_date = summary_data[0]['StatementEndDate_Value']
-
-                # Assign years to transaction dates
-                transactions_records = self.assign_years_to_dates(transactions_records, statement_start_date, statement_end_date)
-
-            # Append the processed transactions and summaries for final aggregation
-            all_transactions.extend(transactions_records)
-            all_summaries.extend(summary_data)
-
-        # Write all transactions and summaries to a single Excel file
-        self.write_transactions_and_summaries_to_excel(
-            all_transactions,
-            all_summaries,
-            output_dir,
-            excel_filename,
-            statement_type=statement_type
-        )
-
     def write_transactions_and_summaries_to_excel(
         self, transactions_records, summary_data, output_dir, excel_filename, table_data=None, statement_type=None, static_info=None
     ):
