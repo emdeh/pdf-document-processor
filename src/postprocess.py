@@ -75,7 +75,6 @@ def main():
                     print("No PDF tasks specified. Exiting.")
                     exit(1)
 
-        else:
             # NO subdirectories, process the input directory directly
             pdf_processor = PDFPostProcessor(input_path)
 
