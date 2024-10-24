@@ -424,19 +424,17 @@ class PDFPostProcessor:
 
         # Gather user inputs
         if self.__class__.acc_input is None:
-            acc_input = input("Please provide an example of the account number. (e.g., '44-1234'):\n")
-        else:
-            acc_input = self.__class__.acc_input
+            self.__class__.acc_input = input("Please provide an example of the account number. (e.g., '44-1234'):\n")
 
         if self.__class__.state_input is None:
-            state_input = input("Please provide an example of the statement number with prefix sentence. (e.g., 'Statement no. 12'): \n")
-        else:
-            state_input = self.__class__.state_input
-            
+            self.__class__.state_input = input("Please provide an example of the statement number with prefix sentence. (e.g., 'Statement no. 12'): \n")
+
         if self.__class__.date_input is None:
-            date_input = input("Please provide an example of the statement start date. (e.g., '12 NOV 2023'): \n")
-        else:
-            date_input = self.__class__.date_input
+            self.__class__.date_input = input("Please provide an example of the statement start date. (e.g., '12 NOV 2023'): \n")
+        
+        acc_input = self.__class__.acc_input
+        state_input = self.__class__.state_input
+        date_input = self.__class__.date_input
 
         # regex inputs
         acc_pattern = self.generate_regex_from_value_example(acc_input)

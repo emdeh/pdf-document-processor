@@ -75,28 +75,28 @@ def main():
                     print("No PDF tasks specified. Exiting.")
                     exit(1)
 
-            else:
-                # NO subdirectories, process the input directory directly
-                pdf_processor = PDFPostProcessor(input_path)
+        else:
+            # NO subdirectories, process the input directory directly
+            pdf_processor = PDFPostProcessor(input_path)
 
-                if args.tasks:
-                    for task_name in args.tasks:
-                        if task_name in PDFPostProcessor.task_registry:
-                            print(f"Performing PDF task: {task_name}")
-                            task_func_name = PDFPostProcessor.task_registry[task_name]['func']
-                            task_func = getattr(pdf_processor, task_func_name)
-                            task_func()
-                        else:
-                            print(f"Task '{task_name}' not recognized for PDFs. Skipping.")
-                else:
-                    print("No PDF tasks specified. Exiting.")
-                    exit(1)
+            if args.tasks:
+                for task_name in args.tasks:
+                    if task_name in PDFPostProcessor.task_registry:
+                        print(f"Performing PDF task: {task_name}")
+                        task_func_name = PDFPostProcessor.task_registry[task_name]['func']
+                        task_func = getattr(pdf_processor, task_func_name)
+                        task_func()
+                    else:
+                        print(f"Task '{task_name}' not recognized for PDFs. Skipping.")
+            else:
+                print("No PDF tasks specified. Exiting.")
+                exit(1)
 
             print("PDF postprocessing complete.")
             
-        else:
-            print("Invalid input path. Please provide a valid Excel file or directory containing PDFs.")
-            exit(1)
+    else:
+        print("Invalid input path. Please provide a valid Excel file or directory containing PDFs.")
+        exit(1)
 
 if __name__ == '__main__':
     main()
