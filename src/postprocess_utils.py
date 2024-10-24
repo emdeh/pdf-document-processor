@@ -114,6 +114,11 @@ class PDFPostProcessor:
         # Add more tasks here as needed
     }
 
+    # Class variables
+    acc_input = None
+    state_input = None
+    date_input = None
+
     def __init__(self, input_folder):
         self.input_folder = input_folder
         self.pdf_files = list(Path(input_folder).glob("*.pdf"))
@@ -359,9 +364,12 @@ class PDFPostProcessor:
         Add statement start date as prefix to PDF filenames for chronological ordering.
         """
         # NOTE: Need to gain insight into which date target is the "correct" date.
-        date_example = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
+        if self.__class__.date_input is None:
+            date_input = input("Please input an example of the start date format. (e.g., '02-FEB-2024', '04-30-2019'):\n")
+        else: 
+            date_input = self.__class__.date_input
         # Develop regex pattern from input example
-        pattern = self.generate_regex_from_value_example(date_example)
+        pattern = self.generate_regex_from_value_example(date_input)
         # Insert pattern into extract_value_from_pdf and output
         if not pattern:
             print("Pattern generation failed. Exiting task.")
@@ -370,6 +378,7 @@ class PDFPostProcessor:
             pdf_path = str(pdf_file)
             date_str = self.extract_statement_start_date(pdf_path, pattern)
             if date_str:
+                # TODO: Move this function into the extraction method, to match statement number extraction method
                 date_prefix = self.format_date(date_str)
                 # Determine new file name
                 new_filename = (f"{date_prefix}-{pdf_file.name}")
@@ -414,9 +423,18 @@ class PDFPostProcessor:
         counter = 0
 
         # Gather user inputs
-        acc_input = input("Please provide an example of the account number. (e.g., '44-1234'):\n")
-        state_input = input("Please provide an example of the statement number. (e.g., 'Statement no. 12'): \n")
-        date_input = input("Please provide an example of the statement start date. (e.g., '12 NOV 2023'): \n")
+        if self.__class__.acc_input is None:
+            self.__class__.acc_input = input("Please provide an example of the account number. (e.g., '44-1234'):\n")
+
+        if self.__class__.state_input is None:
+            self.__class__.state_input = input("Please provide an example of the statement number with prefix sentence. (e.g., 'Statement no. 12'): \n")
+
+        if self.__class__.date_input is None:
+            self.__class__.date_input = input("Please provide an example of the statement start date. (e.g., '12 NOV 2023'): \n")
+        
+        acc_input = self.__class__.acc_input
+        state_input = self.__class__.state_input
+        date_input = self.__class__.date_input
 
         # regex inputs
         acc_pattern = self.generate_regex_from_value_example(acc_input)
