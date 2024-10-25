@@ -47,9 +47,9 @@ statement_types:
   - type_name: "AMEX - Card Statement"
     env_var: "MODEL_ID_AMEX_CARD"
     match_criteria:
-    - type: "regex"
-      value: "\b1 of \d"
-    start_pattern: "\b1 of \d+"
+      - type: "regex"
+        value: '\b1 of \d'
+    start_pattern: '\b1 of \d+'
     split_type: "page_start" # can be "page_start", "start_end" - see note below
     summary_fields:
       - field_name: "PreviousBalance"
@@ -86,9 +86,9 @@ statement_types:
   - type_name: "Westpac - Bank Statement"
     env_var: "MODEL_ID_WESTPAC_BANK"
     match_criteria: # used to determine the start_pattern and split_type
-    - type: "keyword"
-      value: "Westpac"
-    start_pattern: "STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+"
+      - type: "keyword"
+        value: "Westpac"
+    start_pattern: 'STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -127,9 +127,9 @@ statement_types:
   - type_name: "Westpac - Bank Statement (Receipt style)" # For Westpac statements that look like receipts
     env_var: "MODEL_ID_WESTPAC_BANK_RECEIPT_STYLE"
     match_criteria:
-    - type: "keyword"
-      value: "Westpac"
-    start_pattern: "STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+"
+      - type: "keyword"
+        value: "Westpac"
+    start_pattern: 'STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -169,9 +169,9 @@ statement_types:
   - type_name: "Bendigo - Bank Statement"
     env_var: "MODEL_ID_BENDIGO_BANK"
     match_criteria:
-    - type: "keyword"
-      value: "Bendigo"
-    start_pattern: "Statement number\s+(\d+)"
+      - type: "keyword"
+        value: "Bendigo"
+    start_pattern: 'Statement number\s+(\d+)'
     must_not_contain: "Continued overleaf..."
     split_type: "start_end"
     summary_fields:
@@ -206,13 +206,13 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
-        
+            
   - type_name: "Bank of Melbourne - Bank Statement"
     env_var: "MODEL_ID_BOM_BANK"
     match_criteria:
-    - type: "keyword"
-      value: "FREEDOM"
-    start_pattern: "\(page\s+1 of \d+\)"
+      - type: "keyword"
+        value: "FREEDOM"
+    start_pattern: '\(page\s+1 of \d+\)'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -249,9 +249,9 @@ statement_types:
   - type_name: "St. George - Bank Statement"
     env_var: "MODEL_ID_STGEORGE_BANK"
     match_criteria:
-    - type: "keyword"
-      value: "FREEDOM" # Used to detect the document type
-    start_pattern: "\(page\s+1 of \d+\)" # Used for splitting the document
+      - type: "keyword"
+        value: "FREEDOM" # Used to detect the document type
+    start_pattern: '\(page\s+1 of \d+\)' # Used for splitting the document
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -288,9 +288,9 @@ statement_types:
   - type_name: "Suncorp - Bank Statement"
     env_var: "MODEL_ID_SUNCORP_BANK"
     match_criteria:
-    - type: "regex"
-      value: "\b1 of \d"
-    start_pattern: "\b1 of \d+"
+      - type: "regex"
+        value: '\b1 of \d'
+    start_pattern: '\b1 of \d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -333,9 +333,9 @@ statement_types:
   - type_name: "CBA - Bank Statement (Foreign)"
     env_var: "MODEL_ID_CBA_BANK"
     match_criteria:
-    - type: "regex"
-      value: "\b1 of \d"
-    start_pattern: "\b1 of \d+"
+      - type: "regex"
+        value: '\b1 of \d'
+    start_pattern: '\b1 of \d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -372,9 +372,9 @@ statement_types:
   - type_name: "CBA - Bank Statement (Standard)"
     env_var: "MODEL_ID_CBA_BANK"
     match_criteria:
-    - type: "regex"
-      value: "\b1 of \d"
-    start_pattern: "\b1 of \d+"
+      - type: "regex"
+        value: '\b1 of \d'
+    start_pattern: '\b1 of \d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -411,9 +411,9 @@ statement_types:
   - type_name: "NAB - Bank Statement"
     env_var: "MODEL_ID_NAB_BANK"
     match_criteria:
-    - type: "regex"
-      value: "\b1 of \d"
-    start_pattern: "\b1 of \d+"
+      - type: "regex"
+        value: '\b1 of \d'
+    start_pattern: '\b1 of \d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
@@ -451,8 +451,8 @@ statement_types:
   - type_name: "ANZ - Bank Statement"
     env_var: "MODEL_ID_ANZ_BANK"
     match_criteria:
-    - type: "phrase"
-      value: "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE"
+      - type: "phrase"
+        value: "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE"
     start_phrase: "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE"
     split_type: "page_start"
     summary_fields:
