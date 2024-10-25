@@ -13,7 +13,7 @@ import yaml
 
 class PDFProcessor:
     def __init__(self):
-        with open("config.yaml", "r") as file:
+        with open("config/type_models.yaml", "r") as file:
             self.config = yaml.safe_load(file)
         # Set the Tesseract command path if necessary
         pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
