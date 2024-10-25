@@ -88,17 +88,17 @@ class DocAIUtils:
 
         for table_idx, table in enumerate(results.tables):
             table_data = []
-            current_row = []
             current_row_index = -1
-            for cell in table.cells:
-                if cell.row_index != current_row_index:
-                    if current_row:
-                        table_data.append(current_row)
-                    current_row = [""] * table.column_count  # Initialize row with empty strings
+            row = []
+            for cell in sorted(table.cells, key=lambda c: (c.row_index, c.column_index)):
+                if cell.row_index > current_row_index:
+                    if row:
+                        table_data.append(row)
+                    row = []
                     current_row_index = cell.row_index
-                current_row[cell.column_index] = cell.content
-            if current_row:
-                table_data.append(current_row)
+                row.append(cell.content)
+            if row:
+                table_data.append(row)
             tables.append((table_idx, table_data))
 
         return tables
