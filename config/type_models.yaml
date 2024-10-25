@@ -26,6 +26,7 @@
 # statement_types:
 #   - type_name: "Statement Type Name"
 #     env_var: "ENV_VARIABLE_NAME" # References back to a .env file
+#     start_pattern: "The regex pattern used to determine the start of the statement, so documents containing multiple statements can be split"
 #     summary_fields:
 #       - field_name: "Summary Field 1"
 #         is_amount: true
@@ -45,6 +46,7 @@
 statement_types:
   - type_name: "AMEX - Card Statement"
     env_var: "MODEL_ID_AMEX_CARD"
+    start_pattern: ""
     summary_fields:
       - field_name: "PreviousBalance"
         is_amount: true
@@ -79,6 +81,7 @@ statement_types:
 
   - type_name: "Westpac - Bank Statement"
     env_var: "MODEL_ID_WESTPAC_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -115,6 +118,7 @@ statement_types:
 
   - type_name: "Westpac - Bank Statement (Receipt style)" # For Westpac statements that look like receipts
     env_var: "MODEL_ID_WESTPAC_BANK_RECEIPT_STYLE"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -152,6 +156,7 @@ statement_types:
 
   - type_name: "Bendigo - Bank Statement"
     env_var: "MODEL_ID_BENDIGO_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -187,6 +192,7 @@ statement_types:
         
   - type_name: "Bank of Melbourne - Bank Statement"
     env_var: "MODEL_ID_BOM_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -221,6 +227,7 @@ statement_types:
 
   - type_name: "St. George - Bank Statement"
     env_var: "MODEL_ID_STGEORGE_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -255,6 +262,7 @@ statement_types:
 
   - type_name: "Suncorp - Bank Statement"
     env_var: "MODEL_ID_SUNCORP_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -289,12 +297,14 @@ statement_types:
           
   - type_name: "Pre-Built Layout Model"
     env_var: "PRE_BUILT_LAYOUT_MODEL"
+    start_pattern: "" # TODO: Not sure how to handle start_pattern for this one - will need to be able to prompt the user to provide a pattern manually maybe, by using the regex patter finder in postprocess_utils.py
     summary_fields: []
     transaction_static_fields: []
     transaction_dynamic_fields: []
 
   - type_name: "CBA - Bank Statement (Foreign)"
     env_var: "MODEL_ID_CBA_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -329,6 +339,7 @@ statement_types:
 
   - type_name: "CBA - Bank Statement (Standard)"
     env_var: "MODEL_ID_CBA_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -363,6 +374,7 @@ statement_types:
 
   - type_name: "NAB - Bank Statement"
     env_var: "MODEL_ID_NAB_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -398,6 +410,7 @@ statement_types:
 
   - type_name: "ANZ - Bank Statement"
     env_var: "MODEL_ID_ANZ_BANK"
+    start_pattern: ""
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
