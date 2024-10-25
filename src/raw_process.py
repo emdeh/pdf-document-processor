@@ -147,6 +147,10 @@ def main():
         statement_type=statement_type,  # Pass statement_type here #TODO: Check if this is needed, might have been related to date processing.
         static_info=static_info
     )"""
+
+    # Write extacted data to Excel
+    csv_utils.write_raw_data_to_excel(all_transactions, output_folder, "extracted-data.xlsx")
+
     # end time
     end_time = time.time()
     # Calculate time taken and print as hh:mm:ss
