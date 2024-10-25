@@ -312,15 +312,24 @@ class CSVUtils:
 
         print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
         
-    def write_raw_data_to_excel(self, transactions_records, output_dir, excel_filename):
-        # Create DataFrame from transactions_records
-        transactions_df = pd.DataFrame(transactions_records)
+    def write_raw_data_to_excel(self, texts_records, output_dir, excel_filename):
+        """
+        Used by raw_process.py to write extracted text data to an Excel file.
+        """
+        # Create DataFrame from texts_records
+        texts_df = pd.DataFrame(texts_records)
 
         # Define the output file path
         output_file_path = os.path.join(output_dir, excel_filename)
 
         # Write DataFrame to Excel
         with pd.ExcelWriter(output_file_path, engine='xlsxwriter') as writer:
-            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+            texts_df.to_excel(writer, sheet_name='ExtractedText', index=False)
+
+            # Adjust the column width and wrap text
+            worksheet = writer.sheets['ExtractedText']
+            worksheet.set_column('B:B', 100)  # Set column B width (ExtractedText)
+            text_wrap_format = writer.book.add_format({'text_wrap': True})
+            worksheet.set_column('B:B', None, text_wrap_format)
 
         print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")

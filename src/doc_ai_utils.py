@@ -102,3 +102,23 @@ class DocAIUtils:
             tables.append((table_idx, table_data))
 
         return tables
+
+    def extract_all_text(self, results):
+            """
+            Used by raw_process.py to extract all text content from the analysis results.
+            
+            Extracts all text content from the analysis results.
+
+            Args:
+                results (AnalysisResult): The analysis results containing text content.
+
+            Returns:
+                str: A string containing all the text content from the document.
+            """
+            all_text = []
+            for page in results.pages:
+                for line in page.lines:
+                    all_text.append(line.content)
+            # Join all text lines into a single string
+            extracted_text = '\n'.join(all_text)
+            return extracted_text
