@@ -47,8 +47,8 @@ statement_types:
   - type_name: "AMEX - Card Statement"
     env_var: "MODEL_ID_AMEX_CARD"
     match_criteria:
-      - type: "regex"
-        value: '\b1 of \d'
+      - type: "keyword"
+        value: "www.americanexpress.com.au"
     start_pattern: '\b1 of \d+'
     split_type: "page_start" # can be "page_start", "start_end" - see note below
     summary_fields:
