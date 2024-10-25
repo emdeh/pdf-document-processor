@@ -312,3 +312,15 @@ class CSVUtils:
 
         print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
         
+    def write_raw_data_to_excel(self, transactions_records, output_dir, excel_filename):
+        # Create DataFrame from transactions_records
+        transactions_df = pd.DataFrame(transactions_records)
+
+        # Define the output file path
+        output_file_path = os.path.join(output_dir, excel_filename)
+
+        # Write DataFrame to Excel
+        with pd.ExcelWriter(output_file_path, engine='xlsxwriter') as writer:
+            transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+
+        print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
