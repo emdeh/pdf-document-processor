@@ -79,8 +79,8 @@ def main():
     # Process PDFs
     csv_utils = CSVUtils()
     all_transactions = []
-    all_summaries = []
-    all_table_data = []
+    """all_summaries = []
+    all_table_data = []"""
 
     files_to_process = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.lower().endswith('.pdf')]
     files_to_go = len(files_to_process)
@@ -100,11 +100,23 @@ def main():
             print(f"Error: No results found for {original_document_name}.")
             continue
 
-        static_info = csv_utils.extract_static_info(results, original_document_name, statement_type)
-        summary_info = csv_utils.extract_and_process_summary_info(results, original_document_name, statement_type)
-        transactions = csv_utils.process_transactions(results, statement_type)
+    # Extract table data from the results
+    tables = doc_ai_utils.extract_table_data(results)
+    for table_idx, table_data in tables:
+        if not table_data:
+            continue
+        # Assume the first row contains headers
+        headers = table_data[0]
+        for row in table_data[1:]:
+            row_dict = dict(zip(headers, row))
+            row_dict['OriginalFileName'] = original_document_name
+            all_transactions.append(row_dict)
 
-        # Add static info to each transaction
+        """static_info = csv_utils.extract_static_info(results, original_document_name, statement_type)
+        summary_info = csv_utils.extract_and_process_summary_info(results, original_document_name, statement_type)
+        transactions = csv_utils.process_transactions(results, statement_type)"""
+
+        """# Add static info to each transaction
         updated_transactions = []
         for transaction in transactions:
             combined_transaction = {**static_info, **transaction}
@@ -114,7 +126,7 @@ def main():
         all_transactions.extend(updated_transactions)
         all_summaries.append(summary_info)
 
-        print(f"Data aggregated for:\n{os.path.basename(document_path)}.\n")
+        print(f"Data aggregated for:\n{os.path.basename(document_path)}.\n")"""
 
         # Move the analysed file to the analysed-files folder
         env_prep.move_analysed_file(document_path, analysed_files_folder)
@@ -122,10 +134,10 @@ def main():
         files_to_go -= 1
         print(f"Number of files remaining: {files_to_go}.\n")
 
-    print(f"Total transactions extracted: {len(all_transactions)}")
-    print(f"Total summaries extracted: {len(all_summaries)}")
+    """print(f"Total transactions extracted: {len(all_transactions)}")
+    print(f"Total summaries extracted: {len(all_summaries)}")"""
 
-    # Write extracted data to Excel
+    """# Write extracted data to Excel
     csv_utils.write_transactions_and_summaries_to_excel(
         all_transactions,
         all_summaries,
@@ -134,7 +146,7 @@ def main():
         table_data=all_table_data,
         statement_type=statement_type,  # Pass statement_type here #TODO: Check if this is needed, might have been related to date processing.
         static_info=static_info
-    )
+    )"""
     # end time
     end_time = time.time()
     # Calculate time taken and print as hh:mm:ss
