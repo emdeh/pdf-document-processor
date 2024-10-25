@@ -88,7 +88,7 @@ statement_types:
     match_criteria: # used to determine the start_pattern and split_type
       - type: "keyword"
         value: "Westpac"
-    start_pattern: 'STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+'
+    start_pattern: '(?i)Statement\s+No\.\s+\d+\s+Page\s+1\s+of\s+\d+'
     split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
