@@ -150,7 +150,13 @@ class PDFProcessor:
                 if match:
                     # If working with start/end, we need to maintain start/end markers
                     if isinstance(statement_starts, dict):
-                        statement_number = page_num  # Use page number instead of assuming regex group for statement_number
+                        # Extract statement number from regex match if group exists
+                        if match.groups():
+                            statement_number = int(match.group(1))
+                        else:
+                            # If no capturing group, use page number or some default identifier
+                            statement_number = page_num
+
                         if statement_number != current_statement:
                             if current_statement is not None:
                                 # Set the end for the current statement before moving on to a new one
@@ -160,6 +166,7 @@ class PDFProcessor:
                     else:
                         # For simple page start case, append page number to the list
                         statement_starts.append(page_num)
+                    continue  # Move to the next page after handling start_pattern
 
             # Check for specific start phrase match
             if start_phrase and start_phrase in page_text:
