@@ -15,6 +15,12 @@ class PDFProcessor:
     def __init__(self):
         with open("config/type_models.yaml", "r") as file:
             self.config = yaml.safe_load(file)
+        # Verify the structure of self.config
+        if not isinstance(self.config, dict) or 'statement_types' not in self.config:
+            raise ValueError("The YAML file is not correctly formatted. Expected a key 'statement_types' at the top level.")
+        
+        #print("Loaded config:", self.config)
+        #print("Type of self.config:", type(self.config))
         # Set the Tesseract command path if necessary
         pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
         pass
@@ -105,7 +111,7 @@ class PDFProcessor:
         Returns:
             dict: The configuration dictionary for the statement type if found, otherwise None.
         """
-        for statement in self.config:
+        for statement in self.config['statement_types']:
             if statement['type_name'] == statement_type:
                 return statement
         return None
