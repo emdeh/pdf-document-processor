@@ -105,7 +105,7 @@ class PDFProcessor:
         Returns:
             dict: The configuration dictionary for the statement type if found, otherwise None.
         """
-        for statement in self.config['statement_types']:
+        for statement in self.config:
             if statement['type_name'] == statement_type:
                 return statement
         return None
