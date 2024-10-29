@@ -88,17 +88,37 @@ class DocAIUtils:
 
         for table_idx, table in enumerate(results.tables):
             table_data = []
-            current_row = []
             current_row_index = -1
-            for cell in table.cells:
-                if cell.row_index != current_row_index:
-                    if current_row:
-                        table_data.append(current_row)
-                    current_row = [""] * table.column_count  # Initialize row with empty strings
+            row = []
+            for cell in sorted(table.cells, key=lambda c: (c.row_index, c.column_index)):
+                if cell.row_index > current_row_index:
+                    if row:
+                        table_data.append(row)
+                    row = []
                     current_row_index = cell.row_index
-                current_row[cell.column_index] = cell.content
-            if current_row:
-                table_data.append(current_row)
+                row.append(cell.content)
+            if row:
+                table_data.append(row)
             tables.append((table_idx, table_data))
 
         return tables
+
+    def extract_all_text(self, results):
+            """
+            Used by raw_process.py to extract all text content from the analysis results.
+            
+            Extracts all text content from the analysis results.
+
+            Args:
+                results (AnalysisResult): The analysis results containing text content.
+
+            Returns:
+                str: A string containing all the text content from the document.
+            """
+            all_text = []
+            for page in results.pages:
+                for line in page.lines:
+                    all_text.append(line.content)
+            # Join all text lines into a single string
+            extracted_text = '\n'.join(all_text)
+            return extracted_text

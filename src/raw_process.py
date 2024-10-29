@@ -19,12 +19,10 @@ def main():
     parser = argparse.ArgumentParser(
         description='''PDF Processing Script
                                      
-        This script takes a preprocessed folder of PDFs each containing individual statements and extracts the information into an excel file.
-        The input requires the user to specify what type of statement is being accessed. The available types can be found in the type_models.yaml.
-        The config argument is pre-defined but can be changed if required.
+        This script takes a preprocessed folder of PDFs each containing individual statements and extracts the RAW DATA into an excel file.
         ''',
                                      
-        epilog = '''Example: python src/process.py --input PATH/TO/PREPROCESSED PDFS --type "AMEX - Card Statement"
+        epilog = '''Example: python src/raw_process.py --input PATH/TO/PREPROCESSED PDFS
         '''
         )
     parser.add_argument(
@@ -33,24 +31,12 @@ def main():
         required=True, 
         help='Path to the input folder containing preprocessed PDFs'
         )
-    parser.add_argument(
-        '--config_type', 
-        type=str, 
-        default='/config/type_models.yaml', 
-        help='Path to the statement types configuration YAML file'
-        )
-    parser.add_argument(
-        '--type', 
-        type=str, 
-        required=True, 
-        help='Name of the statement type to use'
-        )
     args = parser.parse_args()
 
     input_dir = args.input
     output_folder = args.input #Output folder for processed PDFs will be created inside the initial input folder
-    config_type = args.config_type
-    type = args.type
+    config_type = "config/type_models.yaml"
+    type = "Raw-extract"
 
     # Load configuration
     env_prep = EnvironmentPrep()
@@ -78,9 +64,7 @@ def main():
 
     # Process PDFs
     csv_utils = CSVUtils()
-    all_transactions = []
-    all_summaries = []
-    all_table_data = []
+    all_text = []
 
     files_to_process = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.lower().endswith('.pdf')]
     files_to_go = len(files_to_process)
@@ -100,41 +84,29 @@ def main():
             print(f"Error: No results found for {original_document_name}.")
             continue
 
-        static_info = csv_utils.extract_static_info(results, original_document_name, statement_type)
-        summary_info = csv_utils.extract_and_process_summary_info(results, original_document_name, statement_type)
-        transactions = csv_utils.process_transactions(results, statement_type)
+        # Extract table data from the results
+        extracted_text = doc_ai_utils.extract_all_text(results)
+        all_text.append({
+            "Document Name": original_document_name,
+            "Extracted Text": extracted_text    
+        })
 
-        # Add static info to each transaction
-        updated_transactions = []
-        for transaction in transactions:
-            combined_transaction = {**static_info, **transaction}
-            updated_transactions.append(combined_transaction)
+    # Move the analysed file to the analysed-files folder
+    env_prep.move_analysed_file(document_path, analysed_files_folder)
 
-        # Aggregate transactions and summaries
-        all_transactions.extend(updated_transactions)
-        all_summaries.append(summary_info)
-
-        print(f"Data aggregated for:\n{os.path.basename(document_path)}.\n")
-
-        # Move the analysed file to the analysed-files folder
-        env_prep.move_analysed_file(document_path, analysed_files_folder)
-
-        files_to_go -= 1
-        print(f"Number of files remaining: {files_to_go}.\n")
-
-    print(f"Total transactions extracted: {len(all_transactions)}")
-    print(f"Total summaries extracted: {len(all_summaries)}")
+    files_to_go -= 1
+    print(f"Number of files remaining: {files_to_go}.\n")
 
     # Write extracted data to Excel
-    csv_utils.write_transactions_and_summaries_to_excel(
-        all_transactions,
-        all_summaries,
-        output_folder,
-        "extracted-data.xlsx",
-        table_data=all_table_data,
-        statement_type=statement_type,  # Pass statement_type here #TODO: Check if this is needed, might have been related to date processing.
-        static_info=static_info
-    )
+    if all_text:
+        csv_utils.write_raw_data_to_excel(
+            all_text,
+            output_folder,
+            "extracted-data.xlsx"
+        )
+    else:
+        print("No data extracted from the documents.")
+
     # end time
     end_time = time.time()
     # Calculate time taken and print as hh:mm:ss
