@@ -10,7 +10,6 @@ from PIL import Image
 import io
 import yaml
 
-
 class PDFProcessor:
     def __init__(self):
         with open("config/type_models.yaml", "r") as file:
