@@ -293,6 +293,12 @@ statement_types:
     transaction_static_fields: []
     transaction_dynamic_fields: []
 
+  - type_name: "Raw-extract"
+    env_var: "PRE_BUILT_READ"
+    summary_fields: []
+    transaction_static_fields: []
+    transaction_dynamic_fields: []
+
   - type_name: "CBA - Bank Statement (Foreign)"
     env_var: "MODEL_ID_CBA_BANK"
     summary_fields:
