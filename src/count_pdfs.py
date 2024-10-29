@@ -22,7 +22,6 @@ class PDFCounter:
         """
         try:
             with fitz.open(pdf_path) as doc:
-                print(f"There are {len(doc)} pages in {pdf_path}.")
                 return len(doc)
         except Exception as e:
             print(f"Error processing {pdf_path}: {e}")
@@ -47,9 +46,10 @@ class PDFCounter:
         total_files = 0
         total_pages = 0
 
-        for folder in folders:
-            print(f"Counting files and pages in {os.path.basename(folder)}...\n")
+        #print(f"Counting files and pages in {folders}...\n")
 
+        for folder in folders:
+            
             folder_path = Path(folder)
             folder_files = 0
             folder_pages = 0
@@ -64,6 +64,10 @@ class PDFCounter:
             summary_data.append([folder, folder_files, folder_pages])
             total_files += folder_files
             total_pages += folder_pages
+        
+        # Summary print statement
+        print(f"Total number of FILES: {folder_files}")
+        print(f"Total number of PAGES: {folder_pages}\n")
 
         summary_data.append(["Total", total_files, total_pages])
 

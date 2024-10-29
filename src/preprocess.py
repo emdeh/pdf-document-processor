@@ -59,6 +59,7 @@ def main():
     ) = env_prep.create_folders(name, output_folder)
     
     # Count input PDFs
+    print("PRE-SPLIT COUNTS")
     pdf_counter = PDFCounter()
     (
         detailed_data_before,
@@ -82,19 +83,26 @@ def main():
     )
     
     # Count processed PDFs
+    print("POST-SPLIT COUNTS")
     (
         detailed_data_after,
         summary_data_after,
         total_post_files,
         total_post_pages,
     ) = pdf_counter.process_pdf_count([ready_for_analysis])
+
+    # Computer the difference in pages and files
+    page_diff = total_post_pages - total_pre_pages
+    file_diff = total_post_files - total_pre_files
+
+    # Print summary
+    print("COMPARISON\n")
+    print(f"There is a difference of {page_diff} pages between the original and split files.\n")
     
     # Save post-split counts
     pdf_counter.save_to_excel(
         detailed_data_after, summary_data_after, statement_set_path, "post-split-counts.xlsx"
     )
-    
-    # Output directories and files can be used by the processing script
 
 if __name__ == "__main__":
     main()
