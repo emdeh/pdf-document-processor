@@ -16,7 +16,7 @@ def main():
         Within this folder it creates necessary folders, counts PDFs before and after splitting them, saves the counts to Excel files,
         and stores the split files.''',
         
-        epilog='''Example: python src/preprocess.py --input PATH/TO/PDFS --name statement_run_1'''
+        epilog='''Example: python src/preprocess.py -i PATH/TO/PDFS -n statement_run_1 -t "St. George - Bank Statement"'''
     )
 
     
@@ -34,11 +34,20 @@ def main():
         help='Name of the pre-process run - the folder created within the input folder will be named after this.'
         )
     
+    parser.add_argument(
+        '-t', '--type',
+        type=str,
+        required=True,
+        help='Type of file to process. See YAML for options.'
+
+    )
+    
     args = parser.parse_args()
     
     input_dir = args.input
     output_folder = input_dir # Output folder for preprocessed PDFs will be created inside the given input folder
     name = args.name
+    type_name = args.type
     
     # Create necessary folders
     env_prep = EnvironmentPrep()
@@ -69,6 +78,7 @@ def main():
         input_dir,
         ready_for_analysis,
         manual_splitting_folder,
+        type_name,
     )
     
     # Count processed PDFs
