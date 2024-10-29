@@ -22,6 +22,7 @@ class PDFCounter:
         """
         try:
             with fitz.open(pdf_path) as doc:
+                print(f"There are {len(doc)} pages in {pdf_path}.")
                 return len(doc)
         except Exception as e:
             print(f"Error processing {pdf_path}: {e}")
