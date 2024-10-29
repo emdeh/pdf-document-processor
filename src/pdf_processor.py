@@ -19,7 +19,7 @@ class PDFProcessor:
         pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
         pass
         
-    def process_all_pdfs(self, input_folder, output_folder, manual_processing_folder):
+    def process_all_pdfs(self, input_folder, output_folder, manual_processing_folder, type_name):
         """
         Processes all PDF files in a given folder, splitting them into separate documents based on identified patterns.
 
@@ -35,13 +35,13 @@ class PDFProcessor:
 
             if is_machine_readable:
                 # Proceed with existing logic
-                doc_type = self.detect_document_type(pdf_path)
-                doc_starts = self.get_doc_starts_by_type(pdf_path, doc_type)
+                # doc_type = self.detect_document_type(pdf_path)
+                doc_starts = self.get_doc_starts_by_type(pdf_path, type_name)
             else:
                 print(f"{os.path.basename(pdf_file)} is scanned. Performing OCR to extract text.\n")
                 # Use OCR to extract text
-                doc_type = self.detect_document_type(pdf_path, use_ocr=True)
-                doc_starts = self.get_doc_starts_by_type(pdf_path, doc_type, use_ocr=True)
+                # doc_type = self.detect_document_type(pdf_path, use_ocr=True)
+                doc_starts = self.get_doc_starts_by_type(pdf_path, type_name, use_ocr=True)
 
             if doc_starts:
                 self.split_pdf(pdf_path, output_folder, doc_starts)
@@ -57,43 +57,43 @@ class PDFProcessor:
 
         print(f"Splitting complete.\n\n")
 
-    def detect_document_type(self, pdf_path, use_ocr=False):
-        """
-        Detects the type of a PDF document based on its content using configuration from the YAML file.
-
-        Parameters:
-            pdf_path (str): The path to the PDF document.
-            use_ocr (bool): Whether to use OCR for text extraction.
-
-        Returns:
-            str: The detected document type, or 'unknown' if no match is found.
-        """
-        doc = fitz.open(pdf_path)
-        first_pages_text = ""
-        for i in range(min(12, len(doc))):
-            page = doc.load_page(i)
-            page_text = self.extract_text_from_page(page, use_ocr)
-            first_pages_text += page_text
-
-        doc.close()
-
-        # Iterate over each type definition in the YAML configuration
-        for statement in self.config['statement_types']:
-            match_criteria = statement.get('match_criteria', [])
-
-            for criterion in match_criteria:
-                match_type = criterion.get('type')
-                value = criterion.get('value')
-
-                if match_type == "keyword" and value in first_pages_text:
-                    print(f"{statement['type_name']} detected.")
-                    return statement['type_name']
-
-                elif match_type == "regex" and re.search(value, first_pages_text):
-                    print(f"{statement['type_name']} detected.")
-                    return statement['type_name']
-
-        return "unknown"
+    #def detect_document_type(self, pdf_path, use_ocr=False):
+    #    """
+    #    Detects the type of a PDF document based on its content using configuration from the YAML file.
+#
+    #    Parameters:
+    #        pdf_path (str): The path to the PDF document.
+    #        use_ocr (bool): Whether to use OCR for text extraction.
+#
+    #    Returns:
+    #        str: The detected document type, or 'unknown' if no match is found.
+    #    """
+    #    doc = fitz.open(pdf_path)
+    #    first_pages_text = ""
+    #    for i in range(min(12, len(doc))):
+    #        page = doc.load_page(i)
+    #        page_text = self.extract_text_from_page(page, use_ocr)
+    #        first_pages_text += page_text
+#
+    #    doc.close()
+#
+    #    # Iterate over each type definition in the YAML configuration
+    #    for statement in self.config['statement_types']:
+    #        match_criteria = statement.get('match_criteria', [])
+#
+    #        for criterion in match_criteria:
+    #            match_type = criterion.get('type')
+    #            value = criterion.get('value')
+#
+    #            if match_type == "keyword" and value in first_pages_text:
+    #                print(f"{statement['type_name']} detected.")
+    #                return statement['type_name']
+#
+    #            elif match_type == "regex" and re.search(value, first_pages_text):
+    #                print(f"{statement['type_name']} detected.")
+    #                return statement['type_name']
+#
+    #    return "unknown"
     
     def get_config_for_type(self, statement_type):
         """
