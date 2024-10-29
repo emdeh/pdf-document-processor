@@ -16,7 +16,7 @@ def main():
         Within this folder it creates necessary folders, counts PDFs before and after splitting them, saves the counts to Excel files,
         and stores the split files.''',
         
-        epilog='''Example: python src/preprocess.py --input PATH/TO/PDFS --name statement_run_1'''
+        epilog='''Example: python src/preprocess.py -i PATH/TO/PDFS -n statement_run_1 -t "St. George - Bank Statement"'''
     )
 
     
@@ -34,11 +34,20 @@ def main():
         help='Name of the pre-process run - the folder created within the input folder will be named after this.'
         )
     
+    parser.add_argument(
+        '-t', '--type',
+        type=str,
+        required=True,
+        help='Type of file to process. See YAML for options.'
+
+    )
+    
     args = parser.parse_args()
     
     input_dir = args.input
     output_folder = input_dir # Output folder for preprocessed PDFs will be created inside the given input folder
     name = args.name
+    type_name = args.type
     
     # Create necessary folders
     env_prep = EnvironmentPrep()
@@ -50,6 +59,7 @@ def main():
     ) = env_prep.create_folders(name, output_folder)
     
     # Count input PDFs
+    print("PRE-SPLIT COUNTS")
     pdf_counter = PDFCounter()
     (
         detailed_data_before,
@@ -69,22 +79,30 @@ def main():
         input_dir,
         ready_for_analysis,
         manual_splitting_folder,
+        type_name,
     )
     
     # Count processed PDFs
+    print("POST-SPLIT COUNTS")
     (
         detailed_data_after,
         summary_data_after,
         total_post_files,
         total_post_pages,
     ) = pdf_counter.process_pdf_count([ready_for_analysis])
+
+    # Computer the difference in pages and files
+    page_diff = total_post_pages - total_pre_pages
+    file_diff = total_post_files - total_pre_files
+
+    # Print summary
+    print("COMPARISON\n")
+    print(f"There is a difference of {page_diff} pages between the original and split files.\n")
     
     # Save post-split counts
     pdf_counter.save_to_excel(
         detailed_data_after, summary_data_after, statement_set_path, "post-split-counts.xlsx"
     )
-    
-    # Output directories and files can be used by the processing script
 
 if __name__ == "__main__":
     main()

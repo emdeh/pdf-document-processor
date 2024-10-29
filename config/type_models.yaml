@@ -26,6 +26,8 @@
 # statement_types:
 #   - type_name: "Statement Type Name"
 #     env_var: "ENV_VARIABLE_NAME" # References back to a .env file
+#     start_pattern: "The regex pattern used to determine the start of the statement, so documents containing multiple statements can be split"
+#     split_type: "page_start" # can be "page_start", "start_end" - see note below
 #     summary_fields:
 #       - field_name: "Summary Field 1"
 #         is_amount: true
@@ -45,6 +47,8 @@
 statement_types:
   - type_name: "AMEX - Card Statement"
     env_var: "MODEL_ID_AMEX_CARD"
+    start_pattern: '\b1 of \d+'
+    split_type: "page_start" # can be "page_start", "start_end" - see note below
     summary_fields:
       - field_name: "PreviousBalance"
         is_amount: true
@@ -79,6 +83,8 @@ statement_types:
 
   - type_name: "Westpac - Bank Statement"
     env_var: "MODEL_ID_WESTPAC_BANK"
+    start_pattern: '(?i)Statement\s+No\.\s+\d+\s+Page\s+1\s+of\s+\d+'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -115,6 +121,8 @@ statement_types:
 
   - type_name: "Westpac - Bank Statement (Receipt style)" # For Westpac statements that look like receipts
     env_var: "MODEL_ID_WESTPAC_BANK_RECEIPT_STYLE"
+    start_pattern: 'STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -152,6 +160,9 @@ statement_types:
 
   - type_name: "Bendigo - Bank Statement"
     env_var: "MODEL_ID_BENDIGO_BANK"
+    start_pattern: 'Statement number\s+(\d+)'
+    must_not_contain: "Continued overleaf..."
+    split_type: "start_end"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -184,9 +195,11 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
-        
+            
   - type_name: "Bank of Melbourne - Bank Statement"
     env_var: "MODEL_ID_BOM_BANK"
+    start_pattern: '\(page\s+1 of \d+\)'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -221,6 +234,8 @@ statement_types:
 
   - type_name: "St. George - Bank Statement"
     env_var: "MODEL_ID_STGEORGE_BANK"
+    start_pattern: '\(page\s+1 of \d+\)' # Used for splitting the document
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -255,6 +270,8 @@ statement_types:
 
   - type_name: "Suncorp - Bank Statement"
     env_var: "MODEL_ID_SUNCORP_BANK"
+    start_pattern: '\b1 of \d+'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -287,7 +304,7 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
           
-  - type_name: "Pre-Built Layout Model"
+  - type_name: "Pre-Built Layout Model" # TODO: Maybe this is better in a separate file as it does not do pdf splitting stuff
     env_var: "PRE_BUILT_LAYOUT_MODEL"
     summary_fields: []
     transaction_static_fields: []
@@ -301,6 +318,8 @@ statement_types:
 
   - type_name: "CBA - Bank Statement (Foreign)"
     env_var: "MODEL_ID_CBA_BANK"
+    start_pattern: '\b1 of \d+'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -335,6 +354,8 @@ statement_types:
 
   - type_name: "CBA - Bank Statement (Standard)"
     env_var: "MODEL_ID_CBA_BANK"
+    start_pattern: '\b1 of \d+'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -369,6 +390,8 @@ statement_types:
 
   - type_name: "NAB - Bank Statement"
     env_var: "MODEL_ID_NAB_BANK"
+    start_pattern: '\b1 of \d+'
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -404,6 +427,8 @@ statement_types:
 
   - type_name: "ANZ - Bank Statement"
     env_var: "MODEL_ID_ANZ_BANK"
+    start_phrase: "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE"
+    split_type: "page_start"
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
@@ -435,3 +460,19 @@ statement_types:
         is_amount: true
       - field_name: "Balance"
         is_amount: true
+
+
+###
+#Regex Pattern Only (start_pattern):
+#
+#If the YAML file specifies a start_pattern, the method will apply that regex to identify the start of a statement.
+#This is a straightforward match—if it finds the pattern, it marks the beginning of a new document.
+#Regex Pattern + Condition (must_not_contain):
+#
+#In scenarios like the Bendigo statement, where you need both the regex pattern and to check the absence of specific text ("Continued overleaf..."), the YAML file can specify both start_pattern and must_not_contain.
+#The function first identifies the statement start with the regex (start_pattern), then also checks the absence condition (must_not_contain) to determine the end of the statement.
+#Start Phrase (start_phrase):
+#
+#For situations like the ANZ statement where a specific phrase ("WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE") indicates the start of a new document, the YAML can define start_phrase instead of a regex.
+#If a start_phrase is found in the page, it will be used to mark the beginning of a new document.
+####
