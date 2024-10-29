@@ -27,6 +27,7 @@
 #   - type_name: "Statement Type Name"
 #     env_var: "ENV_VARIABLE_NAME" # References back to a .env file
 #     start_pattern: "The regex pattern used to determine the start of the statement, so documents containing multiple statements can be split"
+#     split_type: "page_start" # can be "page_start", "start_end" - see note below
 #     summary_fields:
 #       - field_name: "Summary Field 1"
 #         is_amount: true

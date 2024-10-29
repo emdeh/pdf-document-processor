@@ -19,8 +19,6 @@ class PDFProcessor:
         if not isinstance(self.config, dict) or 'statement_types' not in self.config:
             raise ValueError("The YAML file is not correctly formatted. Expected a key 'statement_types' at the top level.")
         
-        #print("Loaded config:", self.config)
-        #print("Type of self.config:", type(self.config))
         # Set the Tesseract command path if necessary
         pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
         pass
@@ -28,11 +26,13 @@ class PDFProcessor:
     def process_all_pdfs(self, input_folder, output_folder, manual_processing_folder, type_name):
         """
         Processes all PDF files in a given folder, splitting them into separate documents based on identified patterns.
+        Identified paterns are defined in the YAML configuration file, which is loaded with the argument `type_name`.
 
         Args:
             input_folder (str): The folder containing the PDF files to process.
             output_folder (str): The folder where the split PDFs will be saved.
             manual_processing_folder (str): The folder where the PDF files without a known pattern will be moved.
+            type_name (str): The type of document to process.
         """
         print(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
         for pdf_file in Path(input_folder).glob("*.pdf"):
@@ -40,13 +40,9 @@ class PDFProcessor:
             is_machine_readable = self.is_pdf_machine_readable(pdf_path)
 
             if is_machine_readable:
-                # Proceed with existing logic
-                # doc_type = self.detect_document_type(pdf_path)
                 doc_starts = self.get_doc_starts_by_type(pdf_path, type_name)
             else:
                 print(f"{os.path.basename(pdf_file)} is scanned. Performing OCR to extract text.\n")
-                # Use OCR to extract text
-                # doc_type = self.detect_document_type(pdf_path, use_ocr=True)
                 doc_starts = self.get_doc_starts_by_type(pdf_path, type_name, use_ocr=True)
 
             if doc_starts:
@@ -63,44 +59,6 @@ class PDFProcessor:
 
         print(f"Splitting complete.\n\n")
 
-    #def detect_document_type(self, pdf_path, use_ocr=False):
-    #    """
-    #    Detects the type of a PDF document based on its content using configuration from the YAML file.
-#
-    #    Parameters:
-    #        pdf_path (str): The path to the PDF document.
-    #        use_ocr (bool): Whether to use OCR for text extraction.
-#
-    #    Returns:
-    #        str: The detected document type, or 'unknown' if no match is found.
-    #    """
-    #    doc = fitz.open(pdf_path)
-    #    first_pages_text = ""
-    #    for i in range(min(12, len(doc))):
-    #        page = doc.load_page(i)
-    #        page_text = self.extract_text_from_page(page, use_ocr)
-    #        first_pages_text += page_text
-#
-    #    doc.close()
-#
-    #    # Iterate over each type definition in the YAML configuration
-    #    for statement in self.config['statement_types']:
-    #        match_criteria = statement.get('match_criteria', [])
-#
-    #        for criterion in match_criteria:
-    #            match_type = criterion.get('type')
-    #            value = criterion.get('value')
-#
-    #            if match_type == "keyword" and value in first_pages_text:
-    #                print(f"{statement['type_name']} detected.")
-    #                return statement['type_name']
-#
-    #            elif match_type == "regex" and re.search(value, first_pages_text):
-    #                print(f"{statement['type_name']} detected.")
-    #                return statement['type_name']
-#
-    #    return "unknown"
-    
     def get_config_for_type(self, statement_type):
         """
         Retrieves the configuration for a specific statement type from the YAML config.
@@ -274,209 +232,3 @@ class PDFProcessor:
             image = Image.open(io.BytesIO(img_data))
             text = pytesseract.image_to_string(image)
         return text
-
-
-    
-
-
-
-
-
-
-#
-#
-#    def get_doc_starts_by_type(self, pdf_path, doc_type, use_ocr=False):
-#        if doc_type == "standard_statement":
-#            return self.find_standard_statement_starts(pdf_path, use_ocr)
-#        elif doc_type == "bom_statement":
-#            return self.find_bom_statement_starts(pdf_path, use_ocr)
-#        elif doc_type == "westpac_statement":
-#            return self.find_westpac_statement_starts(pdf_path, use_ocr)
-#        elif doc_type == "bendigo_statement":
-#            return self.find_bendigo_statement_starts(pdf_path, use_ocr)
-#        elif doc_type == "anz_statement":
-#            return self.find_anz_statement_starts(pdf_path, use_ocr)
-#        else:
-#            return None
-#
-#    def find_standard_statement_starts(self, pdf_path, use_ocr=False):
-#        """
-#        Identifies the starting pages of standard statements within a PDF file.
-#
-#        Args:
-#            pdf_path (str): The file path of the PDF to be processed.
-#            use_ocr (bool): Whether to use OCR for text extraction.
-#
-#        Returns:
-#            list: A list of page numbers where new documents start.
-#        """
-#        doc_starts = []
-#        doc = fitz.open(pdf_path)
-#        for page_num in range(len(doc)):
-#            page = doc.load_page(page_num)
-#            page_text = self.extract_text_from_page(page, use_ocr)
-#            if re.search(r"\b1 of \d+", page_text):
-#                doc_starts.append(page_num)
-#        doc.close()
-#        return doc_starts
-#
-#    def find_bendigo_statement_starts(self, pdf_path, use_ocr=False):
-#        """
-#        Identifies the starting pages of documents within a PDF file based on 'Statement Number'.
-#
-#        Args:
-#            pdf_path (str): The file path of the PDF to be processed.
-#            use_ocr (bool): Whether to use OCR for text extraction.
-#
-#        Returns:
-#            dict: A dictionary with keys as the statement number and values as dictionaries
-#                containing 'start' and 'end' pages for each document.
-#        """
-#        doc = fitz.open(pdf_path)
-#        statement_starts = {}
-#        current_statement = None
-#
-#        for page_num in range(len(doc)):
-#            page = doc.load_page(page_num)
-#            page_text = self.extract_text_from_page(page, use_ocr)
-#            match = re.search(r"Statement number\s+(\d+)", page_text)
-#            if match:
-#                statement_number = int(match.group(1))
-#                if statement_number != current_statement:
-#                    if current_statement is not None:
-#                        statement_starts[current_statement]["end"] = page_num - 1
-#                    current_statement = statement_number
-#                    statement_starts[statement_number] = {"start": page_num}
-#            elif "Continued overleaf..." not in page_text and current_statement is not None:
-#                statement_starts[current_statement]["end"] = page_num
-#                current_statement = None
-#
-#        # Ensure the last statement is closed if it doesn't end explicitly
-#        if current_statement and "end" not in statement_starts[current_statement]:
-#            statement_starts[current_statement]["end"] = len(doc) - 1
-#
-#        doc.close()
-#        return statement_starts
-#
-#
-#        # Ensure the last statement is closed if it doesn't end explicitly
-#        if current_statement and "end" not in statement_starts[current_statement]:
-#            statement_starts[current_statement]["end"] = len(doc) - 1
-#
-#        doc.close()
-#        return statement_starts
-#
-#    def find_bom_statement_starts(self, pdf_path, use_ocr=False):
-#        """
-#        Identifies the starting pages of Bank of Melbourne and St. George statements.
-#
-#        Args:
-#            pdf_path (str): The file path of the PDF to be processed.
-#            use_ocr (bool): Whether to use OCR for text extraction.
-#
-#        Returns:
-#            list: A list of page numbers where new documents start.
-#        """
-#        doc_starts = []
-#        doc = fitz.open(pdf_path)
-#        for page_num in range(len(doc)):
-#            page = doc.load_page(page_num)
-#            page_text = self.extract_text_from_page(page, use_ocr)
-#            if re.search(r"\(page\s+1 of \d+\)", page_text):
-#                doc_starts.append(page_num)
-#        doc.close()
-#        return doc_starts
-#    
-#    def find_westpac_statement_starts(self, pdf_path, use_ocr=False):
-#        """
-#        Identifies the starting pages of Westpac Group statements based on the pattern
-#        "STATEMENT NO. X PAGE 1 OF Y".
-#
-#        Args:
-#            pdf_path (str): The file path of the PDF to be processed.
-#            use_ocr (bool): Whether to use OCR for text extraction.
-#
-#        Returns:
-#            list: A list of page numbers where new documents start.
-#        """
-#        doc_starts = []
-#        doc = fitz.open(pdf_path)
-#
-#        # Define regex pattern
-#        statement_pattern = r"STATEMENT\s+NO\.\s+\d+\s+PAGE\s+1\s+OF\s+\d+"
-#
-#        for page_num in range(len(doc)):
-#            page = doc.load_page(page_num)
-#            page_text = self.extract_text_from_page(page, use_ocr)
-#            
-#            # Search for the statement pattern
-#            if re.search(statement_pattern, page_text, re.IGNORECASE):
-#                doc_starts.append(page_num)
-#        
-#        doc.close()
-#        return doc_starts
-#    
-#    def find_anz_statement_starts(self, pdf_path, use_ocr=False):
-#        """
-#        Identifies the starting pages of ANZ statements within a PDF file.
-#
-#        Args:
-#            pdf_path (str): The file path of the PDF to be processed.
-#            use_ocr (bool): Whether to use OCR for text extraction.
-#
-#        Returns:
-#            list: A list of page numbers where new documents start.
-#        """
-#        doc_starts = []
-#        doc = fitz.open(pdf_path)
-#        for page_num in range(len(doc)):
-#            page = doc.load_page(page_num)
-#            page_text = self.extract_text_from_page(page, use_ocr)
-#            if "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE" in page_text:
-#                doc_starts.append(page_num)
-#        doc.close()
-#        return doc_starts
-#
-#    def detect_document_type(self, pdf_path, use_ocr=False):
-#            """
-#            Detects the type of a PDF document based on its content.
-#
-#            Parameters:
-#                pdf_path (str): The path to the PDF document.
-#                use_ocr (bool): Whether to use OCR for text extraction.
-#
-#            Returns:
-#                str: The detected document type. Possible values are 'bendigo_statement',
-#                    'bom_statement', 'standard_statement', or 'unknown'.
-#            """
-#            # TODO: The pattern matching could be moved into the yaml file and loaded here
-#            doc = fitz.open(pdf_path)
-#            first_pages_text = ""
-#            for i in range(min(12, len(doc))):
-#                page = doc.load_page(i)
-#                page_text = self.extract_text_from_page(page, use_ocr)
-#                first_pages_text += page_text
-#
-#            doc.close()
-#
-#            if "Bendigo" in first_pages_text:
-#                print("Bendigo Bank statement detected.")
-#                return "bendigo_statement"
-#
-#            elif "FREEDOM" in first_pages_text:
-#                print("Bank of Melbourne OR St. George statement detected.")
-#                return "bom_statement"
-#
-#            elif re.search(r"\b1 of \d", first_pages_text):
-#                print("Standard statement detected.")
-#                return "standard_statement"
-#            
-#            elif "WELCOME TO YOUR ANZ ACCOUNT AT A GLANCE" in first_pages_text:
-#                print("ANZ statement detected.")
-#                return "anz_statement"
-#            
-#            elif "Westpac" in first_pages_text:
-#                print("Westpac statement detected.")
-#                return "westpac_statement"
-#
-#            return "unknown"
