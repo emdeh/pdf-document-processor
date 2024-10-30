@@ -9,7 +9,7 @@ from utils import Logger
 
 class CSVUtils:
     def __init__(self):
-        pass
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
 
     def extract_static_info(self, results, original_file_name, statement_type):
         """
@@ -311,7 +311,7 @@ class CSVUtils:
                     summary_sheet.set_column(idx, idx, None, money_fmt)
                 # No date formatting applied
 
-        print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
+        self.logger.info("Data written to file %s in %s.", os.path.basename(excel_filename), os.path.basename(output_dir))
         
     def write_raw_data_to_excel(self, texts_records, output_dir, excel_filename):
         """
@@ -333,4 +333,4 @@ class CSVUtils:
             text_wrap_format = writer.book.add_format({'text_wrap': True})
             worksheet.set_column('B:B', None, text_wrap_format)
 
-        print(f"Data written to the file '{os.path.basename(excel_filename)}' in {os.path.basename(output_dir)}.\n")
+        self.logger.info("Data written to file %s in %s.", os.path.basename(excel_filename), os.path.basename(output_dir))

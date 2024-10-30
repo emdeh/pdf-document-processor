@@ -5,6 +5,7 @@ import argparse
 from prep_env import EnvironmentPrep
 from pdf_processor import PDFProcessor
 from count_pdfs import PDFCounter
+from utils import Logger
 
 def main():
     # Parse command-line arguments
@@ -48,6 +49,10 @@ def main():
     output_folder = input_dir # Output folder for preprocessed PDFs will be created inside the given input folder
     name = args.name
     type_name = args.type
+
+    # Set up logger
+    logger = Logger.get_logger("PreProcessor", log_to_file=True)
+    logger.info("Starting preprocessing script...")
     
     # Create necessary folders
     env_prep = EnvironmentPrep()
@@ -59,7 +64,7 @@ def main():
     ) = env_prep.create_folders(name, output_folder)
     
     # Count input PDFs
-    print("PRE-SPLIT COUNTS")
+    logger.info("PRE-SPLIT COUNTS")
     pdf_counter = PDFCounter()
     (
         detailed_data_before,
@@ -83,7 +88,7 @@ def main():
     )
     
     # Count processed PDFs
-    print("POST-SPLIT COUNTS")
+    logger.info("POST-SPLIT COUNTS")
     (
         detailed_data_after,
         summary_data_after,
@@ -96,8 +101,8 @@ def main():
     file_diff = total_post_files - total_pre_files
 
     # Print summary
-    print("COMPARISON\n")
-    print(f"There is a difference of {page_diff} pages between the original and split files.\n")
+    logger.info("SUMMARY")
+    logger.info("There is a difference of %s files between the original and split files.", file_diff)
     
     # Save post-split counts
     pdf_counter.save_to_excel(

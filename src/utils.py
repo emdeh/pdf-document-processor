@@ -1,5 +1,7 @@
 # src/utils.py
 import logging
+import os
+from datetime import datetime
 
 def ask_user_to_continue():
     """
@@ -23,7 +25,7 @@ def ask_user_to_continue():
 
 class Logger:
     @staticmethod
-    def get_logger(name, level=logging.DEBUG, log_to_file=False, log_file='logs/app.log'):
+    def get_logger(name, level=logging.DEBUG, log_to_file=False, log_file=None):
         """
         Returns a logger instance for the specified name.
         
@@ -48,6 +50,14 @@ class Logger:
 
             # Optional: log to file if log_to_file is True
             if log_to_file:
+                # Create a timestamped log file name if not provided
+                if log_file is None:
+                    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+                    log_file = f"logs/{timestamp}.log"
+
+                # Ensure logs directory exists
+                os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
                 fh = logging.FileHandler(log_file)
                 fh.setLevel(level)
                 fh.setFormatter(formatter)
