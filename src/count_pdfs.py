@@ -67,8 +67,8 @@ class PDFCounter:
             total_pages += folder_pages
         
         # Summary print statement
-        print(f"Total number of FILES: {folder_files}")
-        print(f"Total number of PAGES: {folder_pages}\n")
+        self.logger.info("Total number of FILES: %s", folder_files)
+        self.logger.info("Total number of PAGES: %s", folder_pages)
 
         summary_data.append(["Total", total_files, total_pages])
 
