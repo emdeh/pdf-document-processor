@@ -4,11 +4,12 @@ import pandas as pd
 import fitz  # PyMuPDF
 import os
 from pathlib import Path
+from utils import Logger
 
 
 class PDFCounter:
     def __init__(self):
-        pass
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
 
     def count_pdf_pages(self, pdf_path):
         """
@@ -24,7 +25,7 @@ class PDFCounter:
             with fitz.open(pdf_path) as doc:
                 return len(doc)
         except Exception as e:
-            print(f"Error processing {pdf_path}: {e}")
+            self.logger.error("Error processing %s: %s", pdf_path, e)
             return 0
 
     def process_pdf_count(self, folders):
