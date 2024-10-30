@@ -93,12 +93,15 @@ class PDFCounter:
             with pd.ExcelWriter(output_file_path, engine="openpyxl", mode="a", if_sheet_exists="new") as writer:
                 detailed_df.to_excel(writer, sheet_name="Pages Per Document", index=False, header=True)
                 summary_df.to_excel(writer, sheet_name="Summary", index=False, header=True)
-            print(f"Data appended to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.")
+            self.logger.info("Data appended to the file '%s' in %s.", os.path.basename(output_filename), os.path.basename(output_excel_path))
         else:
             with pd.ExcelWriter(output_file_path, engine="openpyxl") as writer:
                 detailed_df.to_excel(writer, sheet_name="Pages Per Document", index=False, header=True)
                 summary_df.to_excel(writer, sheet_name="Summary", index=False, header=True)
-            print(
-                f"New file '{output_filename}' created in {os.path.basename(output_excel_path)}.\n"
-                f"Data written to the file '{os.path.basename(output_filename)}' in {os.path.basename(output_excel_path)}.\n"
+            self.logger.info(
+                "New file '%s' created in %s.\nData written to the file '%s' in %s.",
+                output_filename,
+                os.path.basename(output_excel_path),
+                os.path.basename(output_filename),
+                os.path.basename(output_excel_path),
             )
