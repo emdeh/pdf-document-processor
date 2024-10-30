@@ -3,8 +3,12 @@
 import os
 import shutil
 import yaml
+from utils import Logger
 
 class EnvironmentPrep:
+    def __init__(self):
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
+
     def create_folders(self, statement_set_name, base_folder):
         """
         Creates the necessary folders for processing the files.
@@ -18,19 +22,19 @@ class EnvironmentPrep:
         """
         new_folder = os.path.join(base_folder, statement_set_name)
         os.makedirs(new_folder, exist_ok=True)
-        print(f"Using folder '{os.path.basename(statement_set_name)}' to hold processed files.\n")
+        self.logger.info("Using folder '%s' to hold processed files.", os.path.basename(statement_set_name))
 
         ready_for_analysis = os.path.join(new_folder, 'split-files')
         os.makedirs(ready_for_analysis, exist_ok=True)
-        print("Created 'split-files' folder to hold files ready for analysis.\n")
+        self.logger.info("Created 'split-files' folder to hold files ready for analysis.")
 
         manual_splitting_folder = os.path.join(new_folder, 'manual-splitting required')
         os.makedirs(manual_splitting_folder, exist_ok=True)
-        print("Created 'manual-splitting required' folder to hold files that fail auto-splitting.\n")
+        self.logger.info("Created 'manual-splitting required' folder to hold files that fail auto-splitting.")
 
         analysed_files_folder = os.path.join(new_folder, 'analysed-files')
         os.makedirs(analysed_files_folder, exist_ok=True)
-        print("Created 'analysed-files' folder to hold files that have been analysed.\n")
+        self.logger.info("Created 'analysed-files' folder to hold files that have been analysed.")
 
         return new_folder, ready_for_analysis, manual_splitting_folder, analysed_files_folder
 
@@ -42,10 +46,10 @@ class EnvironmentPrep:
             document_path (str): Path to the document to be moved.
             analysed_files_folder (str): Destination folder.
         """
-        print(f"Moving {os.path.basename(document_path)} to the analysed-files folder.\n")
+        self.logger.info("Moving %s to the analysed-files folder.", os.path.basename(document_path))
         destination_path = os.path.join(analysed_files_folder, os.path.basename(document_path))
         shutil.move(document_path, destination_path)
-        print(f"Moved {os.path.basename(document_path)} to {os.path.basename(analysed_files_folder)}.\n")
+        self.logger.info("Moved %s to %s.", os.path.basename(document_path), os.path.basename(analysed_files_folder))
 
     def load_statement_config(self, config_path):
         """
@@ -118,10 +122,10 @@ class EnvironmentPrep:
             source_folder (str): Source directory.
             destination_folder (str): Destination directory.
         """
-        print(f"Copying files from {source_folder} to {destination_folder}...\n")
+        self.logger.info("Copying files from %s to %s...", source_folder, destination_folder)
         for filename in os.listdir(source_folder):
             source_path = os.path.join(source_folder, filename)
             dest_path = os.path.join(destination_folder, filename)
             if os.path.isfile(source_path) and filename.lower().endswith('.pdf'):
                 shutil.copy(source_path, dest_path)
-        print("Files copied successfully.\n")
+        self.logger.info("Files copied successfully.\n")
