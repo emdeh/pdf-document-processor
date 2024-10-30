@@ -4,6 +4,7 @@ import csv
 import pandas as pd
 import os
 import re
+from utils import Logger
 
 
 class CSVUtils:

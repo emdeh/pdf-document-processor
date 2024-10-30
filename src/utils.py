@@ -23,7 +23,7 @@ def ask_user_to_continue():
 
 class Logger:
     @staticmethod
-    def get_logger(name, level=logging.DEBUG, log_to_file=False, log_file='app.log'):
+    def get_logger(name, level=logging.DEBUG, log_to_file=False, log_file='logs/app.log'):
         """
         Returns a logger instance for the specified name.
         
