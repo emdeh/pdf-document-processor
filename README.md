@@ -13,7 +13,11 @@ env file requirements
 
 # PDF Document Processor
 
-This project consists of two main scripts designed to preprocess PDF documents and extract data from them using Azure Document Intelligence (formerly Form Recognizer). The preprocessing script splits PDFs and prepares them for analysis, while the processing script extracts data and writes it to an Excel file.
+This project consists of 4 main scripts designed to preprocess PDF documents and extract data from them using Azure Document Intelligence (formerly Form Recognizer). 
+The preprocessing script splits PDFs and prepares them for analysis. 
+The processing and raw processing scripts extract data and write it to an Excel file, either as treated or raw data respectively.
+The postprocessing script offers several data treatment pipelines that allow for more detailed analysis.
+
 
 ## Table of Contents
 
@@ -23,6 +27,8 @@ This project consists of two main scripts designed to preprocess PDF documents a
 - [Usage](#usage)
   - [Preprocessing Script](#preprocessing-script)
   - [Processing Script](#processing-script)
+  - [Raw Processing Script](#rawprocessing-script)
+  - [Postprocessing Script](#postprocessing-script)
 - [Configuration](#configuration)
 - [Environment Variables](#environment-variables)
 - [Example](#example)
@@ -39,6 +45,20 @@ This project consists of two main scripts designed to preprocess PDF documents a
   - Extracts data from PDFs using Azure Document Intelligence.
   - Supports custom models specified in a YAML configuration file.
   - Writes extracted data to Excel files with appropriate formatting.
+
+- **Raw Processing:**
+  - Extracts data from PDFs using Azure Document Intelligence.
+  - Supports custom models specified in a YAML configuration file.
+  - Writes extracted raw data to Excel files with no formatting.
+
+- **Postprocessing:**
+  - Allows for several different kinds of data treating pipelines for improved data analytics.
+  - *Excel Handler:*
+    - Fill Missing Dates from known date values.
+  - *PDF Postprocessor:*
+    - Categorise by user specified value.
+    - Add date prefix to filenames.
+    - Identify and remove duplicates.
 
 ## Prerequisites
 
