@@ -11,7 +11,6 @@ def main():
     parser = argparse.ArgumentParser(
         description=f'This script provides a variety of postprocessing tasks.\n\n**AVAILABLE EXCEL TASKS:\n{excel_task_help}\n\n**AVAILABLE PDF TASKS:\n{pdf_task_help}',
         formatter_class=argparse.RawTextHelpFormatter,
-
         epilog='''Example: python src/postprocess.py -i PATH/TO/PDFS -t categorise_by_value'''
     )
 
@@ -27,7 +26,7 @@ def main():
         type=str, 
         nargs='+', 
         help='List of post-processing tasks to perform.'
-        )
+    )
     
     args = parser.parse_args()
 

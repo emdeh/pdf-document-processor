@@ -23,9 +23,8 @@ def main():
         This script takes a preprocessed folder of PDFs each containing individual statements and extracts the information into an excel file.
         The --input requires the user to specify what --type of statement is being accessed. The available types can be found in the type_models.yaml.
         The --config argument is pre-defined but can be changed if required.''',
-
-        formatter_class=argparse.RawDescriptionHelpFormatter,                             
-        epilog = '''Example: python src/process.py --i PATH/TO/PREPROCESSED PDFS --t "AMEX - Card Statement"'''
+        formatter_class=argparse.RawDescriptionHelpFormatter, 
+        epilog = '''Example: python src/process.py -i PATH/TO/PDFS -t "AMEX - Card Statement"'''
         )
     
     parser.add_argument(
