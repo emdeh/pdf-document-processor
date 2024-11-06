@@ -9,12 +9,14 @@ from count_pdfs import PDFCounter
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description='''PDF Preprocessing Script.
+        description='''
+        PDF Preprocessing Script.
         
         This script splits PDF files containing multiple statements into individual files to prepare them for processing. 
         It creates a folder within the --input folder based on the --name given.
         Within this folder it creates necessary folders, counts PDFs before and after splitting them, saves the counts to Excel files,
         and stores the split files.''',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         
         epilog='''Example: python src/preprocess.py -i PATH/TO/PDFS -n statement_run_1 -t "St. George - Bank Statement"'''
     )
