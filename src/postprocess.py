@@ -10,7 +10,9 @@ def main():
     # Parse command-line arguments using RawTextHelpFormatter to preserve formatting
     parser = argparse.ArgumentParser(
         description=f'Postprocessing tasks.\n\n**AVAILABLE EXCEL TASKS:\n{excel_task_help}\n\n**AVAILABLE PDF TASKS:\n{pdf_task_help}',
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
+
+        epilog='''Example: python src/postprocess.py -i PATH/TO/PDFS -t categorise_by_value'''
     )
 
     parser.add_argument(
@@ -21,7 +23,7 @@ def main():
         )
     
     parser.add_argument(
-        '--tasks', 
+        '-t', '--tasks', 
         type=str, 
         nargs='+', 
         help='List of post-processing tasks to perform.'
