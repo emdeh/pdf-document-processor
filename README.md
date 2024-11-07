@@ -108,40 +108,75 @@ The preprocessing script (`preprocess.py`) splits PDFs and prepares them for ana
 
 #### Command-Line Arguments
 
-- `--input_folder`: Path to the folder containing the original PDFs.
-- `--output_folder`: Path where the split PDFs and counts will be saved.
-- `--statement_set_name`: Name to identify the statement set.
+- `--input` OR `-i`: Path to the folder containing the original PDFs.
+- `--name` OR `-n`: Name of folder the output will be generated into.
+- `--type` OR `-t`: Type of file to process. See `/config/type_models.yaml` for options.
 
 #### Example Usage
 
 ```bash
 python preprocess.py \
-  --input_folder /path/to/original_pdfs \
-  --output_folder /path/to/output_folder \
-  --statement_set_name my_statements
+  -i /path/to/original_pdfs \
+  -n "Test Run" \
+  -t "AMEX - Card Statement"
   ```
 
 ### Processing Script
-The processing script (`process.py`) extracts data from PDFs and writes it to an Excel file.
+The processing script (`process.py`) extracts data from PDFs, sorts it according to what kind of data it is, and writes it to an Excel file.
 
 Command-Line Arguments
-- `--input_folder`: Path to the folder containing the PDFs to process (output from preprocessing).
-- `--output_folder`: Path where the results (Excel files) will be saved.
-- `--config_path`: Path to the YAML configuration file specifying statement types.
-- `--statement_type_name`: Name of the statement type to use (as specified in the YAML file).
+- `--input` OR `-i`: Path to the folder containing the PDFs to process (output from preprocessing).
+- `--config_type` OR `-c`: Path to the YAML configuration file specifying statement types. Defaults to `/config/type_models.yaml`
+- `--type` OR `-t`: Name of the statement type to use (as specified in the YAML file).
 
 #### Example Usage
 
 ```bash
 python process.py \
-  --input_folder /path/to/preprocessed_pdfs \
-  --output_folder /path/to/results_folder \
-  --config_path config/type_models.yaml \
-  --statement_type_name "Your Statement Type Name"
+  -i /path/to/preprocessed_pdfs \
+  -t "Your Statement Type Name"
+```
+
+### Raw Processing Script
+The raw processing script (`rawprocess.py`) functions similarly to `process.py`, except the output is raw data instead of processed and partially sorted data.
+
+Command-Line Arguments
+- `--input` OR `-i`: Path to the folder containing the PDFs to process (output from `preprocessing`).
+
+#### Example Usage
+
+```bash
+python rawprocess.py \
+  -i /path/to/preprocessed_pdfs
+```
+
+### Post Processing Script
+The post processing script (`postprocess.py`) allows the user to apply one or more types of post processing pipelines to a folder of PDFs created from the output of `preprocess.py`.
+
+Command-Line Arguements
+- `--input` OR `-i`: Path to the folder containing the PDFs to process (output from `preprocessing.py`)
+- `--tasks` OR `-t`: The task that will be applied to the input. The list of available tasks is contained with the help function, and also listed below.
+
+#### Task Options
+- "fill_missing_dates":
+  - Fills missing dates in the output Excel Date column via back-fill propagation
+- "categorise_by_value":
+  - Categorises the pdfs by a user specified value. Appends value to filename and moves PDFs into folders of the same value. Requests name and example of the value type.
+- "add_date_prefix_to_filenames":
+  - Appends a date prefix to the pdf filenames. Requests example of date format.
+- "identify_and_move_duplicates":
+  - Identifies duplicates and moves them into a duplicate folder. Requests examples of Account Number, Statement Number and Statement Start Date from user to create unique identifiers.
+
+#### Example Usage
+
+```bash
+python postprocess.py \
+  -i /path/to/preprocessed_pdfs \
+  -t "Name of task to perform"
 ```
 
 ## Configuration
-The processing script relies on a YAML configuration file (type_models.yaml) to define statement types and their corresponding models.
+The processing script relies on a YAML configuration file (`type_models.yaml`) to define statement types and their corresponding models.
 
 ### Sample type_models.yaml
 
