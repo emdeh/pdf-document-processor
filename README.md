@@ -240,58 +240,10 @@ python process.py \
   -t "ANZ - Bank Statement"
 ```
 
-#### Post process the PDFs:
+#### Post Process the PDFs:
 ```bash
 python postprocess.py \
   -i /data/processed_pdfs/split-files \
   -t "categorise_by_value"
 ```
 You would then be asked for the name of the value, e.g."Account" and then an example of the account number, e.g."44-1234"
-
-## To-Do List
-
-### Implement Error Logging:
-- Add logging throughout the scripts to capture errors and important events.
-- Use Python's logging module to create logs at different levels (INFO, DEBUG, ERROR).
-- Write logs to a file for later review.
-
-### Improve CLI Output:
-- Enhance the command-line interface (CLI) output for both scripts.
-- Use clear and informative messages to indicate progress and any issues.
-- Consider adding a verbose mode for more detailed output.
-
-### Refine Folder Structure:
-- Tidy up how folders are created and managed.
-- Ensure that all output directories are created if they do not exist.
-- Allow users to specify custom folder names and paths.
-- Clean up temporary files and directories after processing.
-
-### Dockerize the Application:
-
-- Create a Dockerfile to containerize the application.
-- Simplify deployment and ensure consistency across environments.
-
-### Implement Configuration Validation:
-- Validate the YAML configuration file before processing.
-
-### Check for missing fields or incorrect formats.
- 
-### Optimize Performance:
-- Investigate ways to improve the processing speed.
-- Consider parallel processing of PDFs if appropriate.
-
-### Handling scenarios where transaction dates are already fully provided
-
-To handle scenarios where some statement types have transaction dates that already include the year, while others have partial dates (without the year).
-
-To achieve this flexibility, need to update the YAML configuration and the relevant methods in your CSVUtils class to allow the system to intelligently determine whether to append the year to transaction dates based on the presence of year information in the date format.
-
-To the YAML:
-- add an additional flag `has_year` for the transaction date field.
-- This will indicate whether the transaction date includes the year
-- values are `true` or `false`
-
-In `assign_years_to_dates()`
-- dtermine whether to assign the year based on the `has_year` flag
-
-```
