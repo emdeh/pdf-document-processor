@@ -184,6 +184,10 @@ The processing script relies on a YAML configuration file (`type_models.yaml`) t
 statement_types:
   - type_name: "Your Statement Type Name"
     env_var: "MODEL_ID_YOUR_STATEMENT_TYPE"
+    start_pattern: 'Pattern Of Page Numbering'
+    must_not_contain: "Exclusion phrase"
+    start_phrase: "Target Phrase Here"
+    split_type: "page_start OR start_end"
     transaction_dynamic_fields:
       - field_name: "TransactionDate"
         is_date: true
@@ -196,8 +200,12 @@ statement_types:
         is_amount: true
 ```
 
-- `type_name`: Name of the statement type (used with --statement_type_name).
+- `type_name`: Name of the statement type (used with --type).
 - `env_var`: Environment variable name for the model ID.
+- `start_pattern` : If specified, the method will apply this as a regex to identify the start of a statement.
+- `must_not_contain` : Used in conjunction with start_pattern or start_phrase to assist with identifying the end of a statement.
+- `start_phrase` : If specified, the method will apply this as a regex to identify the start of a statement.
+- `split_type` : Normally set to "page_start", however if the "must_not_contain" value is defined, set this to "start_end".
 - `transaction_dynamic_fields`: Fields to extract from transactions.
 - `transaction_static_fields`: Static fields to extract from the document.
 - `summary_fields`: Summary fields to extract.
@@ -214,24 +222,31 @@ Assuming you have:
 
 - Original PDFs in `/data/original_pdfs`
 - You want to output preprocessed files to `/data/processed_pdfs`
-- Your statement type is "Bank Statement"
+- Your statement type is "ANZ - Bank Statement"
+- You want to sort the pdfs by account number
 
 #### Preprocess the PDFs:
 ```bash
 python preprocess.py \
-  --input_folder /data/original_pdfs \
-  --output_folder /data/processed_pdfs \
-  --statement_set_name bank_statements
+  -i /data/original_pdfs \
+  -n "processed_pdfs"
+  -t "ANZ - Bank Statement"
 ```
 
 #### Process the PDFs:
 ```bash
 python process.py \
-  --input_folder /data/processed_pdfs/split-files \
-  --output_folder /data/results \
-  --config_path config/type_models.yaml \
-  --statement_type_name "Bank Statement"
+  -i /data/processed_pdfs/split-files \
+  -t "ANZ - Bank Statement"
 ```
+
+#### Post process the PDFs:
+```bash
+python postprocess.py \
+  -i /data/processed_pdfs/split-files \
+  -t "categorise_by_value"
+```
+You would then be asked for the name of the value, e.g."Account" and then an example of the account number, e.g."44-1234"
 
 ## To-Do List
 
