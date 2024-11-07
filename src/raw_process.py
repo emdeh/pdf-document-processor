@@ -17,20 +17,23 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description='''PDF Processing Script
+        description='''\
+        PDF Processing Script
                                      
         This script takes a preprocessed folder of PDFs each containing individual statements and extracts the RAW DATA into an excel file.
-        ''',
-                                     
-        epilog = '''Example: python src/raw_process.py --input PATH/TO/PREPROCESSED PDFS
-        '''
+        It creates a folder within the --input folder and saves the excel into that folder.
+        The excel is saved as "extracted-data.xlsx"''',        
+        formatter_class=argparse.RawDescriptionHelpFormatter,                                     
+        epilog = '''Example: python src/raw_process.py -i PATH/TO/PDFS'''
         )
+    
     parser.add_argument(
-        '--input', 
+        '-i', '--input', 
         type=str, 
         required=True, 
         help='Path to the input folder containing preprocessed PDFs'
-        )
+    )
+    
     args = parser.parse_args()
 
     input_dir = args.input
