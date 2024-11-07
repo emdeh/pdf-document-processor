@@ -32,8 +32,6 @@ The postprocessing script offers several data treatment pipelines that allow for
 - [Configuration](#configuration)
 - [Environment Variables](#environment-variables)
 - [Example](#example)
-- [To-Do List](#to-do-list)
-- [License](#license)
 
 ## Features
 
@@ -122,7 +120,7 @@ python preprocess.py \
   ```
 
 ### Processing Script
-The processing script (`process.py`) extracts data from PDFs, sorts it according to what kind of data it is, and writes it to an Excel file.
+The processing script (`process.py`) extracts data from PDFs, sorts it according to what type of data it is, and writes it to an Excel file.
 
 Command-Line Arguments
 - `--input` OR `-i`: Path to the folder containing the PDFs to process (output from preprocessing).
