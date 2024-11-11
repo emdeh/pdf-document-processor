@@ -67,6 +67,15 @@ Provides utilities for counting PDFs and their pages before and after processing
 - **`process_pdf_count()`**: Aggregates file and page counts across a set of folders.
 - **`save_to_excel()`**: Writes detailed and summary page count data to an Excel file.
 
+### `azure_blobs_utils.py` ###
+
+Provides ultility functions for interaction with Azure Blob Storage.
+
+- **`get_blob_service_client()`**: Retrieves the Blob Service Client.
+- **`list_blobs()`**: Lists blobs in a container.
+- **`read_blob_content()`**: Reads and outputs the contents of a blob.
+- **`upload_analysis_results_to_blob()`**: Uploads the analysis results to Azure Blob Storage as a JSON file.
+
 ### `config` (`type_models.yaml`)
 
 Defines the structure and fields of interest for different statement types, influencing data extraction logic. Each type references a pre-trained custom extraction model.
