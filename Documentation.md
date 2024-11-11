@@ -67,6 +67,17 @@ Contains functions for PDF manipulation, including counting pages and splitting 
 
 ### `postprocess_utils.py` ###
 
+Two classes that are ultilised by the `postprocess.py` script. Each have a list of tasks that can readily called.
+
+- **`ExcelHandler`**: A class to handle the reading and writing of excel files.
+    - **`fill_missing_dates()`**: Fills the missing dates within the "Date" column via the forward-fill method.
+
+- **`PDFPostProcessor`**: A class to handle the post-processing of seperated PDF files.
+    - **`categorise_by_value()`**: Categorise PDF statements into folders and apply a prefix to the filenames according to a user specified criteria.
+    - **`add_date_prefix_to_filenames()`**: Adds the statement start date prefix to PDF filenames.
+    - **`identify_and_move_duplicates()`**: Identifies duplicate statements and moves them into a duplicates folder.
+
+
 ### `postprocess.py` ###
 
 ### `prep_env.py`
@@ -76,9 +87,9 @@ Responsible for environment preparation tasks including directories creation and
 - **`create_folders()`**: Prompts the user for a statement set name, creating structured directories for file processing stages.
 - **`move_analysed_file()`**: Moves processed files to a designated folder post-analysis.
 - **`load_statement_config()`**: Loads statement processing configuration from a YAML file.
-- **`select_statement_type()`**: Enables user selection of statement type for processing, as defiend in the YAML configuration file.
--**`set_model_id()`**: Sets the model id to designated model type.
--**`copy_files()`**: Copies the source folder PDF files to the destination folder.
+- **`select_statement_type()`**: Enables user selection of statement type for processing, as defiend in the YAML configuration file. 
+- **`set_model_id()`**: Sets the model id to designated model type.
+- **`copy_files()`**: Copies the source folder PDF files to the destination folder.
 
 ### `preprocess.py` ###
 
