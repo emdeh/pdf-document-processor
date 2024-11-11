@@ -102,11 +102,15 @@ This script allows the user to input a single PDF of multiple statements and out
 
 ### `process.py` ###
 
-This script takes a folder of seperated PDFs, as per the output of `preprocess.py`, extracts the data in each and writes it to an excel file.
+This script takes a folder of seperated PDFs, as per the output of `preprocess.py`, extracts the data in each, sorts and writes it to an excel file.
 
-- **`main()`**: Accepts thre arguements; `--input`, `--config_type`, `--type`. Input is the path to the folder containing the PDF/s, and is typically the output from `preprocess.py`. Config Type is an optional argument that allows a user to provide a custom list of file types to process. The default provided list is `config/type_models.yaml`. Type is the specific kind of statement found in the PDF and is found in the list seen within the yaml file provided to the Config Type argument.
+- **`main()`**: Accepts three arguments; `--input`, `--config_type`, `--type`. Input is the path to the folder containing the PDF/s, and is typically the output from `preprocess.py`. Config Type is an optional argument that allows a user to provide a custom list of file types to process. The default provided list is `config/type_models.yaml`. Type is the specific kind of statement found in the PDF and is found in the list seen within the yaml file provided to the Config Type argument.
 
 ### `raw_process.py` ###
+
+This script functions very similarly to `process.py`, however the output is raw un-sorted text data. This is a quick alternative if an untrained type is discovered and a type yaml has yet to be created.
+
+- **`main()`**: Accepts only one argument: `--input`. Input is the path to the folder containing the PDF/s and is typically the output from `preprocess.py`. 
 
 ### `utils.py` ###
 
