@@ -114,6 +114,10 @@ This script functions very similarly to `process.py`, however the output is raw 
 
 ### `utils.py` ###
 
+A simple script that asks the user if they want to continue or stop.
+
+- **`ask_user_to_continue()`**: Asks the user if they wish to continue to the next stage of the program.
+
 ### `config` (`type_models.yaml`)
 
 Defines the structure and fields of interest for different statement types, influencing data extraction logic. Each type references a pre-trained custom extraction model.
