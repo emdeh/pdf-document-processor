@@ -14,16 +14,6 @@ The process flow involves several key steps:
 
 ## Files and Their Functions
 
-### `main.py`
-
-This is the entry point of the program. It orchestrates the flow of operations including environment setup, PDF processing, document analysis, data extraction, and output generation.
-
-- **Environment Variables Loading**: Utilises `dotenv` to load configuration from a `.env` file, setting up paths and API keys.
-- **Environment Preparation**: Calls functions to create necessary directories and select statement types based on user input.
-- **PDF Processing**: Counts PDFs before and after splitting them for analysis readiness, providing feedback on the process.
-- **Data Analysis and Extraction**: Initialises the Document Analysis Client, processes each PDF, extracts data, and aggregates the results.
-- **Output Generation**: Writes the aggregated transaction and summary data to an Excel file.
-
 ### `prep_env.py`
 
 Responsible for environment preparation tasks including directories creation and configuration loading.
@@ -63,8 +53,11 @@ Handles the extraction, transformation, and formatting of data from the analysis
 
 - **`extract_static_info()`**: Extracts static information relevant across all documents of a certain type.
 - **`process_transactions()`**: Processes dynamic transactional data from documents.
+- **`convert_amount()`**: Converts numerical values in strings into a float type.
 - **`extract_and_process_summary_info()`**: Extracts and formats summary information from document analysis results.
+- **`format_summary_for_excel()`**: Flattens the dictionary output from `extract_and_process_summary_info()`.
 - **`write_transactions_and_summaries_to_excel()`**: Writes formatted transaction and summary data to an Excel file.
+- **`write_raw_data_to_excel()`**: Writes raw extracted text data to an excel file.
 
 ### `count_pdfs.py`
 
