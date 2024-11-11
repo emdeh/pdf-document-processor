@@ -53,6 +53,9 @@ Interfaces with the Azure Document Analysis Client for document analysis.
 
 - **`initialise_analysis_client()`**: Sets up the Document Analysis Client with necessary credentials.
 - **`analyse_document()`**: Analyses a document using the specified model, extracting structured data.
+- **`analyse_layout_document()`**: Analyses a document using a pre-built layout model.
+- **`extract_table_data()`**: Extracts table data from the layout and structures it into rows.
+- **`extract_all_text()`**: Extracts all text content from the PDFs.
 
 ### `csv_utils.py`
 
