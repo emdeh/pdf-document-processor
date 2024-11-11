@@ -1,4 +1,4 @@
-# Documentation for PDF Processing and Data Extraction System
+0# Documentation for PDF Processing and Data Extraction System
 
 This system processes financial statements in PDF format, extracts information using custom Microsoft Document Intelligence models, and writes the extracted data to an Excel file. The program is structured around a series of Python scripts within a `src` directory, complemented by a configuration file and requires a virtual environment for dependencies management.
 
@@ -32,6 +32,8 @@ Responsible for environment preparation tasks including directories creation and
 - **`move_analysed_file()`**: Moves processed files to a designated folder post-analysis.
 - **`load_statement_config()`**: Loads statement processing configuration from a YAML file.
 - **`select_statement_type()`**: Enables user selection of statement type for processing, as defiend in the YAML configuration file.
+-**`set_model_id()`**: Sets the model id to designated model type.
+-**`copy_files()`**: Copies the source folder PDF files to the destination folder.
 
 ### `pdf_processor.py`
 
