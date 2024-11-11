@@ -98,9 +98,13 @@ Responsible for environment preparation tasks including directories creation and
 
 This script allows the user to input a single PDF of multiple statements and outputs a folder of PDFs split down to individual statements. Most of the `process.py` and `postprocess.py` inputs use the outputs from this script.
 
-- **`main()`**: Accepts three arguments; `--input`, `--name`, `--type`. Input is the path to the PDF/s. Name specifies the output folder's name. Type is an optional argument that allows a user to provide a custom list of file types to process. The default provided list can be found in `config/type_models.yaml`
+- **`main()`**: Accepts three arguments; `--input`, `--name`, `--type`. Input is the path to the PDF/s. Name specifies the output folder's name. Type is the specific kind of statement found in the PDF. See `config/type_models.yaml` for the list of options.
 
 ### `process.py` ###
+
+This script takes a folder of seperated PDFs, as per the output of `preprocess.py`, extracts the data in each and writes it to an excel file.
+
+- **`main()`**: Accepts thre arguements; `--input`, `--config_type`, `--type`. Input is the path to the folder containing the PDF/s, and is typically the output from `preprocess.py`. Config Type is an optional argument that allows a user to provide a custom list of file types to process. The default provided list is `config/type_models.yaml`. Type is the specific kind of statement found in the PDF and is found in the list seen within the yaml file provided to the Config Type argument.
 
 ### `raw_process.py` ###
 
