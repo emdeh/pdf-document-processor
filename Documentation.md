@@ -14,38 +14,22 @@ The process flow involves several key steps:
 
 ## Files and Their Functions
 
-### `prep_env.py`
+### `azure_blobs_utils.py` ###
 
-Responsible for environment preparation tasks including directories creation and configuration loading.
+Provides ultility functions for interaction with Azure Blob Storage.
 
-- **`create_folders()`**: Prompts the user for a statement set name, creating structured directories for file processing stages.
-- **`move_analysed_file()`**: Moves processed files to a designated folder post-analysis.
-- **`load_statement_config()`**: Loads statement processing configuration from a YAML file.
-- **`select_statement_type()`**: Enables user selection of statement type for processing, as defiend in the YAML configuration file.
--**`set_model_id()`**: Sets the model id to designated model type.
--**`copy_files()`**: Copies the source folder PDF files to the destination folder.
+- **`get_blob_service_client()`**: Retrieves the Blob Service Client.
+- **`list_blobs()`**: Lists blobs in a container.
+- **`read_blob_content()`**: Reads and outputs the contents of a blob.
+- **`upload_analysis_results_to_blob()`**: Uploads the analysis results to Azure Blob Storage as a JSON file.
 
-### `pdf_processor.py`
+### `count_pdfs.py`
 
-Contains functions for PDF manipulation, including counting pages and splitting documents based on content patterns.
+Provides utilities for counting PDFs and their pages before and after processing, aiding in validation processes.
 
-- **`find_document_starts()`**: Scans a PDF for document start patterns, returning their page numbers.
-- **`split_pdf()`**: Splits a PDF into separate documents based on start patterns.
-- **`process_all_pdfs()`**: Orchestrates the scanning and splitting of PDFs within a folder, handling single and multiple document PDFs.
-- **`get_config_for_type()`**: Retrieves the configuration for a specific statement type.
-- **`find_statement_starts()`**: Identifies the starting pages of statements within a PDF file.
-- **`is_pdf_machine_readable()`**: Checks a PDF to determine if it is machine-readable.
-- **`extract_text_from_page()`**: Extracts the text from a PDF, using OCR extraction if specified.
-
-### `doc_ai_utils.py`
-
-Interfaces with the Azure Document Analysis Client for document analysis.
-
-- **`initialise_analysis_client()`**: Sets up the Document Analysis Client with necessary credentials.
-- **`analyse_document()`**: Analyses a document using the specified model, extracting structured data.
-- **`analyse_layout_document()`**: Analyses a document using a pre-built layout model.
-- **`extract_table_data()`**: Extracts table data from the layout and structures it into rows.
-- **`extract_all_text()`**: Extracts all text content from the PDFs.
+- **`count_pdf_pages()`**: Counts the pages in a single PDF.
+- **`process_pdf_count()`**: Aggregates file and page counts across a set of folders.
+- **`save_to_excel()`**: Writes detailed and summary page count data to an Excel file.
 
 ### `csv_utils.py`
 
@@ -59,22 +43,50 @@ Handles the extraction, transformation, and formatting of data from the analysis
 - **`write_transactions_and_summaries_to_excel()`**: Writes formatted transaction and summary data to an Excel file.
 - **`write_raw_data_to_excel()`**: Writes raw extracted text data to an excel file.
 
-### `count_pdfs.py`
+### `doc_ai_utils.py`
 
-Provides utilities for counting PDFs and their pages before and after processing, aiding in validation processes.
+Interfaces with the Azure Document Analysis Client for document analysis.
 
-- **`count_pdf_pages()`**: Counts the pages in a single PDF.
-- **`process_pdf_count()`**: Aggregates file and page counts across a set of folders.
-- **`save_to_excel()`**: Writes detailed and summary page count data to an Excel file.
+- **`initialise_analysis_client()`**: Sets up the Document Analysis Client with necessary credentials.
+- **`analyse_document()`**: Analyses a document using the specified model, extracting structured data.
+- **`analyse_layout_document()`**: Analyses a document using a pre-built layout model.
+- **`extract_table_data()`**: Extracts table data from the layout and structures it into rows.
+- **`extract_all_text()`**: Extracts all text content from the PDFs.
 
-### `azure_blobs_utils.py` ###
+### `pdf_processor.py`
 
-Provides ultility functions for interaction with Azure Blob Storage.
+Contains functions for PDF manipulation, including counting pages and splitting documents based on content patterns.
 
-- **`get_blob_service_client()`**: Retrieves the Blob Service Client.
-- **`list_blobs()`**: Lists blobs in a container.
-- **`read_blob_content()`**: Reads and outputs the contents of a blob.
-- **`upload_analysis_results_to_blob()`**: Uploads the analysis results to Azure Blob Storage as a JSON file.
+- **`find_document_starts()`**: Scans a PDF for document start patterns, returning their page numbers.
+- **`split_pdf()`**: Splits a PDF into separate documents based on start patterns.
+- **`process_all_pdfs()`**: Orchestrates the scanning and splitting of PDFs within a folder, handling single and multiple document PDFs.
+- **`get_config_for_type()`**: Retrieves the configuration for a specific statement type.
+- **`find_statement_starts()`**: Identifies the starting pages of statements within a PDF file.
+- **`is_pdf_machine_readable()`**: Checks a PDF to determine if it is machine-readable.
+- **`extract_text_from_page()`**: Extracts the text from a PDF, using OCR extraction if specified.
+
+### `postprocess_utils.py` ###
+
+### `postprocess.py` ###
+
+### `prep_env.py`
+
+Responsible for environment preparation tasks including directories creation and configuration loading.
+
+- **`create_folders()`**: Prompts the user for a statement set name, creating structured directories for file processing stages.
+- **`move_analysed_file()`**: Moves processed files to a designated folder post-analysis.
+- **`load_statement_config()`**: Loads statement processing configuration from a YAML file.
+- **`select_statement_type()`**: Enables user selection of statement type for processing, as defiend in the YAML configuration file.
+-**`set_model_id()`**: Sets the model id to designated model type.
+-**`copy_files()`**: Copies the source folder PDF files to the destination folder.
+
+### `preprocess.py` ###
+
+### `process.py` ###
+
+### `raw_process.py` ###
+
+### `utils.py` ###
 
 ### `config` (`type_models.yaml`)
 
