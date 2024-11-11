@@ -77,8 +77,11 @@ Two classes that are ultilised by the `postprocess.py` script. Each have a list 
     - **`add_date_prefix_to_filenames()`**: Adds the statement start date prefix to PDF filenames.
     - **`identify_and_move_duplicates()`**: Identifies duplicate statements and moves them into a duplicates folder.
 
-
 ### `postprocess.py` ###
+
+Allows the user to apply several post-processing pipelines to a folder of seperated PDFs according to the classes defined in `postprocess_utils.py`.
+
+- **`main()`**: Accepts two arguments, `--input` and `--tasks`. Input is the path to the folder containing the target excel or PDFs. Tasks specifies which post-processing pipeline is applied to the input.
 
 ### `prep_env.py`
 
