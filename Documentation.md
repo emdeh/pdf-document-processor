@@ -42,6 +42,10 @@ Contains functions for PDF manipulation, including counting pages and splitting 
 - **`find_document_starts()`**: Scans a PDF for document start patterns, returning their page numbers.
 - **`split_pdf()`**: Splits a PDF into separate documents based on start patterns.
 - **`process_all_pdfs()`**: Orchestrates the scanning and splitting of PDFs within a folder, handling single and multiple document PDFs.
+- **`get_config_for_type()`**: Retrieves the configuration for a specific statement type.
+- **`find_statement_starts()`**: Identifies the starting pages of statements within a PDF file.
+- **`is_pdf_machine_readable()`**: Checks a PDF to determine if it is machine-readable.
+- **`extract_text_from_page()`**: Extracts the text from a PDF, using OCR extraction if specified.
 
 ### `doc_ai_utils.py`
 
