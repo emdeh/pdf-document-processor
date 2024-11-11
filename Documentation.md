@@ -81,7 +81,7 @@ Two classes that are ultilised by the `postprocess.py` script. Each have a list 
 
 Allows the user to apply several post-processing pipelines to a folder of seperated PDFs according to the classes defined in `postprocess_utils.py`.
 
-- **`main()`**: Accepts two arguments, `--input` and `--tasks`. Input is the path to the folder containing the target excel or PDFs. Tasks specifies which post-processing pipeline is applied to the input.
+- **`main()`**: Accepts two arguments; `--input` and `--tasks`. Input is the path to the folder containing the target excel or PDFs. Tasks specifies which post-processing pipeline is applied to the input.
 
 ### `prep_env.py`
 
@@ -95,6 +95,10 @@ Responsible for environment preparation tasks including directories creation and
 - **`copy_files()`**: Copies the source folder PDF files to the destination folder.
 
 ### `preprocess.py` ###
+
+This script allows the user to input a single PDF of multiple statements and outputs a folder of PDFs split down to individual statements. Most of the `process.py` and `postprocess.py` inputs use the outputs from this script.
+
+- **`main()`**: Accepts three arguments; `--input`, `--name`, `--type`. Input is the path to the PDF/s. Name specifies the output folder's name. Type is an optional argument that allows a user to provide a custom list of file types to process. The default provided list can be found in `config/type_models.yaml`
 
 ### `process.py` ###
 
