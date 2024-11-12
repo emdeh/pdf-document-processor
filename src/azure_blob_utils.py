@@ -2,6 +2,10 @@
 from azure.storage.blob import BlobServiceClient, BlobClient
 from dotenv import load_dotenv
 import json
+import logging
+
+# Instantiate logger
+logger = logging.get_logger("azure_blobs_utils", log_to_file=True)
 
 # Function to get the Blob Service Client
 def get_blob_service_client(blob_account_url, blob_credential):
@@ -18,11 +22,11 @@ def read_blob_content(client, container_name, blob_name):
         blob_client = client.get_blob_client(container=container_name, blob=blob_name)
         blob_content = blob_client.download_blob().readall()
         text_content = blob_content.decode('utf-8')
-        print(f"Decoded text content for {blob_name}: {text_content[:100]}")
+        logger.info("Decoded text content for %s: %s", (blob_name,text_content[:100]))
         content = json.loads(text_content)
         return content
     except Exception as e:
-        print(f"Failed to read blob content for {blob_name}: {e}")
+        logger.info("Failed to read blob content for %s: %s", (blob_name, e))
         return None
     
 
