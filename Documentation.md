@@ -1,4 +1,4 @@
-0# Documentation for PDF Processing and Data Extraction System
+# Documentation for PDF Processing and Data Extraction System
 
 This system processes financial statements in PDF format, extracts information using custom Microsoft Document Intelligence models, and writes the extracted data to an Excel file. The program is structured around a series of Python scripts within a `src` directory, complemented by a configuration file and requires a virtual environment for dependencies management.
 
@@ -63,11 +63,11 @@ Contains functions for PDF manipulation, including counting pages and splitting 
 - **`get_config_for_type()`**: Retrieves the configuration for a specific statement type.
 - **`find_statement_starts()`**: Identifies the starting pages of statements within a PDF file.
 - **`is_pdf_machine_readable()`**: Checks a PDF to determine if it is machine-readable.
-- **`extract_text_from_page()`**: Extracts the text from a PDF, using OCR extraction if specified.
+- **`extract_text_from_page()`**: Extracts the text from a PDF, using OCR extraction if requested.
 
 ### `postprocess_utils.py` ###
 
-Two classes that are ultilised by the `postprocess.py` script. Each have a list of tasks that can readily called.
+Two classes that are ultilised by the `postprocess.py` script. Each have a list of tasks that can called.
 
 - **`ExcelHandler`**: A class to handle the reading and writing of excel files.
     - **`fill_missing_dates()`**: Fills the missing dates within the "Date" column via the forward-fill method.
@@ -81,17 +81,17 @@ Two classes that are ultilised by the `postprocess.py` script. Each have a list 
 
 Allows the user to apply several post-processing pipelines to a folder of seperated PDFs according to the classes defined in `postprocess_utils.py`.
 
-- **`main()`**: Accepts two arguments; `--input` and `--tasks`. Input is the path to the folder containing the target excel or PDFs. Tasks specifies which post-processing pipeline is applied to the input.
+- **`main()`**: Accepts two arguments; `--input` and `--tasks`. Input is the path to the folder containing the target excel or PDFs. Tasks specifies which post-processing pipeline is applied to the input as listed in `postprocess_utils.py`.
 
 ### `prep_env.py`
 
-Responsible for environment preparation tasks including directories creation and configuration loading.
+Responsible for environment preparation tasks including creation of directories and configuration loading.
 
 - **`create_folders()`**: Prompts the user for a statement set name, creating structured directories for file processing stages.
 - **`move_analysed_file()`**: Moves processed files to a designated folder post-analysis.
 - **`load_statement_config()`**: Loads statement processing configuration from a YAML file.
 - **`select_statement_type()`**: Enables user selection of statement type for processing, as defiend in the YAML configuration file. 
-- **`set_model_id()`**: Sets the model id to designated model type.
+- **`set_model_id()`**: Sets the model ID to designated model type.
 - **`copy_files()`**: Copies the source folder PDF files to the destination folder.
 
 ### `preprocess.py` ###
@@ -102,7 +102,7 @@ This script allows the user to input a single PDF of multiple statements and out
 
 ### `process.py` ###
 
-This script takes a folder of seperated PDFs, as per the output of `preprocess.py`, extracts the data in each, sorts and writes it to an excel file.
+This script takes a folder of seperated PDFs, as per the output of `preprocess.py`, extracts the data in each, sorts according to the configuration file and writes to an excel file.
 
 - **`main()`**: Accepts three arguments; `--input`, `--config_type`, `--type`. Input is the path to the folder containing the PDF/s, and is typically the output from `preprocess.py`. Config Type is an optional argument that allows a user to provide a custom list of file types to process. The default provided list is `config/type_models.yaml`. Type is the specific kind of statement found in the PDF and is found in the list seen within the yaml file provided to the Config Type argument.
 
@@ -147,7 +147,4 @@ Here's a simplified example of data transformation through the pipeline:
 
 ## Conclusion
 
-
-TO-DO: Expan on data flow example to describe how data is stored and flattened for writing to excel
-
-Need to update
+The primary goal of this system is to reduce human hours required to extract information from bank statements stored as large PDFs. The preprocessing step alone provides the core of this at a fraction of the time required. The processing and postprocessing steps enable more fine-tuned analysis of the data, based on the individual needs of the data.
