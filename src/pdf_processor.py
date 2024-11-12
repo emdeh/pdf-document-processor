@@ -36,7 +36,11 @@ class PDFProcessor:
             manual_processing_folder (str): The folder where the PDF files without a known pattern will be moved.
             type_name (str): The type of document to process.
         """
-        self.logger.info("Splitting files in %s and saving individual documents to %s...", input_folder, output_folder)
+        self.logger.info(
+            "Splitting files in %s and saving individual documents to %s...", 
+            input_folder, 
+            output_folder
+        )
         for pdf_file in Path(input_folder).glob("*.pdf"):
             pdf_path = str(pdf_file)
             is_machine_readable = self.is_pdf_machine_readable(pdf_path)
@@ -44,14 +48,23 @@ class PDFProcessor:
             if is_machine_readable:
                 doc_starts = self.get_doc_starts_by_type(pdf_path, type_name)
             else:
-                self.logger.info("%s is scanned. Performing OCR to extract text.", os.path.basename(pdf_file))
+                self.logger.info(
+                    "%s is scanned. Performing OCR to extract text.", 
+                    os.path.basename(pdf_file)
+                )
                 doc_starts = self.get_doc_starts_by_type(pdf_path, type_name, use_ocr=True)
 
             if doc_starts:
                 self.split_pdf(pdf_path, output_folder, doc_starts)
-                self.logger.info("%s has been processed and split accordingly.", os.path.basename(pdf_file))
+                self.logger.info(
+                    "%s has been processed and split accordingly.", 
+                    os.path.basename(pdf_file)
+                )
             else:
-                self.logger.warning("Could not identify document pattern for %s, moving to manual processing folder.", os.path.basename(pdf_file))
+                self.logger.warning(
+                    "Could not identify document pattern for %s, moving to manual processing folder.", 
+                    os.path.basename(pdf_file)
+                )
                 shutil.copy(pdf_path, manual_processing_folder)
                 manifest_path = os.path.join(manual_processing_folder, "manifest-of-unsplit-files.txt")
                 with open(manifest_path, "a") as manifest_file:
