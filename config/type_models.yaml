@@ -462,7 +462,7 @@ statement_types:
         is_amount: true
 
   - type_name: "ANZ - Bank Statement (Receipt style)" # For ANZ statements that look like receipts
-    env_var: "MODEL_ID_ANZ_BANK"
+    env_var: "MODEL_ID_ANZ_BANK_RECEIPT_STYLE"
     # Pattern type TBD
     summary_fields:
       - field_name: "BalanceBroughtForward"
