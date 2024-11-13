@@ -224,7 +224,7 @@ class PDFPostProcessor:
         pattern = f"(?i){pattern}"
         return pattern
 
-    def extract_value_from_pdf(self, pdf_path, pattern, page_size = 0.2):
+    def extract_value_from_pdf(self, pdf_path, pattern, page_size = 0.5):
         """
         Extracts a value from a PDF using a regex pattern..
 
