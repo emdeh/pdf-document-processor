@@ -87,7 +87,10 @@ class EnvironmentPrep:
         if statement_type_name:
             for stype in self.config["statement_types"]:
                 if stype["type_name"] == statement_type_name:
-                    print(f"Selected statement type: {stype['type_name']}")
+                    self.logger.info(
+                        "Selected statement type: %s",
+                        stype['type_name']
+                    )
                     return stype, stype["env_var"]
             raise ValueError(f"Statement type '{statement_type_name}' not found in configuration.")
         else:
@@ -109,7 +112,10 @@ class EnvironmentPrep:
         """
         model_id = os.getenv(selected_env_var)
         if model_id:
-            print(f"MODEL ID set to: {model_id}")
+            self.logger.info(
+                "MODEL ID set to: %s",
+                model_id
+            )
             return model_id
         else:
             raise ValueError(f"No corresponding MODEL ID variable found for {selected_env_var}.")
