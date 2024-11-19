@@ -116,7 +116,10 @@ class CSVUtils:
             else:
                 raise ValueError("No numeric value found")
         except ValueError:
-            print(f"Could not convert {amount_str} to float. Mapping actual value.")
+            self.logger.error(
+                "Could not convert %s to float. Mapping actual value.",
+                amount_str
+            )
             return amount_str, False
 
     def extract_and_process_summary_info(self, document_analysis_results, original_document_name, statement_type):
@@ -311,7 +314,11 @@ class CSVUtils:
                     summary_sheet.set_column(idx, idx, None, money_fmt)
                 # No date formatting applied
 
-        self.logger.info("Data written to file %s in %s.", os.path.basename(excel_filename), os.path.basename(output_dir))
+        self.logger.info(
+            "Data written to file %s in %s.", 
+            os.path.basename(excel_filename), 
+            os.path.basename(output_dir)
+        )
         
     def write_raw_data_to_excel(self, texts_records, output_dir, excel_filename):
         """
@@ -333,4 +340,8 @@ class CSVUtils:
             text_wrap_format = writer.book.add_format({'text_wrap': True})
             worksheet.set_column('B:B', None, text_wrap_format)
 
-        self.logger.info("Data written to file %s in %s.", os.path.basename(excel_filename), os.path.basename(output_dir))
+        self.logger.info(
+            "Data written to file %s in %s.", 
+            os.path.basename(excel_filename), 
+            os.path.basename(output_dir)
+        )

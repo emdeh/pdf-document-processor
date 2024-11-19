@@ -5,6 +5,7 @@ import os
 import shutil
 from pathlib import Path
 from datetime import datetime
+from utils import Logger
 import string
 import math
 import dateutil.parser
@@ -35,17 +36,24 @@ class ExcelHandler:
         self.summary_df = None
         self.transactions_df = None
         self._load_excel_file()
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
 
     def _load_excel_file(self):
         """Loads the Excel file into DataFrames."""
-        print(f"Loading Excel file: {self.file_path}")
+        self.logger.info(
+            "Loading Excel file: %s",
+            self.file_path
+        )
         excel_file = pd.ExcelFile(self.file_path)
         self.summary_df = pd.read_excel(excel_file, sheet_name='Summary')
         self.transactions_df = pd.read_excel(excel_file, sheet_name='Transactions')
 
     def save(self, output_file):
         """Saves the DataFrames back to an Excel file."""
-        print(f"Saving to: {output_file}")
+        self.logger.info(
+            "Saving to: %s",
+            output_file
+        )
         with pd.ExcelWriter(output_file, 
                             engine='xlsxwriter',
                             datetime_format="DD/MM/YYYY",
@@ -122,6 +130,7 @@ class PDFPostProcessor:
     def __init__(self, input_folder):
         self.input_folder = input_folder
         self.pdf_files = list(Path(input_folder).glob("*.pdf"))
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
 
     def categorise_by_value(self):
         """
@@ -130,7 +139,10 @@ class PDFPostProcessor:
         # TODO: Instead of prompting for an example, consider storing in yaml and loading patterns from there.
         # Prompt the user for a field name, used to append a description to the folder and filename.
         field_name = input("Please enter a name for the field (e.g., 'Account Number', 'Statement ID'):\n")
-        print(f"Categorising PDF statements by {field_name}...")
+        self.logger.info(
+            "Categorising PDF statements by %s...",
+            field_name
+        )
 
         # Prompt the user for an example value
         # This example will be used to generate a regex pattern to extract the value from the PDF
@@ -140,10 +152,13 @@ class PDFPostProcessor:
         # Calls the `generate_regex_from_value_example` function to generate the pattern based on the example.
         pattern = self.generate_regex_from_value_example(value_example)
         if not pattern:
-            print("Pattern generation failed. Exiting task.")
+            self.logger.warning("Pattern generation failed. Exiting task.")
             return
 
-        print(f"Generated value pattern: {pattern}\n")
+        self.logger.info(
+            "Generated value pattern: %s\n",
+            pattern
+        )
 
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
@@ -166,14 +181,24 @@ class PDFPostProcessor:
                 #   be called independently from the task registry specifically for date prefixes.
                 ###
                 new_filename = (f"{sanitised_field_name}-{sanitised_value}-{pdf_file.name}")
-                print(f"File {pdf_file.name} renamed to {new_filename}")
+                self.logger.info(
+                    "File %s renamed to $s",
+                    pdf_file.name,
+                    new_filename
+                )
                 destination = os.path.join(folder_path, new_filename)
 
                 # Move and rename the file                
                 shutil.move(pdf_path, destination)
-                print(f"Moved to Folder: {sanitised_value}")
+                self.logger.info(
+                    "Moved to Folder: %s",
+                    sanitised_value
+                )
             else:
-                print(f"Value not found in {pdf_file.name}")
+                self.logger.info(
+                    "Value not found in %s",
+                    pdf_file.name
+                )
 
     def generate_regex_from_value_example(self, value_example):
         """
@@ -372,7 +397,7 @@ class PDFPostProcessor:
         pattern = self.generate_regex_from_value_example(date_input)
         # Insert pattern into extract_value_from_pdf and output
         if not pattern:
-            print("Pattern generation failed. Exiting task.")
+            self.logger.info("Pattern generation failed. Exiting task.")
             return
         for pdf_file in self.pdf_files:
             pdf_path = str(pdf_file)
@@ -388,9 +413,16 @@ class PDFPostProcessor:
 
                 # Rename the file                
                 os.rename(origin, destination)
-                print(f"File {pdf_file.name} renamed to {new_filename}")
+                self.logger.info(
+                    "File %s renamed to %s",
+                    pdf_file.name,
+                    new_filename
+                )
             else:
-                print(f"Value not found in {pdf_file.name}")
+                self.logger.info(
+                    "Value not found in %s",
+                    pdf_file.name
+                )
 
     def extract_statement_number(self, pdf_path, pattern):
         """
@@ -444,13 +476,13 @@ class PDFPostProcessor:
 
         # Regex error handling
         if not acc_pattern:
-            print("Account number pattern generation failed. Exiting task.")
+            self.logger.info("Account number pattern generation failed. Exiting task.")
             return
         if not state_pattern:
-            print("Statement number pattern generation failed. Exiting task.")
+            self.logger.info("Statement number pattern generation failed. Exiting task.")
             return
         if not date_pattern:
-            print("Statement start date number pattern generation failed. Exiting task.")
+            self.logger.info("Statement start date number pattern generation failed. Exiting task.")
             return
         
         # Loop over each pdf file
@@ -474,7 +506,13 @@ class PDFPostProcessor:
                     shutil.move(pdf_path, destination)
                     # Track total number of duplicates
                     counter += 1
-                    print('File moved to duplicate')
+                    self.logger.info("File moved to duplicate")
             else:
-                print(f"Value not found in {pdf_file.name}")
-        return print(f"A total of {counter} duplicates were found")
+                self.logger.info(
+                    "Value not found in %s",
+                    pdf_file.name
+                )
+        return self.logger.info(
+            "A total of %s duplicates were found",
+            counter
+        )

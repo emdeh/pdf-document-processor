@@ -2,12 +2,13 @@
 
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
+from utils import Logger
 import os
 
 
 class DocAIUtils:
     def __init__(self):
-        pass
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
 
     def initialise_analysis_client(self, endpoint, api_key, doc_model_id):
         """
@@ -21,11 +22,13 @@ class DocAIUtils:
         Returns:
             DocumentAnalysisClient: The initialized Document Intelligence Client.
         """
-        print("Initializing Document Intelligence Client...\n")
+        self.logger.info("Initializing Document Intelligence Client...\n")
         credential = AzureKeyCredential(api_key)
         client = DocumentAnalysisClient(endpoint=endpoint, credential=credential)
-        print(
-            f"Document Intelligence Client established with Endpoint: {endpoint}.\nUsing {doc_model_id}.\nPreparing to extract data...\n\n"
+        self.logger.info(
+            "Document Intelligence Client established with Endpoint: %s.\nUsing %s.\nPreparing to extract data...\n\n",
+            endpoint,
+            doc_model_id
         )
         return client
 
@@ -41,14 +44,24 @@ class DocAIUtils:
         Returns:
             AnalysisResult: The result of the document analysis.
         """
-        print(f"Analyzing:\n{os.path.basename(document_path)}.\n\n")
+        self.logger.info(
+            "Analyzing:\n%s.\n\n",
+            os.path.basename(document_path)
+        )
         try:
             with open(document_path, "rb") as document:
                 poller = client.begin_analyze_document(model_id=model_id, document=document)
                 result = poller.result()
-            print(f"Analyzed:\n{os.path.basename(document_path)}.\n")
+            self.logger.info(
+                "Analyzed:\n%s.\n",
+                os.path.basename(document_path)
+            )
         except Exception as e:
-            print(f"Error analyzing {os.path.basename(document_path)}: {e}")
+            self.logger.error(
+                "Error analyzing %s: %s",
+                os.path.basename(document_path),
+                e
+            )
             result = None
         return result
 
@@ -63,14 +76,24 @@ class DocAIUtils:
         Returns:
             AnalysisResult: The analysis result if successful, None otherwise.
         """
-        print(f"Analyzing with pre-built layout model: {os.path.basename(document_path)}.\n\n")
+        self.logger.info(
+            "Analyzing with pre-built layout model: %s.\n\n",
+            os.path.basename(document_path)
+        )
         try:
             with open(document_path, "rb") as document:
                 poller = client.begin_analyze_document("prebuilt-layout", document=document)
                 result = poller.result()
-            print(f"Analyzed: {os.path.basename(document_path)}.\n")
+            self.logger.info(
+                "Analyzed: %s.\n",
+                os.path.basename(document_path)
+            )
         except Exception as e:
-            print(f"Error analyzing {os.path.basename(document_path)}: {e}")
+            self.logger.error(
+                "Error analyzing %s: %s",
+                os.path.basename(document_path),
+                e
+            )
             result = None
         return result
 
