@@ -9,6 +9,7 @@ import pytesseract
 from PIL import Image
 import io
 import yaml
+from utils import Logger
 
 class PDFProcessor:
     def __init__(self):
@@ -20,7 +21,9 @@ class PDFProcessor:
         
         # Set the Tesseract command path if necessary
         pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
-        pass
+        
+        # Set up logger
+        self.logger = Logger.get_logger(self.__class__.__name__, log_to_file=True)
         
     def process_all_pdfs(self, input_folder, output_folder, manual_processing_folder, type_name):
         """
@@ -33,7 +36,11 @@ class PDFProcessor:
             manual_processing_folder (str): The folder where the PDF files without a known pattern will be moved.
             type_name (str): The type of document to process.
         """
-        print(f"Splitting files in {input_folder} and saving individual documents to {output_folder}...\n")
+        self.logger.info(
+            "Splitting files in %s and saving individual documents to %s...", 
+            input_folder, 
+            output_folder
+        )
         for pdf_file in Path(input_folder).glob("*.pdf"):
             pdf_path = str(pdf_file)
             is_machine_readable = self.is_pdf_machine_readable(pdf_path)
@@ -41,22 +48,29 @@ class PDFProcessor:
             if is_machine_readable:
                 doc_starts = self.get_doc_starts_by_type(pdf_path, type_name)
             else:
-                print(f"{os.path.basename(pdf_file)} is scanned. Performing OCR to extract text.\n")
+                self.logger.info(
+                    "%s is scanned. Performing OCR to extract text.", 
+                    os.path.basename(pdf_file)
+                )
                 doc_starts = self.get_doc_starts_by_type(pdf_path, type_name, use_ocr=True)
 
             if doc_starts:
                 self.split_pdf(pdf_path, output_folder, doc_starts)
-                print(f"{os.path.basename(pdf_file)} has been processed and split accordingly.\n")
+                self.logger.info(
+                    "%s has been processed and split accordingly.", 
+                    os.path.basename(pdf_file)
+                )
             else:
-                print(
-                    f"Could not identify document pattern for {os.path.basename(pdf_file)}, moving to manual processing folder.\n"
+                self.logger.warning(
+                    "Could not identify document pattern for %s, moving to manual processing folder.", 
+                    os.path.basename(pdf_file)
                 )
                 shutil.copy(pdf_path, manual_processing_folder)
                 manifest_path = os.path.join(manual_processing_folder, "manifest-of-unsplit-files.txt")
                 with open(manifest_path, "a") as manifest_file:
                     manifest_file.write(f"{pdf_file.stem}\n")
 
-        print(f"Splitting complete.\n\n")
+        self.logger.info("Splitting complete.")
 
     def get_config_for_type(self, statement_type):
         """

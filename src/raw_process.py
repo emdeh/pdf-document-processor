@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from prep_env import EnvironmentPrep
 from doc_ai_utils import DocAIUtils
 from csv_utils import CSVUtils
+from utils import Logger
 import pandas as pd
 import time
 
@@ -41,6 +42,10 @@ def main():
     config_type = "config/type_models.yaml"
     type = "Raw-extract"
 
+    # Set up logger
+    logger = Logger.get_logger("RawProcessor", log_to_file=True)
+    logger.info("Starting raw processing script...")
+
     # Load configuration
     env_prep = EnvironmentPrep()
     config = env_prep.load_statement_config(config_type)
@@ -56,7 +61,7 @@ def main():
     model_api_key = os.getenv("MODEL_API_KEY")
 
     if not model_endpoint or not model_api_key:
-        print("Error: MODEL_ENDPOINT and MODEL_API_KEY must be set in the .env file.")
+        logger.error("Error: MODEL_ENDPOINT and MODEL_API_KEY must be set in the .env file.")
         exit(1)
 
     # Initialize Document Analysis Client
@@ -82,9 +87,12 @@ def main():
 
         # Analyze document and extract static info, summary, transactions
         results = doc_ai_utils.analyse_document(doc_ai_client, model_id, document_path)
-        print("Processing extracted data...\n")
+        logger.info("Processing extracted data...\n")
         if not results:
-            print(f"Error: No results found for {original_document_name}.")
+            logger.error(
+                "Error: No results found for %s.",
+                original_document_name
+            )
             continue
 
         # Extract table data from the results
@@ -98,7 +106,10 @@ def main():
     env_prep.move_analysed_file(document_path, analysed_files_folder)
 
     files_to_go -= 1
-    print(f"Number of files remaining: {files_to_go}.\n")
+    logger.info(
+        "Number of files remaining: %s.\n",
+        files_to_go
+    )
 
     # Write extracted data to Excel
     if all_text:
@@ -108,12 +119,15 @@ def main():
             "extracted-data.xlsx"
         )
     else:
-        print("No data extracted from the documents.")
+        logger.info("No data extracted from the documents.")
 
     # end time
     end_time = time.time()
     # Calculate time taken and print as hh:mm:ss
-    print(f"Time taken: {time.strftime('%H:%M:%S', time.gmtime(end_time - start_time))}")
+    logger.info(
+        "Time taken: %s",
+        time.strftime('%H:%M:%S', time.gmtime(end_time - start_time))
+    )
 
 if __name__ == "__main__":
     main()
