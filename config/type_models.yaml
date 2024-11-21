@@ -461,6 +461,40 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
+  - type_name: "ANZ - Bank Statement (Receipt style)" # For ANZ statements that look like receipts
+    env_var: "MODEL_ID_ANZ_BANK_RECEIPT_STYLE"
+    # Pattern type TBD
+    summary_fields:
+      - field_name: "BalanceBroughtForward"
+        is_amount: true
+      - field_name: "TotalDebitsAtEndOfPeriod"
+        is_amount: true
+      - field_name: "TotalCreditsAtEndOfPeriod"
+        is_amount: true
+      - field_name: "TotalBalanceAtEndOfPeriod"
+        is_amount: true
+      - field_name: "StatementStartDate"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "22 JUN 2022"
+      - field_name: "StatementEndDate"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "22 JUL 2023"
+    transaction_static_fields:
+      - field_name: "AccountName"
+      - field_name: "BSB"
+      - field_name: "AccountNumber"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+        date_format: "%d %b"  # For dates like "01 Jan"
+      - field_name: "TransactionDescription"
+      - field_name: "Debits"
+        is_amount: true
+      - field_name: "Credits"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
+
 
 ###
 #Regex Pattern Only (start_pattern):
