@@ -436,6 +436,7 @@ statement_types:
         is_amount: true
       - field_name: "Interest"
     transaction_static_fields:
+      - field_name: "AccountName"
       - field_name: "ABN"
       - field_name: "Address"
       - field_name: "AccountNumber"
