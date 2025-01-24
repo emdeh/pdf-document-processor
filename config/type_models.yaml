@@ -395,9 +395,9 @@ statement_types:
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
-      - field_name: "TotalDebits"
-        is_amount: true
       - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "TotalDebits"
         is_amount: true
       - field_name: "ClosingBalance"
         is_amount: true
