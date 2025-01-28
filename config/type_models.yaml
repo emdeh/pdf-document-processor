@@ -395,9 +395,9 @@ statement_types:
     summary_fields:
       - field_name: "OpeningBalance"
         is_amount: true
-      - field_name: "TotalDebits"
-        is_amount: true
       - field_name: "TotalCredits"
+        is_amount: true
+      - field_name: "TotalDebits"
         is_amount: true
       - field_name: "ClosingBalance"
         is_amount: true
@@ -424,6 +424,35 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
       - field_name: "CR if Credit"
+
+  - type_name: "NAB - Transaction Listings"
+    env_var: "MODEL_ID_NAB_TRANSACTION_LISTINGS"
+    start_pattern: # tba
+    split_type: # tba
+    summary_fields:
+      - field_name: "CurrentBalance"
+        is_amount: true
+      - field_name: "AvailableBalance"
+        is_amount: true
+      - field_name: "Interest"
+    transaction_static_fields:
+      - field_name: "AccountName"
+      - field_name: "ABN"
+      - field_name: "Address"
+      - field_name: "AccountNumber"
+      - field_name: "BSB"
+      - field_name: "AccountType"
+      - field_name: "AccountHolding"
+      - field_name: "AccountStatus"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "01 Jan 2022"
+      - field_name: "TransactionDetails"
+      - field_name: "Amount"
+        is_amount: true
+      - field_name: "Balance"
+        is_amount: true
 
   - type_name: "ANZ - Bank Statement"
     env_var: "MODEL_ID_ANZ_BANK"
