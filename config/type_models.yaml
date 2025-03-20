@@ -524,6 +524,38 @@ statement_types:
       - field_name: "Balance"
         is_amount: true
 
+  - type_name: "NAB - Credit Card Statement"
+    env_var: "MODEL_ID_NAB_CREDIT_CARD"
+    summary_fields:
+      - field_name: "CardholderName"
+      - field_name: "AccountNo"
+      - field_name: "StatementStartDate"
+        is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
+      - field_name: "StatementEndDate"
+        is_date: true
+        date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
+      - field_name: "CompanyAccountNo"
+      - field_name: "CreditLimit"
+        is_amount: true
+      - field_name: "AvailableCredit"
+        is_amount: true
+    transaction_static_fields:
+      - field_name: "TransactionRecordFor"
+    transaction_dynamic_fields:
+      - field_name: "Date"
+        is_date: true
+        date_format: "%d %b %Y"  # For dates like "22 JUN 2022"
+      - field_name: "Amount"
+        is_amount: true
+      - field_name: "Details"
+      - field_name: "Explanation"
+      - field_name: "AmountNotSubjectToGST"
+      - field_name: "AmountSubjectToGST"
+      - field_name: "GSTComponent"
+      - field_name: "Reference"
+      
+
 
 ###
 #Regex Pattern Only (start_pattern):
