@@ -535,10 +535,10 @@ statement_types:
       - field_name: "StatementEndDate"
         is_date: true
         date_format: "%d %B %Y"  # For dates like "22 JUNE 2022"
-      - field_name: "Company Account No"
-      - field_name: "Credit Limit"
+      - field_name: "CompanyAccountNo"
+      - field_name: "CreditLimit"
         is_amount: true
-      - field_name: "Available Credit"
+      - field_name: "AvailableCredit"
         is_amount: true
     transaction_static_fields:
       - field_name: "TransactionRecordFor"
@@ -553,7 +553,7 @@ statement_types:
       - field_name: "AmountNotSubjectToGST"
       - field_name: "AmountSubjectToGST"
       - field_name: "GSTComponent"
-      - field_name: "References"
+      - field_name: "Reference"
       
 
 
