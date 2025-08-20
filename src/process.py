@@ -96,6 +96,9 @@ def main():
     analysed_files_folder = os.path.join(output_folder, "analysed-files")
     os.makedirs(analysed_files_folder, exist_ok=True)
 
+    #debug issue with no files
+    static_info = {}  # default if no files or all files fail
+
     for document_path in files_to_process:
         # Analyze the document
         original_document_name = os.path.basename(document_path)
